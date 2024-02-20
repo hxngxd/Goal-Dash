@@ -5,6 +5,7 @@
 #include "include/SDL2/SDL_ttf.h"
 #include "mylib/Screen.hpp"
 #include "mylib/Render.hpp"
+#include "mylib/Entity.hpp"
 
 int main(int argc, char* argv[]){
     if (SDL_Init(SDL_INIT_VIDEO) < 0){
@@ -14,6 +15,14 @@ int main(int argc, char* argv[]){
 
     Screen currentScreen;
     Render currentRenderer(currentScreen.window);
+
+    SDL_Texture * bg_texture = currentRenderer.loadTexture("texture/board.png");
+    Entity background({0, 0}, {0, 0, 256, 256}, bg_texture);
+    
+    // std::vector<Entity> entities = {
+    //     Entity({0, 0}, {0, 0, 256, 256}, bg_texture),
+    //     Entity({255, 255}, {0, 0, 256, 256}, bg_texture)
+    // };
 
     bool running = true;
     SDL_Event event;
@@ -28,8 +37,8 @@ int main(int argc, char* argv[]){
                     break;
             }
         }
-        SDL_SetRenderDrawColor(currentRenderer.renderer, 255, 255, 255, 255);
         currentRenderer.Clear();
+        currentRenderer.RenderIt(background);
         currentRenderer.Display();
     }
 
