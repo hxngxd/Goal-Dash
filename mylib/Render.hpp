@@ -1,21 +1,18 @@
 #pragma once
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
-#include "Screen.hpp"
-#include "Entity.hpp"
+
+struct {
+    SDL_Rect tex256 = {0, 0, 90, 160};
+} TexRect;
 
 class Render{
 public:
-    //renderer flags
-    Uint32 renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+    Uint32 flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 
-    SDL_Renderer * renderer = NULL;
+    SDL_Renderer * renderer = nullptr;
 
-    //method
-    Render(SDL_Window * window);
-    SDL_Texture * loadTexture(const char * path);
+    void Init(SDL_Window * window);
     void Clear();
-    void RenderIt(Entity & entity);
     void Display();
-    void CleanUp();
 };
