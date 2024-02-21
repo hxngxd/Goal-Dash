@@ -6,8 +6,9 @@ class Screen{
 public:
     const char * title = "SDL2-Template";
 
-    int width = 1280;
-    int height = 720;
+    int width = 800;
+    int height = 800;
+    int scale = 16;
 
     int x = SDL_WINDOWPOS_CENTERED;
     int y = SDL_WINDOWPOS_CENTERED;

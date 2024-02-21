@@ -21,6 +21,9 @@ bool Game::Init(){
     currentRenderer.Init(currentScreen.window);
     if (currentRenderer.renderer==nullptr) return 0;
 
+    SDL_SetRenderDrawBlendMode(currentRenderer.renderer, SDL_BLENDMODE_BLEND);
+
+    currentRenderer.SquareGrid.resize(currentScreen.scale, std::vector<bool>(currentScreen.scale, 0));
     return 1;
 }
 
@@ -37,8 +40,8 @@ void Game::HandleEvent(){
 }
 
 void Game::Update(){
-    currentRenderer.Clear();
-    currentRenderer.SetBackgroundColor(Color.cyan);
+    currentRenderer.Clear(Color.black(255));
+    currentRenderer.PointGrid(currentScreen, Color.white(127));
     currentRenderer.Display();
 }
 
