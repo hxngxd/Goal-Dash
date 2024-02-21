@@ -5,17 +5,18 @@
 #include "../include/SDL2/SDL_ttf.h"
 #include "../mylib/Game.hpp"
 
-Game game;
+// Game game;
 
 int main(int argc, char* argv[]){
     
-    game.isRunning = game.Init();
+    // game.isRunning = game.Init();
     
-    while (game.isRunning){
-        game.HandleEvent();
-        game.Update();
-    }
+    // while (game.isRunning){
+    //     game.HandleEvent();
+    //     game.Update();
+    // }
 
-    game.Quit();
+    // game.Quit();
+
     return 0;
 }
