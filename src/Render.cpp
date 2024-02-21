@@ -15,3 +15,7 @@ void Render::Clear(){
 void Render::Display(){
     SDL_RenderPresent(renderer);
 }
+
+void Render::SetBackgroundColor(SDL_Color & color){
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+}

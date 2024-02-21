@@ -10,7 +10,7 @@ Game::Game(){}
 Game::~Game(){}
 
 bool Game::Init(){
-    if (SDL_Init(SDL_INIT_VIDEO) != 0){
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0){
         std::cout << "Error: SDL failed to initialize - " << SDL_GetError();
         return 0;
     }
@@ -38,7 +38,7 @@ void Game::HandleEvent(){
 
 void Game::Update(){
     currentRenderer.Clear();
-    SDL_SetRenderDrawColor(currentRenderer.renderer, 100, 100, 100, 100);
+    currentRenderer.SetBackgroundColor(Color.cyan);
     currentRenderer.Display();
 }
 
