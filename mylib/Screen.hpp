@@ -20,6 +20,9 @@ public:
     bool isMaximized = false;
     bool isResizable = false;
 
+    const float FPS = 60.0;
+    const float frameDelay = 1000.0 / FPS;
+
     SDL_Window * window = nullptr;
 
     void Init();

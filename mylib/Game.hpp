@@ -1,14 +1,17 @@
 #pragma once
+#include <bits/stdc++.h>
 #include "../include/SDL2/SDL.h"
 #include "../mylib/Screen.hpp"
-#include "../mylib/Render.hpp"
-#include "../mylib/Entity.hpp"
+#include "../mylib/Renderer.hpp"
+#include "../mylib/GameObject.hpp"
+#include "../mylib/Math.hpp"
 
 class Game {
 private:
 
 public:
     bool isRunning = false;
+    std::vector<GameObject> gameObjects;
 
     Game();
     ~Game();
@@ -16,8 +19,9 @@ public:
     bool Init();
     void HandleEvent();
     void Update();
+    void Render();
     void Quit();
 
     Screen currentScreen;
-    Render currentRenderer;
+    Renderer currentRenderer;
 };

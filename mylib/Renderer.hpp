@@ -1,6 +1,8 @@
 #pragma once
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
+#include "../mylib/Screen.hpp"
+#include "../mylib/GameObject.hpp"
 
 struct {
     SDL_Color white  (Uint8 a) { return {255, 255, 255, a}; }
@@ -19,7 +21,7 @@ struct {
     SDL_Rect tex256 = {0, 0, 256, 256};
 } TexRect;
 
-class Render{
+class Renderer{
 public:
     std::vector<std::vector<bool>> SquareGrid;
 
@@ -30,6 +32,12 @@ public:
     void Init(SDL_Window * window);
     void Clear(SDL_Color color);
     void SetDrawColor(SDL_Color color);
-    void Display();
     void PointGrid(Screen & currentScreen, SDL_Color color);
+    void RenderGameObject(GameObject & gameObject);
+    void Display();
+};
+
+class TextureManager{
+public:
+    static SDL_Texture * LoadTexture(const char * name, const char * path, SDL_Renderer * renderer);
 };
