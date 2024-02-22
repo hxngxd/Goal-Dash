@@ -8,32 +8,42 @@ Game::Game(){}
 
 Game::~Game(){}
 
-bool Game::Init(){
+void Game::Init(){
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0){
         std::cout << "Error: SDL failed to initialize - " << SDL_GetError();
-        return 0;
+        return;
     }
 
     if (!(IMG_Init(IMG_INIT_PNG))) {
         std::cout << "Error: SDL_IMAGE failed to initialize - " << SDL_GetError();
-        return 0;
+        return;
     }
 
     currentScreen.Init();
-    if (currentScreen.window==nullptr) return 0;
+    if (currentScreen.getWindow()==nullptr) return;
 
-    currentRenderer.Init(currentScreen.window);
-    if (currentRenderer.renderer==nullptr) return 0;
+    currentRenderer.Init(currentScreen.getWindow());
+    if (currentRenderer.getRenderer()==nullptr) return;
 
-    SDL_SetRenderDrawBlendMode(currentRenderer.renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawBlendMode(currentRenderer.getRenderer(), SDL_BLENDMODE_BLEND);
 
-    currentRenderer.SquareGrid.resize(currentScreen.scale, std::vector<bool>(currentScreen.scale, 0));
+    running = true;
+
+    Start();
+}
+
+void Game::Start(){
+    currentRenderer.SquareGrid.resize(Screen::scale, std::vector<bool>(Screen::scale, 0));
 
     gameObjects = {
-        GameObject("Object1", Vector2(), TexRect.tex256, "texture/board.png", currentRenderer.renderer)
+        GameObject("Object1", Vector2(), TexRect.Square(256), "texture/board.png", currentRenderer.getRenderer()),
+        GameObject("Object2", Vector2(), TexRect.Square(256), "texture/board.png", currentRenderer.getRenderer()),
+        GameObject("Object3", Vector2(), TexRect.Square(256), "texture/board.png", currentRenderer.getRenderer())
     };
+}
 
-    return 1;
+bool Game::isRunning(){
+    return running;
 }
 
 void Game::HandleEvent(){
@@ -41,7 +51,7 @@ void Game::HandleEvent(){
     SDL_PollEvent(&event);
     switch (event.type){
         case SDL_QUIT:
-            isRunning = false;
+            running = false;
             break;
         default:
             break;
@@ -49,18 +59,25 @@ void Game::HandleEvent(){
 }
 
 void Game::Update(){
-
+    gameObjects[0].MoveRight(Game::speed);
+    gameObjects[1].MoveDown(Game::speed);
+    gameObjects[2].MoveDownRight(Game::speed);
+    gameObjects[2].MoveRight(Game::speed);
 }
 
 void Game::Render(){
     currentRenderer.Clear(Color.black(255));
-    currentRenderer.PointGrid(currentScreen, Color.white(127));
-    currentRenderer.RenderGameObject(gameObjects[0]);
+    currentRenderer.PointGrid(Color.white(127));
+
+    for (GameObject gameObject : gameObjects){
+        currentRenderer.RenderGameObject(gameObject);
+    }
+
     currentRenderer.Display();
 }
 
 void Game::Quit(){
-    SDL_DestroyRenderer(currentRenderer.renderer);
-    SDL_DestroyWindow(currentScreen.window);
+    SDL_DestroyRenderer(currentRenderer.getRenderer());
+    SDL_DestroyWindow(currentScreen.getWindow());
     SDL_Quit();
 }

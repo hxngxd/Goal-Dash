@@ -8,19 +8,25 @@
 
 class Game {
 private:
+    bool running = false;
 
 public:
-    bool isRunning = false;
     std::vector<GameObject> gameObjects;
+
+    const int speed = 3;
+    static constexpr float FPS = 60.0;
+    static constexpr float frameDelay = 1000.0 / FPS;
 
     Game();
     ~Game();
 
-    bool Init();
+    void Init();
+    void Start();
     void HandleEvent();
     void Update();
     void Render();
     void Quit();
+    bool isRunning();
 
     Screen currentScreen;
     Renderer currentRenderer;

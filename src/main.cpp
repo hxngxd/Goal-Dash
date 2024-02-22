@@ -6,11 +6,11 @@ Game game;
 
 int main(int argc, char* argv[]){
     
-    game.isRunning = game.Init();
+    game.Init();
     
     float frameStart, frameTime;
 
-    while (game.isRunning){
+    while (game.isRunning()){
 
         frameStart = (float)SDL_GetTicks();
 
@@ -20,8 +20,8 @@ int main(int argc, char* argv[]){
 
         frameTime = (float)SDL_GetTicks() - frameStart;
 
-        if (frameTime < game.currentScreen.frameDelay){
-            SDL_Delay(game.currentScreen.frameDelay - frameTime);
+        if (frameTime < Game::frameDelay){
+            SDL_Delay(Game::frameDelay - frameTime);
         }
     }
 

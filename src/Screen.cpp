@@ -7,3 +7,7 @@ void Screen::Init() {
         std::cout << "Error: Failed to open window - " << SDL_GetError();
     }
 }
+
+SDL_Window * Screen::getWindow(){
+    return this->window;
+}

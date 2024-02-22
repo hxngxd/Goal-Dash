@@ -3,27 +3,27 @@
 #include "../include/SDL2/SDL_image.h"
 
 class Screen{
-public:
-    const char * title = "SDL2-Template";
-
-    int width = 800;
-    int height = 800;
-    int scale = 16;
-
-    int x = SDL_WINDOWPOS_CENTERED;
-    int y = SDL_WINDOWPOS_CENTERED;
-
-    Uint32 fixedsize = 0;
-    Uint32 resizable = SDL_WINDOW_RESIZABLE;
+private:
 
     bool isFullscreen = false;
     bool isMaximized = false;
     bool isResizable = false;
 
-    const float FPS = 60.0;
-    const float frameDelay = 1000.0 / FPS;
-
     SDL_Window * window = nullptr;
 
+public:
+    static constexpr const char * title = "Fun game";
+
+    static constexpr int width = 800;
+    static constexpr int height = 800;
+    static constexpr int scale = 16;
+
+    static constexpr int x = SDL_WINDOWPOS_CENTERED;
+    static constexpr int y = SDL_WINDOWPOS_CENTERED;
+
+    static constexpr Uint32 fixedsize = 0;
+    static constexpr Uint32 resizable = SDL_WINDOW_RESIZABLE;
+
     void Init();
+    SDL_Window * getWindow();
 };

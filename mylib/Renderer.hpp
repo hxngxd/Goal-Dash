@@ -1,7 +1,6 @@
 #pragma once
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
-#include "../mylib/Screen.hpp"
 #include "../mylib/GameObject.hpp"
 
 struct {
@@ -18,23 +17,24 @@ struct {
 } Color;
 
 struct {
-    SDL_Rect tex256 = {0, 0, 256, 256};
+    SDL_Rect Square (int res) { return {0, 0, res, res}; }
 } TexRect;
 
 class Renderer{
+private:
+    SDL_Renderer * renderer = nullptr;
+
 public:
     std::vector<std::vector<bool>> SquareGrid;
-
     Uint32 flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
-
-    SDL_Renderer * renderer = nullptr;
 
     void Init(SDL_Window * window);
     void Clear(SDL_Color color);
     void SetDrawColor(SDL_Color color);
-    void PointGrid(Screen & currentScreen, SDL_Color color);
+    void PointGrid(SDL_Color color);
     void RenderGameObject(GameObject & gameObject);
     void Display();
+    SDL_Renderer * getRenderer();
 };
 
 class TextureManager{

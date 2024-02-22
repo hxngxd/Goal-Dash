@@ -10,6 +10,10 @@ void Renderer::Init(SDL_Window * window){
     }
 }
 
+SDL_Renderer * Renderer::getRenderer(){
+    return this->renderer;
+}
+
 void Renderer::SetDrawColor(SDL_Color color){
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 }
@@ -24,14 +28,14 @@ void Renderer::Display(){
 }
 
 void Renderer::RenderGameObject(GameObject & gameObject){
-    SDL_RenderCopy(renderer, gameObject.texture, & gameObject.src, & gameObject.dst);
+    SDL_RenderCopy(renderer, gameObject.getTexture(), & gameObject.src, & gameObject.dst);
 }
 
-void Renderer::PointGrid(Screen & currentScreen, SDL_Color color){
+void Renderer::PointGrid(SDL_Color color){
     SetDrawColor(color);
-    int sqr = currentScreen.width / currentScreen.scale;
-    for (int i=sqr;i<currentScreen.width;i+=sqr){
-        for (int j=sqr;j<currentScreen.height;j+=sqr){
+    int sqr = Screen::width / Screen::scale;
+    for (int i=sqr;i<Screen::width;i+=sqr){
+        for (int j=sqr;j<Screen::height;j+=sqr){
             SDL_RenderDrawPoint(renderer, i, j);
         }
     }
