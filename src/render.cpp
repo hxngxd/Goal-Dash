@@ -1,17 +1,18 @@
-#include <bits/stdc++.h>
-#include "../mylib/Screen.hpp"
-#include "../mylib/Renderer.hpp"
-#include "../mylib/Math.hpp"
+#include <iostream>
+#include "render.h"
+#include "screen.h"
 
-void Renderer::Init(SDL_Window * window){
+bool Renderer::CreateRenderer(SDL_Window * window){
     renderer = SDL_CreateRenderer(window, -1, flags);
     if (renderer==nullptr){
         std::cout << "Error: Failed to create renderer - " << SDL_GetError();
+        return false;
     }
+    return true;
 }
 
-SDL_Renderer * Renderer::getRenderer(){
-    return this->renderer;
+void Renderer::DestroyRenderer(){
+    SDL_DestroyRenderer(renderer);
 }
 
 void Renderer::SetDrawColor(SDL_Color color){
@@ -27,13 +28,9 @@ void Renderer::Display(){
     SDL_RenderPresent(renderer);
 }
 
-void Renderer::RenderGameObject(GameObject & gameObject){
-    SDL_RenderCopy(renderer, gameObject.getTexture(), & gameObject.src, & gameObject.dst);
-}
-
 void Renderer::PointGrid(SDL_Color color){
     SetDrawColor(color);
-    int sqr = Screen::width / Screen::scale;
+    int sqr = Screen::width/Screen::scale;
     for (int i=sqr;i<Screen::width;i+=sqr){
         for (int j=sqr;j<Screen::height;j+=sqr){
             SDL_RenderDrawPoint(renderer, i, j);
@@ -45,8 +42,10 @@ SDL_Texture * TextureManager::LoadTexture(const char * name, const char * path, 
     SDL_Surface * tmpSurface = IMG_Load(path);
     SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
+
     if (texture==nullptr){
         std::cout << "Error: SDL failed to load texture " << name << " - " << SDL_GetError();
     }
+
     return texture;
 }

@@ -1,14 +1,24 @@
-#include <bits/stdc++.h>
+#include <iostream>
 #include "../include/SDL2/SDL.h"
-#include "../mylib/Game.hpp"
+#include "screen.h"
+#include "game.h"
+
+const char * Screen::title = "Fun game";
+int Screen::width = 800;
+int Screen::height = 800;
+int Screen::scale = 16;
+
+float Game::fps = 60.0;
+int Game::speed = 5;
 
 Game game;
 
 int main(int argc, char* argv[]){
     
-    game.Init();
-    
-    float frameStart, frameTime;
+    game.Start();
+    std::cout << game.isRunning();
+
+    float frameStart, frameTime, frameDelay = 1000.0/Game::fps;
 
     while (game.isRunning()){
 
@@ -20,8 +30,8 @@ int main(int argc, char* argv[]){
 
         frameTime = (float)SDL_GetTicks() - frameStart;
 
-        if (frameTime < Game::frameDelay){
-            SDL_Delay(Game::frameDelay - frameTime);
+        if (frameTime < frameDelay){
+            SDL_Delay(frameDelay - frameTime);
         }
     }
 

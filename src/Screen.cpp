@@ -1,13 +1,15 @@
-#include <bits/stdc++.h>
-#include "../mylib/Screen.hpp"
+#include <iostream>
+#include "screen.h"
 
-void Screen::Init() {
+bool Screen::CreateWindow() {
     window = SDL_CreateWindow(title, x, y, width, height, fixedsize);
     if (window==nullptr){
         std::cout << "Error: Failed to open window - " << SDL_GetError();
+        return false;
     }
+    return true;
 }
 
-SDL_Window * Screen::getWindow(){
-    return this->window;
+void Screen::DestroyWindow(){
+    SDL_DestroyWindow(window);
 }
