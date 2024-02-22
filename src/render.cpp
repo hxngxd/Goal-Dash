@@ -1,18 +1,13 @@
-#include <iostream>
+#include "game.h"
 #include "render.h"
-#include "screen.h"
 
-bool Renderer::CreateRenderer(SDL_Window * window){
+bool Renderer::CreateRenderer(){
     renderer = SDL_CreateRenderer(window, -1, flags);
     if (renderer==nullptr){
         std::cout << "Error: Failed to create renderer - " << SDL_GetError();
         return false;
     }
     return true;
-}
-
-void Renderer::DestroyRenderer(){
-    SDL_DestroyRenderer(renderer);
 }
 
 void Renderer::SetDrawColor(SDL_Color color){
@@ -30,15 +25,15 @@ void Renderer::Display(){
 
 void Renderer::PointGrid(SDL_Color color){
     SetDrawColor(color);
-    int sqr = Screen::width/Screen::scale;
-    for (int i=sqr;i<Screen::width;i+=sqr){
-        for (int j=sqr;j<Screen::height;j+=sqr){
+    int sqr = width/map_size;
+    for (int i=sqr;i<width;i+=sqr){
+        for (int j=sqr;j<height;j+=sqr){
             SDL_RenderDrawPoint(renderer, i, j);
         }
     }
 }
 
-SDL_Texture * TextureManager::LoadTexture(const char * name, const char * path, SDL_Renderer * renderer){
+SDL_Texture * TextureManager::LoadTexture(const char * name, const char * path){
     SDL_Surface * tmpSurface = IMG_Load(path);
     SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
@@ -46,6 +41,6 @@ SDL_Texture * TextureManager::LoadTexture(const char * name, const char * path, 
     if (texture==nullptr){
         std::cout << "Error: SDL failed to load texture " << name << " - " << SDL_GetError();
     }
-
+    std::cout << "Loaded: " << name << std::endl;
     return texture;
 }

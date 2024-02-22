@@ -1,6 +1,4 @@
-#pragma once
-#include "../include/SDL2/SDL.h"
-#include "../include/SDL2/SDL_image.h"
+#include "game.h"
 
 struct Color{
     static SDL_Color white  (Uint8 a) { return {255, 255, 255, a}; }
@@ -23,20 +21,17 @@ class Renderer{
 private:
 
 public:
-    Uint32 flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+    static const Uint32 flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 
-    SDL_Renderer * renderer = nullptr;
+    static bool CreateRenderer();
 
-    bool CreateRenderer(SDL_Window * window);
-    void DestroyRenderer();
-
-    void Clear(SDL_Color color);
-    void SetDrawColor(SDL_Color color);
-    void PointGrid(SDL_Color color);
-    void Display();
+    static void Clear(SDL_Color color);
+    static void SetDrawColor(SDL_Color color);
+    static void PointGrid(SDL_Color color);
+    static void Display();
 };
 
 class TextureManager{
 public:
-    static SDL_Texture * LoadTexture(const char * name, const char * path, SDL_Renderer * renderer);
+    static SDL_Texture * LoadTexture(const char * name, const char * path);
 };

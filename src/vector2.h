@@ -12,12 +12,12 @@ struct Vector2{
         out << "(" << v.x << ", " << v.y << ")";
     }
 
-    void operator += (Vector2 & v){
+    void operator += (Vector2 v){
         x += v.x;
         y += v.y;
     }
 
-    void operator -= (Vector2 & v){
+    void operator -= (Vector2 v){
         x -= v.x;
         y -= v.y;
     }

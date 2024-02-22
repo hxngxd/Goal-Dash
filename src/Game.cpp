@@ -1,16 +1,30 @@
-#include <iostream>
-#include "../include/SDL2/SDL.h"
-#include "../include/SDL2/SDL_image.h"
 #include "game.h"
 #include "screen.h"
 #include "render.h"
 
+const char * title = "Fun game";
+const int width = 800;
+const int height = 800;
+const int map_size = 16;
+
+float fps = 60.0;
+float speed = 7;
+
+Direction velocity;
+
+SDL_Window * window = nullptr;
+SDL_Renderer * renderer = nullptr;
+
 SDL_Event Game::event;
-Screen Game::currentScreen;
-Renderer Game::currentRenderer;
+
+SDL_Texture * player = nullptr;
+Vector2 playerPos;
 
 void Game::Start(){
     Init();
+    if (!running) return;
+
+    player = TextureManager::LoadTexture("player", "texture/board.png");
 }
 
 void Game::Init(){
@@ -24,11 +38,11 @@ void Game::Init(){
         return;
     }
 
-    if (!currentScreen.CreateWindow()) return;
+    if (!Screen::CreateWindow()) return;
 
-    if (!currentRenderer.CreateRenderer(currentScreen.window)) return;
+    if (!Renderer::CreateRenderer()) return;
 
-    SDL_SetRenderDrawBlendMode(currentRenderer.renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     running = true;
 }
@@ -49,17 +63,56 @@ void Game::HandleEvent(){
 }
 
 void Game::Update() {
-
+    if (event.type==SDL_KEYDOWN){
+        switch (event.key.keysym.sym){
+            case SDLK_w:
+                velocity.u = -1;
+                break;
+            case SDLK_a:
+                velocity.l = -1;
+                break;
+            case SDLK_s:
+                velocity.d = 1;
+                break;
+            case SDLK_d:
+                velocity.r = 1;
+                break;
+            default:
+                break;
+        }
+    }
+    if (event.type==SDL_KEYUP){
+        switch (event.key.keysym.sym){
+            case SDLK_w:
+                velocity.u = 0;
+                break;
+            case SDLK_a:
+                velocity.l = 0;
+                break;
+            case SDLK_s:
+                velocity.d = 0;
+                break;
+            case SDLK_d:
+                velocity.r = 0;
+                break;
+            default:
+                break;
+        }
+    }
+    playerPos += Vector2((velocity.l + velocity.r) * speed, (velocity.u + velocity.d) * speed);
 }
 
 void Game::Render(){
-    currentRenderer.Clear(Color::black(255));
-    currentRenderer.PointGrid(Color::white(127));
-    currentRenderer.Display();
+    Renderer::Clear(Color::black(255));
+    Renderer::PointGrid(Color::white(127));
+    SDL_Rect src = Rect::Square(256);
+    SDL_Rect dst = {playerPos.x, playerPos.y, 50, 50};
+    SDL_RenderCopy(renderer, player, &src, &dst);
+    Renderer::Display();
 }
 
 void Game::Quit(){
-    currentRenderer.DestroyRenderer();
-    currentScreen.DestroyWindow();
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     SDL_Quit();
 }

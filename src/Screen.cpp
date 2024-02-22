@@ -1,4 +1,4 @@
-#include <iostream>
+#include "game.h"
 #include "screen.h"
 
 bool Screen::CreateWindow() {
@@ -8,8 +8,4 @@ bool Screen::CreateWindow() {
         return false;
     }
     return true;
-}
-
-void Screen::DestroyWindow(){
-    SDL_DestroyWindow(window);
 }
