@@ -4,14 +4,18 @@
 
 const char * title = "Fun game";
 const Vector2 resolution(800, 800);
-const int map_size = 32;
-const int player_size = 179;
+const int map_size = 16;
+const int player_size = 75;
 
 float fps = 60.0;
 float player_speed = 5;
 float animation_speed = 20;
 float falling_speed = 0.5;
 float gravity = 10;
+
+std::vector<std::vector<int>> tileMap;
+
+Map newMap(map_size, map_size, {0.9, 0.1, 0}, tileMap);
 
 SDL_Window * window = nullptr;
 SDL_Renderer * renderer = nullptr;
@@ -22,6 +26,7 @@ Sprite sprite_idle;
 Sprite sprite_run;
 
 Player player1;
+
 void Game::Start(){
     Init();
     if (!running) return;
@@ -29,7 +34,14 @@ void Game::Start(){
     sprite_idle.LoadSprite("img/idle.png", 10, Vector2(48, 48));
     sprite_run.LoadSprite("img/run.png", 9, Vector2(48, 48));
 
-    player1.Init("Hoang le minh", Vector2());
+    player1.Init("Hoang le minh", Vector2(150, 150));
+
+    for (auto i : tileMap){
+        for (auto j : i){
+            std::cout << j << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 void Game::Init(){
@@ -72,6 +84,7 @@ void Game::Update() {
     Renderer::PointGrid(Color::white(127));
     player1.Update();
     player1.Animation();
+    newMap.Draw(tileMap);
     Renderer::Display();
 }
 

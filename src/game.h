@@ -18,6 +18,8 @@ extern float animation_speed;
 extern float falling_speed;
 extern float gravity;
 
+extern std::vector<std::vector<int>> tileMap;
+
 extern SDL_Window * window;
 extern SDL_Renderer * renderer;
 
@@ -85,5 +87,15 @@ public:
 };
 
 class Map{
+public:
+    enum type{
+        empty = 0,
+        normal = 1,
+        damage = 2,
+    };
+    int rows;
+    int cols;
+    Map(int rows, int cols, std::vector<float> tileProbabilities, std::vector<std::vector<int>> & tileMap);
 
+    void Draw(std::vector<std::vector<int>> & tileMap);
 };

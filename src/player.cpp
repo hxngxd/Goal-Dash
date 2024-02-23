@@ -55,16 +55,4 @@ void Player::Collision(){
     SDL_RenderDrawLine(renderer, startPos.x, startPos.y, startPos.x, endPos.y);
     SDL_RenderDrawLine(renderer, endPos.x, endPos.y, endPos.x, startPos.y);
     SDL_RenderDrawLine(renderer, endPos.x, endPos.y, startPos.x, endPos.y);
-
-    Vector2 startTile(
-        (startPos.x + 1)/(resolution.x/map_size),
-        (startPos.y + 1)/(resolution.x/map_size)
-    );
-
-    Vector2 endTile(
-        (endPos.x + 1)/(resolution.x/map_size),
-        (endPos.y + 1)/(resolution.x/map_size)
-    );
-
-    std::cout << position << " " << startTile << " " << endTile << std::endl;
 }
