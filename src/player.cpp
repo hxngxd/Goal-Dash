@@ -28,7 +28,7 @@ void Player::Update(){
         
     }
     state_frames = state->frames;
-    Renderer::DrawSprite(*state, position, Vector2(100, 100), std::min(frame, state_frames), animation_direction == left);
+    Renderer::DrawSprite(*state, position, Vector2(150, 150), std::min(frame, state_frames), animation_direction == left);
 }
 
 void Player::Animation(){
