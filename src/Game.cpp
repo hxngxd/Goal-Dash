@@ -3,13 +3,15 @@
 #include "render.h"
 
 const char * title = "Fun game";
-const int width = 800;
-const int height = 800;
-const int map_size = 16;
+const Vector2 resolution(800, 800);
+const int map_size = 32;
+const int player_size = 100;
 
 float fps = 60.0;
-float speed = 10;
+float player_speed = 10;
 float animation_speed = 20;
+float falling_speed = 0.5;
+float gravity = 10;
 
 SDL_Window * window = nullptr;
 SDL_Renderer * renderer = nullptr;

@@ -5,7 +5,7 @@ Game game;
 int main(int argc, char* argv[]){
 
     game.Start();
-    if (game.isRunning()) std::cout << "RUNNING!" << std::endl;
+    if (game.isRunning()) std::cout << "Game is running!" << std::endl;
 
     float frameStart, frameTime, frameDelay = 1000.0/fps;
 

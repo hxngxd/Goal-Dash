@@ -25,9 +25,9 @@ void Renderer::Display(){
 
 void Renderer::PointGrid(SDL_Color color){
     SetDrawColor(color);
-    int sqr = width/map_size;
-    for (int i=sqr;i<width;i+=sqr){
-        for (int j=sqr;j<height;j+=sqr){
+    int sqr = resolution.x/map_size;
+    for (int i=sqr;i<resolution.x;i+=sqr){
+        for (int j=sqr;j<resolution.y;j+=sqr){
             SDL_RenderDrawPoint(renderer, i, j);
         }
     }

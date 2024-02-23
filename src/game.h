@@ -8,13 +8,15 @@
 struct Direction;
 
 extern const char * title;
-extern const int width;
-extern const int height;
+extern const Vector2 resolution;
 extern const int map_size;
+extern const int player_size;
 
 extern float fps;
-extern float speed;
+extern float player_speed;
 extern float animation_speed;
+extern float falling_speed;
+extern float gravity;
 
 extern SDL_Window * window;
 extern SDL_Renderer * renderer;
@@ -78,4 +80,9 @@ public:
 
     void Update();
     void Animation();
+    void ScreenLimit();
+};
+
+class Map{
+
 };

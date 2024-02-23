@@ -14,8 +14,9 @@ Player::~Player(){
 void Player::Update(){
     KeyboardHandler::PlayerMovement(*this);
 
-    position.x += (velocity.l + velocity.r) * speed;
-    position.y += (velocity.u + velocity.d) * speed;
+    position.x += (velocity.l + velocity.r) * player_speed;
+    position.y += (velocity.u + velocity.d) * player_speed;
+    ScreenLimit();
 
     Sprite * state = nullptr;
     switch (animation_state){
@@ -28,7 +29,7 @@ void Player::Update(){
         
     }
     state_frames = state->frames;
-    Renderer::DrawSprite(*state, position, Vector2(150, 150), std::min(frame, state_frames), animation_direction == left);
+    Renderer::DrawSprite(*state, position, Vector2(player_size), std::min(frame, state_frames), animation_direction == left);
 }
 
 void Player::Animation(){
@@ -38,4 +39,9 @@ void Player::Animation(){
         if (frame >= state_frames) frame = 0;
         animation_delay = currentTicks;
     }
+}
+
+void Player::ScreenLimit(){
+    position = Vector2::max(position, Vector2(-player_size/6, 0));
+    position = Vector2::min(position, resolution - Vector2(player_size/6*5, player_size));
 }
