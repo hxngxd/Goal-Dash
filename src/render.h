@@ -1,4 +1,7 @@
+#pragma once
 #include "game.h"
+
+class Sprite;
 
 struct Color{
     static SDL_Color white  (Uint8 a) { return {255, 255, 255, a}; }
@@ -28,10 +31,15 @@ public:
     static void Clear(SDL_Color color);
     static void SetDrawColor(SDL_Color color);
     static void PointGrid(SDL_Color color);
+    static void DrawSprite(Sprite & sprite, Vector2 position, Vector2 displayRes, int frame, bool flipped);
     static void Display();
 };
 
-class TextureManager{
+class Sprite{
 public:
-    static SDL_Texture * LoadTexture(const char * name, const char * path);
+    SDL_Texture * texture;
+    const char * path;
+    int frames;
+    Vector2 res;
+    void LoadSprite(const char * path, int frames, Vector2 res);
 };

@@ -15,7 +15,6 @@ int main(int argc, char* argv[]){
 
         game.HandleEvent();
         game.Update();
-        game.Render();
 
         frameTime = (float)SDL_GetTicks() - frameStart;
 

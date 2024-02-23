@@ -8,23 +8,26 @@ const int height = 800;
 const int map_size = 16;
 
 float fps = 60.0;
-float speed = 7;
-
-Direction velocity;
+float speed = 10;
+float animation_speed = 20;
 
 SDL_Window * window = nullptr;
 SDL_Renderer * renderer = nullptr;
 
 SDL_Event Game::event;
 
-SDL_Texture * player = nullptr;
-Vector2 playerPos;
+Sprite sprite_idle;
+Sprite sprite_run;
 
+Player player1;
 void Game::Start(){
     Init();
     if (!running) return;
 
-    player = TextureManager::LoadTexture("player", "texture/board.png");
+    sprite_idle.LoadSprite("img/idle.png", 10, Vector2(48, 48));
+    sprite_run.LoadSprite("img/run.png", 9, Vector2(48, 48));
+
+    player1.Init("Hoang le minh", Vector2());
 }
 
 void Game::Init(){
@@ -63,51 +66,10 @@ void Game::HandleEvent(){
 }
 
 void Game::Update() {
-    if (event.type==SDL_KEYDOWN){
-        switch (event.key.keysym.sym){
-            case SDLK_w:
-                velocity.u = -1;
-                break;
-            case SDLK_a:
-                velocity.l = -1;
-                break;
-            case SDLK_s:
-                velocity.d = 1;
-                break;
-            case SDLK_d:
-                velocity.r = 1;
-                break;
-            default:
-                break;
-        }
-    }
-    if (event.type==SDL_KEYUP){
-        switch (event.key.keysym.sym){
-            case SDLK_w:
-                velocity.u = 0;
-                break;
-            case SDLK_a:
-                velocity.l = 0;
-                break;
-            case SDLK_s:
-                velocity.d = 0;
-                break;
-            case SDLK_d:
-                velocity.r = 0;
-                break;
-            default:
-                break;
-        }
-    }
-    playerPos += Vector2((velocity.l + velocity.r) * speed, (velocity.u + velocity.d) * speed);
-}
-
-void Game::Render(){
     Renderer::Clear(Color::black(255));
     Renderer::PointGrid(Color::white(127));
-    SDL_Rect src = Rect::Square(256);
-    SDL_Rect dst = {playerPos.x, playerPos.y, 50, 50};
-    SDL_RenderCopy(renderer, player, &src, &dst);
+    player1.Update();
+    player1.Animation();
     Renderer::Display();
 }
 

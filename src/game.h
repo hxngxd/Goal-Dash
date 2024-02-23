@@ -3,6 +3,7 @@
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
 #include "vector2.h"
+#include "render.h"
 
 struct Direction;
 
@@ -13,11 +14,13 @@ extern const int map_size;
 
 extern float fps;
 extern float speed;
+extern float animation_speed;
 
 extern SDL_Window * window;
 extern SDL_Renderer * renderer;
 
-extern Direction velocity;
+extern Sprite sprite_idle;
+extern Sprite sprite_run;
 
 struct Direction {
     int u, d, l, r;
@@ -36,8 +39,43 @@ public:
     void Init();
     void HandleEvent();
     void Update();
-    void Render();
     void Quit();
 
     bool isRunning();
+};
+
+class Player {
+private:
+
+public:
+
+    enum animation {
+        idle,
+        run,
+        push,
+        pull,
+        jump
+    };
+    enum direction {
+        left,
+        right
+    };
+
+    int frame = 0;
+    const char * name;
+    Vector2 position;
+    Direction velocity;
+
+    animation animation_state = idle;
+    direction animation_direction = right;
+    
+    int state_frames = 0;
+    float animation_delay = 0;
+
+    void Init(const char * name, Vector2 position);
+
+    ~Player();
+
+    void Update();
+    void Animation();
 };

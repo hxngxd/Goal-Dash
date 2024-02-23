@@ -33,14 +33,25 @@ void Renderer::PointGrid(SDL_Color color){
     }
 }
 
-SDL_Texture * TextureManager::LoadTexture(const char * name, const char * path){
+void Sprite::LoadSprite(const char * path, int frames, Vector2 res){
     SDL_Surface * tmpSurface = IMG_Load(path);
-    SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
+    this->texture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
+    
+    this->path = path;
+    this->frames = frames;
+    this->res = res;
 
-    if (texture==nullptr){
-        std::cout << "Error: SDL failed to load texture " << name << " - " << SDL_GetError();
+    if (this->texture==nullptr){
+        std::cout << "Error: SDL failed to load texture " << path << " - " << SDL_GetError();
     }
-    std::cout << "Loaded: " << name << std::endl;
-    return texture;
+    else{
+        std::cout << "Sprite loaded: " << path << std::endl;
+    }
+}
+
+void Renderer::DrawSprite(Sprite & sprite, Vector2 position, Vector2 displayRes, int frame, bool flipped){
+    SDL_Rect src = {(frame%sprite.frames)*sprite.res.x, 0, sprite.res.x, sprite.res.y};
+    SDL_Rect dst = {position.x, position.y, displayRes.x, displayRes.y};
+    SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }

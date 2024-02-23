@@ -1,6 +1,7 @@
+#pragma once
 #include "game.h"
 
 class KeyboardHandler{
 public:
-    void Update();
+    static void PlayerMovement(Player & player);
 };
