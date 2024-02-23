@@ -81,6 +81,7 @@ public:
     void Update();
     void Animation();
     void ScreenLimit();
+    void Collision();
 };
 
 class Map{

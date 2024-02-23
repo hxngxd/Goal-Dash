@@ -37,6 +37,10 @@ void KeyboardHandler::PlayerMovement(Player & player){
             case SDLK_a: a = false;
                 player.velocity.l = 0;
                 if (!d) player.animation_state = player.idle;
+                else{
+                    player.velocity.r = 1;
+                    player.animation_direction = player.right;
+                }
                 break;
             case SDLK_s: s = false;
                 player.velocity.d = 0;
@@ -44,6 +48,10 @@ void KeyboardHandler::PlayerMovement(Player & player){
             case SDLK_d: d = false;
                 player.velocity.r = 0;
                 if (!a) player.animation_state = player.idle;
+                else{
+                    player.velocity.l = -1;
+                    player.animation_direction = player.left;
+                }
                 break;
             default:
                 break;

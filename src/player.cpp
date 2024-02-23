@@ -12,6 +12,7 @@ Player::~Player(){
 }
 
 void Player::Update(){
+    Collision();
     KeyboardHandler::PlayerMovement(*this);
 
     position.x += (velocity.l + velocity.r) * player_speed;
@@ -44,4 +45,26 @@ void Player::Animation(){
 void Player::ScreenLimit(){
     position = Vector2::max(position, Vector2(-player_size/6, 0));
     position = Vector2::min(position, resolution - Vector2(player_size/6*5, player_size));
+}
+
+void Player::Collision(){
+    Vector2 startPos(position.x + player_size/6, position.y);
+    Vector2 endPos(position.x + player_size/6*5, position.y + player_size);
+
+    SDL_RenderDrawLine(renderer, startPos.x, startPos.y, endPos.x, startPos.y);
+    SDL_RenderDrawLine(renderer, startPos.x, startPos.y, startPos.x, endPos.y);
+    SDL_RenderDrawLine(renderer, endPos.x, endPos.y, endPos.x, startPos.y);
+    SDL_RenderDrawLine(renderer, endPos.x, endPos.y, startPos.x, endPos.y);
+
+    Vector2 startTile(
+        (startPos.x + 1)/(resolution.x/map_size),
+        (startPos.y + 1)/(resolution.x/map_size)
+    );
+
+    Vector2 endTile(
+        (endPos.x + 1)/(resolution.x/map_size),
+        (endPos.y + 1)/(resolution.x/map_size)
+    );
+
+    std::cout << position << " " << startTile << " " << endTile << std::endl;
 }

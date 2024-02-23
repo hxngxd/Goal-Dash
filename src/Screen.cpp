@@ -7,5 +7,8 @@ bool Screen::CreateWindow() {
         std::cout << "Error: Failed to open window - " << SDL_GetError();
         return false;
     }
+    else{
+        std::cout << "Window created!" << std::endl;
+    }
     return true;
 }

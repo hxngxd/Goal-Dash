@@ -7,6 +7,9 @@ bool Renderer::CreateRenderer(){
         std::cout << "Error: Failed to create renderer - " << SDL_GetError();
         return false;
     }
+    else{
+        std::cout << "Renderer created!" << std::endl;
+    }
     return true;
 }
 
