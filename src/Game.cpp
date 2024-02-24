@@ -1,17 +1,18 @@
 #include "game.h"
 #include "screen.h"
 #include "render.h"
+#include "keyboard.h"
 
 const char * title = "Fun game";
-const Vector2 resolution(800, 800);
+const Vector2 resolution(768, 768);
 const int map_size = 16;
-const int player_size = 50;
+const int player_size = resolution.x/map_size;
 
 float fps = 60.0;
-float player_speed = 5;
+float player_speed = 4;
 float animation_speed = 20;
 float falling_speed = 0.5;
-float gravity = 10;
+float gravity = 5;
 
 std::vector<std::vector<int>> tileMap;
 
@@ -35,13 +36,6 @@ void Game::Start(){
     sprite_run.LoadSprite("img/run.png", 9, Vector2(48, 48));
 
     player1.Init("Hoang le minh", Vector2(150, 150));
-
-    for (auto i : tileMap){
-        for (auto j : i){
-            std::cout << j << " ";
-        }
-        std::cout << std::endl;
-    }
 }
 
 void Game::Init(){
@@ -69,13 +63,11 @@ bool Game::isRunning(){
 }
 
 void Game::HandleEvent(){
-    SDL_PollEvent(&event);
-    switch (event.type){
-        case SDL_QUIT:
-            running = false;
-            break;
-        default:
-            break;
+    while (SDL_PollEvent(&event) != 0){
+        if (event.type == SDL_QUIT){
+            running = true;
+        }
+        KeyboardHandler::PlayerMovement(player1);
     }
 }
 

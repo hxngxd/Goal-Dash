@@ -69,12 +69,8 @@ public:
     const char * name;
     Vector2 position;
     Direction velocity;
+    Direction acceleration;
 
-    bool collide_left = false;
-    bool collide_right = false;
-    bool collide_up = false;
-    bool collide_down = false;
-    
     animation animation_state = idle;
     direction animation_direction = right;
     
@@ -88,7 +84,7 @@ public:
     void Update();
     void Animation();
     void ScreenLimit();
-    void Collision();
+    void Move();
 };
 
 class Map{

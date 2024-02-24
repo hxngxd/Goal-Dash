@@ -6,8 +6,8 @@ Map::Map(int rows, int cols, std::vector<float> tileProbabilities, std::vector<s
 
     tileMap.resize(rows, std::vector<int>(cols, 0));
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed);
     std::discrete_distribution<> distribution(tileProbabilities.begin(), tileProbabilities.end());
 
     for (int i=0;i<rows;i++){
@@ -32,7 +32,7 @@ void Map::Draw(std::vector<std::vector<int>> & tileMap){
     for (int i=0;i<rows;i++){
         for (int j=0;j<cols;j++){
             if (!tileMap[i][j]) continue;
-            SDL_Rect rect = {j*tile_size, i*tile_size, tile_size, resolution.y/map_size};
+            SDL_Rect rect = {j*tile_size, i*tile_size, tile_size, tile_size};
             switch (tileMap[i][j]){
                 case 1:
                     Renderer::SetDrawColor(Color::white(255));
