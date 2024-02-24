@@ -13,6 +13,7 @@ void KeyboardHandler::PlayerMovement(Player & player){
             case SDLK_a: a = true;
                 player.animation_state = player.run;
                 player.animation_direction = player.left;
+                player.previous_animation_state = player.animation_state;
                 break;
             // case SDLK_s: s = true;
             //     player.velocity.d = 1;
@@ -20,6 +21,16 @@ void KeyboardHandler::PlayerMovement(Player & player){
             case SDLK_d: d = true;
                 player.animation_state = player.run;
                 player.animation_direction = player.right;
+                player.previous_animation_state = player.animation_state;
+                break;
+            case SDLK_SPACE:
+                player.previous_animation_state = player.animation_state;
+                player.animation_state = player.jump;
+                if (a) player.animation_direction = player.left;
+                else if (d) player.animation_direction = player.right;
+
+                player.velocity.d = -jump_speed;
+                player.onGround = false;
                 break;
             default:
                 break;
@@ -35,6 +46,7 @@ void KeyboardHandler::PlayerMovement(Player & player){
                 else{
                     player.animation_direction = player.right;
                 }
+                player.previous_animation_state = player.animation_state;
                 break;
             // case SDLK_s: s = false;
             //     player.velocity.d = 0;
@@ -44,6 +56,7 @@ void KeyboardHandler::PlayerMovement(Player & player){
                 else{
                     player.animation_direction = player.left;
                 }
+                player.previous_animation_state = player.animation_state;
                 break;
             default:
                 break;

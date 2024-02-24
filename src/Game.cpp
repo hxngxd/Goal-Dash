@@ -10,10 +10,10 @@ const int player_size = resolution.x/map_size;
 
 float fps = 60.0;
 float player_speed = 4;
-float player_acceleration_rate = 0.05;
+float player_acceleration_rate = 0.075;
 float animation_speed = 20;
-float falling_speed = 0.5;
-float gravity = 5;
+float jump_speed = 15;
+float gravity = 0.5;
 
 std::vector<std::vector<int>> tileMap;
 
@@ -26,6 +26,7 @@ SDL_Event Game::event;
 
 Sprite sprite_idle;
 Sprite sprite_run;
+Sprite sprite_jump;
 
 Player player1;
 
@@ -35,6 +36,7 @@ void Game::Start(){
 
     sprite_idle.LoadSprite("img/idle.png", 10, Vector2(48, 48));
     sprite_run.LoadSprite("img/run.png", 9, Vector2(48, 48));
+    sprite_jump.LoadSprite("img/jump.png", 4, Vector2(48, 48));
 
     player1.Init("Hoang le minh", Vector2(150, 150));
 }

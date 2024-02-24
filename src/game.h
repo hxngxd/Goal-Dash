@@ -16,7 +16,7 @@ extern float fps;
 extern float player_speed;
 extern float player_acceleration_rate;
 extern float animation_speed;
-extern float falling_speed;
+extern float jump_speed;
 extern float gravity;
 
 extern std::vector<std::vector<int>> tileMap;
@@ -26,6 +26,7 @@ extern SDL_Renderer * renderer;
 
 extern Sprite sprite_idle;
 extern Sprite sprite_run;
+extern Sprite sprite_jump;
 
 struct Direction {
     float u, d, l, r;
@@ -72,10 +73,13 @@ public:
     Direction velocity;
 
     animation animation_state = idle;
+    animation previous_animation_state = idle;
     direction animation_direction = right;
     
     int state_frames = 0;
     float animation_delay = 0;
+
+    bool onGround = false;
 
     void Init(const char * name, Vector2 position);
 

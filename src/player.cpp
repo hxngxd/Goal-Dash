@@ -19,6 +19,9 @@ void Player::Update(){
         case run:
             state = &sprite_run;
             break;
+        case jump:
+            state = &sprite_jump;
+            break;
         default:
             state = &sprite_idle;
             break;
@@ -63,7 +66,7 @@ void Player::Move(){
         (endPos.y - player_speed)/tile_size
     );
 
-    if (animation_state == run){
+    if (animation_state == run || (animation_state == jump && previous_animation_state == run)){
         if (animation_direction == left){
             velocity.l -= player_acceleration_rate;
             velocity.l = (velocity.l < -1 ? -1 : velocity.l);
@@ -80,7 +83,6 @@ void Player::Move(){
     }
 
     position.x += (velocity.l + velocity.r) * player_speed;
-    position.y += gravity;
 
     for (int i=std::max(0, (int)startTile.y);i<=std::min(map_size-1, (int)endTile.y);i++){
         if (startTile.x > 0 && tileMap[i][startTile.x-1]){
@@ -106,13 +108,39 @@ void Player::Move(){
         }
     }
 
-    for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
-        if (endTile.y < map_size - 1 && tileMap[endTile.y+1][i]){
-            if (((int)endTile.y+1)*tile_size - position.y - player_size <= 0){
-                position.y -= gravity;
+    if (!onGround){
+        velocity.d += gravity;
+        position.y += velocity.d;
+        for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
+            if (endTile.y < map_size - 1 && tileMap[endTile.y+1][i]){
+                if (((int)endTile.y+1)*tile_size - position.y - player_size <= 0){
+                    position.y = ((int)endTile.y+1)*tile_size - player_size;
+                    onGround = true;
+                    velocity.d = 0;
+                    animation_state = previous_animation_state;
+                }
+            }
+        }
+        for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
+            if (startTile.y > 0 && tileMap[startTile.y-1][i]){
+                if (position.y - (int)startTile.y*tile_size <= 0){
+                    position.y = (int)startTile.y*tile_size;
+                    velocity.d = 0;
+                }
             }
         }
     }
+    else{
+        int tmp = false;
+        for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
+            if (endTile.y < map_size - 1 && tileMap[endTile.y+1][i]){
+                if (((int)endTile.y+1)*tile_size - position.y - player_size <= 0){
+                    tmp = true;
+                }
+            }
+        }
+        onGround = tmp;
+    }
 
-    std::cout << animation_state << " " << velocity.l << " " << velocity.r << std::endl;
+    std::cout << onGround << std::endl;
 }
