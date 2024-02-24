@@ -5,7 +5,7 @@
 const char * title = "Fun game";
 const Vector2 resolution(800, 800);
 const int map_size = 16;
-const int player_size = 75;
+const int player_size = 50;
 
 float fps = 60.0;
 float player_speed = 5;

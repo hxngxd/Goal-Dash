@@ -70,6 +70,11 @@ public:
     Vector2 position;
     Direction velocity;
 
+    bool collide_left = false;
+    bool collide_right = false;
+    bool collide_up = false;
+    bool collide_down = false;
+    
     animation animation_state = idle;
     direction animation_direction = right;
     
