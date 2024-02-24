@@ -14,6 +14,7 @@ extern const int player_size;
 
 extern float fps;
 extern float player_speed;
+extern float player_acceleration_rate;
 extern float animation_speed;
 extern float falling_speed;
 extern float gravity;
@@ -27,9 +28,9 @@ extern Sprite sprite_idle;
 extern Sprite sprite_run;
 
 struct Direction {
-    int u, d, l, r;
+    float u, d, l, r;
     Direction() : u(0), d(0), l(0), r(0) {}
-    Direction(int u, int d, int l, int r) : u(u), d(d), l(l), r(r) {}
+    Direction(float u, float d, float l, float r) : u(u), d(d), l(l), r(r) {}
 };
 
 class Game {
@@ -69,7 +70,6 @@ public:
     const char * name;
     Vector2 position;
     Direction velocity;
-    Direction acceleration;
 
     animation animation_state = idle;
     direction animation_direction = right;

@@ -10,13 +10,14 @@ const int player_size = resolution.x/map_size;
 
 float fps = 60.0;
 float player_speed = 4;
+float player_acceleration_rate = 0.05;
 float animation_speed = 20;
 float falling_speed = 0.5;
 float gravity = 5;
 
 std::vector<std::vector<int>> tileMap;
 
-Map newMap(map_size, map_size, {0.9, 0.1, 0}, tileMap);
+Map newMap(map_size, map_size, {0.99, 0.01}, tileMap);
 
 SDL_Window * window = nullptr;
 SDL_Renderer * renderer = nullptr;

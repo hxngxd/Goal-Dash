@@ -63,6 +63,22 @@ void Player::Move(){
         (endPos.y - player_speed)/tile_size
     );
 
+    if (animation_state == run){
+        if (animation_direction == left){
+            velocity.l -= player_acceleration_rate;
+            velocity.l = (velocity.l < -1 ? -1 : velocity.l);
+            velocity.r = 0;
+        }
+        else{
+            velocity.l = 0;
+            velocity.r += player_acceleration_rate;
+            velocity.r = (velocity.r > 1 ? 1 : velocity.r);
+        }
+    }
+    else{
+        velocity.l = velocity.r = 0;
+    }
+
     position.x += (velocity.l + velocity.r) * player_speed;
     position.y += gravity;
 
@@ -98,5 +114,5 @@ void Player::Move(){
         }
     }
 
-    std::cout << position << std::endl;
+    std::cout << animation_state << " " << velocity.l << " " << velocity.r << std::endl;
 }

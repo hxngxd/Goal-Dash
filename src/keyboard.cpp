@@ -11,8 +11,6 @@ void KeyboardHandler::PlayerMovement(Player & player){
             //     player.velocity.u = -1;
             //     break;
             case SDLK_a: a = true;
-                player.velocity.l = -1;
-                if (d) player.velocity.r = 0;
                 player.animation_state = player.run;
                 player.animation_direction = player.left;
                 break;
@@ -20,8 +18,6 @@ void KeyboardHandler::PlayerMovement(Player & player){
             //     player.velocity.d = 1;
             //     break;
             case SDLK_d: d = true;
-                player.velocity.r = 1;
-                if (a) player.velocity.l = 0;
                 player.animation_state = player.run;
                 player.animation_direction = player.right;
                 break;
@@ -35,10 +31,8 @@ void KeyboardHandler::PlayerMovement(Player & player){
             //     player.velocity.u = 0;
             //     break;
             case SDLK_a: a = false;
-                player.velocity.l = 0;
                 if (!d) player.animation_state = player.idle;
                 else{
-                    player.velocity.r = 1;
                     player.animation_direction = player.right;
                 }
                 break;
@@ -46,10 +40,8 @@ void KeyboardHandler::PlayerMovement(Player & player){
             //     player.velocity.d = 0;
             //     break;
             case SDLK_d: d = false;
-                player.velocity.r = 0;
                 if (!a) player.animation_state = player.idle;
                 else{
-                    player.velocity.l = -1;
                     player.animation_direction = player.left;
                 }
                 break;
