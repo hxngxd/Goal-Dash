@@ -14,7 +14,7 @@ public:
     Vector2 size;
     Direction velocity;
 
-    static bool isCollide(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2);
+    static bool isCollide(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2, int error);
 };
 
 class MapTile : public GameObject{

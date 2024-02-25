@@ -23,15 +23,9 @@ void KeyboardHandler::InputHandler(){
             case SDLK_d:
                 key_d = true;
                 break;
-            // case SDLK_SPACE:
-            //     player.previous_animation_state = player.animation_state;
-            //     player.animation_state = player.jump;
-            //     if (a) player.animation_direction = player.left;
-            //     else if (d) player.animation_direction = player.right;
-
-            //     player.velocity.d = -jump_speed;
-            //     player.onGround = false;
-            //     break;
+            case SDLK_SPACE:
+                key_space = true;
+                break;
             default:
                 break;
         }
@@ -49,6 +43,9 @@ void KeyboardHandler::InputHandler(){
                 break;
             case SDLK_d:
                 key_d = false;
+                break;
+            case SDLK_SPACE:
+                key_space = false;
                 break;
             default:
                 break;
