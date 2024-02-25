@@ -1,32 +1,40 @@
 #include "game.h"
-#include "screen.h"
-#include "render.h"
-#include "keyboard.h"
 
-const char * title = "Fun game";
+const char * title = "Game";
 const Vector2 resolution(768, 768);
 const int map_size = 16;
 const int player_size = resolution.x/map_size;
 
 float fps = 60.0;
-float player_speed = 4;
+float player_moving_speed = 4;
 float player_acceleration_rate = 0.075;
 float animation_speed = 20;
 float jump_speed = 15;
 float gravity = 0.5;
 
-std::vector<std::vector<int>> tileMap;
-
-Map newMap(map_size, map_size, {0.99, 0.01}, tileMap);
+std::vector<std::vector<int>> map = {
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1},
+        {1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+        {1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+    };
 
 SDL_Window * window = nullptr;
 SDL_Renderer * renderer = nullptr;
 
 SDL_Event Game::event;
-
-Sprite sprite_idle;
-Sprite sprite_run;
-Sprite sprite_jump;
 
 Player player1;
 
@@ -34,11 +42,8 @@ void Game::Start(){
     Init();
     if (!running) return;
 
-    sprite_idle.LoadSprite("img/idle.png", 10, Vector2(48, 48));
-    sprite_run.LoadSprite("img/run.png", 9, Vector2(48, 48));
-    sprite_jump.LoadSprite("img/jump.png", 4, Vector2(48, 48));
-
-    player1.Init("Hoang le minh", Vector2(150, 150));
+    MapTile::Create(map);
+    player1.Init("hxngxd", Vector2(100, 100));
 }
 
 void Game::Init(){
@@ -68,18 +73,17 @@ bool Game::isRunning(){
 void Game::HandleEvent(){
     while (SDL_PollEvent(&event) != 0){
         if (event.type == SDL_QUIT){
-            running = true;
+            running = false;
         }
-        KeyboardHandler::PlayerMovement(player1);
+        KeyboardHandler::InputHandler();
     }
 }
 
 void Game::Update() {
     Renderer::Clear(Color::black(255));
     Renderer::PointGrid(Color::white(127));
+    MapTile::Draw();
     player1.Update();
-    player1.Animation();
-    newMap.Draw(tileMap);
     Renderer::Display();
 }
 

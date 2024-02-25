@@ -1,7 +1,7 @@
 #pragma once
-#include "game.h"
 
 class KeyboardHandler{
 public:
-    static void PlayerMovement(Player & player);
+    static bool key_w, key_a, key_s, key_d, key_space;
+    static void InputHandler();
 };

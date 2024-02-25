@@ -56,4 +56,20 @@ struct Vector2{
     friend Vector2 operator / (Vector2 v, float k){
         return Vector2(v.x / k, v.y / k);
     }
+
+    float distance(Vector2 other){
+        float dx = other.x - x;
+        float dy = other.y - y;
+        return sqrt(dx*dx + dy*dy);
+    }
+
+    std::pair<Vector2, float> closestPoint(std::vector<Vector2> & vs){
+        Vector2 ans = vs.front();
+        for (int i=1;i<vs.size();i++){
+            if (distance(vs[i]) < distance(ans)){
+                ans = vs[i];
+            }
+        }
+        return {ans, distance(ans)};
+    }
 };

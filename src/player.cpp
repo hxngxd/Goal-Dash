@@ -1,146 +1,240 @@
 #include "game.h"
-#include "render.h"
-#include "keyboard.h"
 
 void Player::Init(const char * name, Vector2 position){
     this->name = name;
     this->position = position;
-}
-
-Player::~Player(){
-    
+    this->size = Vector2(48);
+    this->_idle.LoadSprite("img/idle.png", 10, this->size);
+    this->_run.LoadSprite("img/run.png", 9, this->size);
+    this->_jump.LoadSprite("img/jump.png", 4, this->size);
+    this->currentFrame = 0;
+    this->maxFrame = 0;
+    this->animation_delay = 0;
 }
 
 void Player::Update(){
-    Move();
-
-    Sprite * state = nullptr;
-    switch (animation_state){
-        case run:
-            state = &sprite_run;
-            break;
-        case jump:
-            state = &sprite_jump;
-            break;
-        default:
-            state = &sprite_idle;
-            break;
-        
-    }
-    state_frames = state->frames;
-    Renderer::DrawSprite(*state, position, Vector2(player_size), std::min(frame, state_frames), animation_direction == left);
+    Movement();
+    Animation();
 }
 
 void Player::Animation(){
     float currentTicks = SDL_GetTicks();
     if (currentTicks > animation_delay + 1000/animation_speed){
-        frame += 1;
-        if (frame >= state_frames) frame = 0;
+        currentFrame += 1;
+        if (currentFrame >= maxFrame) currentFrame = 0;
         animation_delay = currentTicks;
     }
+    Sprite * current_state_sprite = nullptr;
+    switch (current_state){
+        case idle:
+            current_state_sprite = &_idle;
+            break;
+        case run:
+            current_state_sprite = &_run;
+            break;
+        case jump:
+            current_state_sprite = &_jump;
+            break;
+    }
+    maxFrame = current_state_sprite->maxFrames;
+    Renderer::DrawSprite(*current_state_sprite, position, Vector2(player_size), std::min(currentFrame, maxFrame), (direction==left));
 }
 
-void Player::ScreenLimit(){
-    position = Vector2::max(position, Vector2(-player_size/6, 0));
-    position = Vector2::min(position, resolution - Vector2(player_size/6*5, player_size));
-}
+void Player::Movement(){
+    if (!(KeyboardHandler::key_a ^ KeyboardHandler::key_d)){
+        // std::cout << "Player stopped" << std::endl;
+        current_state = idle;
+        velocity.l = velocity.r = 0;
+    }
+    else{
+        if (KeyboardHandler::key_a){
+            // std::cout << "Player moved left" << std::endl;
+            current_state = run;
+            direction = left;
+            velocity.l -= player_acceleration_rate;
+            velocity.l = velocity.l < -1 ? -1 : velocity.l;
+            velocity.r = 0;
+        }
+        if (KeyboardHandler::key_d){
+            // std::cout << "Player moved right" << std::endl;
+            current_state = run;
+            direction = right;
+            velocity.l = 0;
+            velocity.r += player_acceleration_rate;
+            velocity.r = velocity.r > 1 ? 1 : velocity.r;
+        }
+    }
 
-void Player::Move(){
-    Vector2 startPos(position.x + player_size/6, position.y);
-    Vector2 endPos(position.x + player_size/6*5, position.y + player_size);
+    if (!(KeyboardHandler::key_w ^ KeyboardHandler::key_s)){
+        // std::cout << "Player stopped" << std::endl;
+        current_state = idle;
+        velocity.u = velocity.d = 0;
+    }
+    else{
+        if (KeyboardHandler::key_w){
+            // std::cout << "Player moved up" << std::endl;
+            current_state = run;
+            velocity.u -= player_acceleration_rate;
+            velocity.u = velocity.u < -1 ? -1 : velocity.u;
+            velocity.d = 0;
+        }
+        if (KeyboardHandler::key_s){
+            // std::cout << "Player moved down" << std::endl;
+            current_state = run;
+            velocity.u = 0;
+            velocity.d += player_acceleration_rate;
+            velocity.d = velocity.d > 1 ? 1 : velocity.d;
+        }
+    }
+
+    position.x += (velocity.l + velocity.r) * player_moving_speed;
+    position.y += (velocity.u + velocity.d) * player_moving_speed;
+
+    float eps = 1e-5;
+    int error = -5;
+    for (auto tile : MapTile::Tiles){
+        Vector2 tileCenter = tile.position + tile.size/2;
+        Vector2 playerCenter = position + size/2;
+        bool is_near_player = playerCenter.distance(tileCenter) <= player_size * sqrt(2) + error;
+        if (is_near_player){
+            SDL_RenderDrawLine(renderer, playerCenter.x, playerCenter.y, tileCenter.x, tileCenter.y);
+            Vector2 d = tileCenter - playerCenter;
+            float h = playerCenter.distance(tileCenter);
+            float cos = d.x/h;
+            float angle = (tileCenter.y <= playerCenter.y ? 1 : -1) * std::acos(cos);
+            int where = 0;
+            if ((abs(angle) <= M_PI/4) || (abs(cos-1) <= eps)){
+                where = 1;
+            }
+            else if ((M_PI/4 <= angle && angle <= 3*M_PI/4) || (abs(cos) <= eps && tileCenter.y < playerCenter.y)){
+                where = 4;
+            }
+            else if ((3*M_PI/4 <= abs(angle) && abs(angle) <= M_PI) || (abs(cos+1) <= eps)){
+                where = 2;
+            }
+            else if ((-3*M_PI/4 <= angle && angle <= -M_PI/4) || (abs(cos) <= eps && tileCenter.y > playerCenter.y)){
+                where = 3;
+            }
+            if (GameObject::isCollide(playerCenter, size, tileCenter, tile.size)){
+                switch (where){
+                    case 1:
+                        std::cout << "Right" << std::endl;
+                        position.x = tile.position.x - size.x;
+                        break;
+                    case 2:
+                        std::cout << "Left" << std::endl;
+                        position.x = tile.position.x + size.x;
+                        break;
+                    case 3:
+                        std::cout << "Under" << std::endl;
+                        position.y = tile.position.y - size.y;
+                        break;
+                    case 4:
+                        std::cout << "Above" << std::endl;
+                        position.y = tile.position.y + size.y;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    Vector2 startPos(position.x, position.y);
+    Vector2 endPos(position.x + player_size, position.y + player_size);
 
     SDL_RenderDrawLine(renderer, startPos.x, startPos.y, endPos.x, startPos.y);
     SDL_RenderDrawLine(renderer, startPos.x, startPos.y, startPos.x, endPos.y);
     SDL_RenderDrawLine(renderer, endPos.x, endPos.y, endPos.x, startPos.y);
     SDL_RenderDrawLine(renderer, endPos.x, endPos.y, startPos.x, endPos.y);
 
-    int tile_size = resolution.x/map_size;
+    // int tile_size = resolution.x/map_size;
 
-    Vector2 startTile(
-        (startPos.x + player_speed)/tile_size,
-        (startPos.y + player_speed)/tile_size
-    );
+    // Vector2 startTile(
+    //     (startPos.x + player_speed)/tile_size,
+    //     (startPos.y + player_speed)/tile_size
+    // );
 
-    Vector2 endTile(
-        (endPos.x - player_speed)/tile_size,
-        (endPos.y - player_speed)/tile_size
-    );
+    // Vector2 endTile(
+    //     (endPos.x - player_speed)/tile_size,
+    //     (endPos.y - player_speed)/tile_size
+    // );
 
-    if (animation_state == run || (animation_state == jump && previous_animation_state == run)){
-        if (animation_direction == left){
-            velocity.l -= player_acceleration_rate;
-            velocity.l = (velocity.l < -1 ? -1 : velocity.l);
-            velocity.r = 0;
-        }
-        else{
-            velocity.l = 0;
-            velocity.r += player_acceleration_rate;
-            velocity.r = (velocity.r > 1 ? 1 : velocity.r);
-        }
-    }
-    else{
-        velocity.l = velocity.r = 0;
-    }
+    // if (animation_state == run || (animation_state == jump && previous_animation_state == run)){
+    //     if (animation_direction == left){
+    //         velocity.l -= player_acceleration_rate;
+    //         velocity.l = (velocity.l < -1 ? -1 : velocity.l);
+    //         velocity.r = 0;
+    //     }
+    //     else{
+    //         velocity.l = 0;
+    //         velocity.r += player_acceleration_rate;
+    //         velocity.r = (velocity.r > 1 ? 1 : velocity.r);
+    //     }
+    // }
+    // else{
+    //     velocity.l = velocity.r = 0;
+    // }
 
-    position.x += (velocity.l + velocity.r) * player_speed;
+    // position.x += (velocity.l + velocity.r) * player_speed;
 
-    for (int i=std::max(0, (int)startTile.y);i<=std::min(map_size-1, (int)endTile.y);i++){
-        if (startTile.x > 0 && tileMap[i][startTile.x-1]){
-            if (position.x + player_size/6 - (int)startTile.x*tile_size <= 0){
-                position.x -= velocity.l * player_speed;
-            }
-        }
-    }
+    // for (int i=std::max(0, (int)startTile.y);i<=std::min(map_size-1, (int)endTile.y);i++){
+    //     if (startTile.x > 0 && tileMap[i][startTile.x-1]){
+    //         if (position.x + player_size/6 - (int)startTile.x*tile_size <= 0){
+    //             position.x -= velocity.l * player_speed;
+    //         }
+    //     }
+    // }
 
-    for (int i=std::max(0, (int)startTile.y);i<=std::min(map_size-1, (int)endTile.y);i++){
-        if (endTile.x < map_size - 1 && tileMap[i][endTile.x+1]){
-            if (((int)endTile.x+1)*tile_size - position.x - player_size/6*5 <= 0){
-                position.x -= velocity.r * player_speed;
-            }
-        }
-    }
+    // for (int i=std::max(0, (int)startTile.y);i<=std::min(map_size-1, (int)endTile.y);i++){
+    //     if (endTile.x < map_size - 1 && tileMap[i][endTile.x+1]){
+    //         if (((int)endTile.x+1)*tile_size - position.x - player_size/6*5 <= 0){
+    //             position.x -= velocity.r * player_speed;
+    //         }
+    //     }
+    // }
 
-    for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
-        if (startTile.y > 0 && tileMap[startTile.y-1][i]){
-            if (position.y - (int)startTile.y*tile_size <= 0){
-                position.y -= velocity.u * player_speed;
-            }
-        }
-    }
+    // for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
+    //     if (startTile.y > 0 && tileMap[startTile.y-1][i]){
+    //         if (position.y - (int)startTile.y*tile_size <= 0){
+    //             position.y -= velocity.u * player_speed;
+    //         }
+    //     }
+    // }
 
-    if (!onGround){
-        velocity.d += gravity;
-        position.y += velocity.d;
-        for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
-            if (endTile.y < map_size - 1 && tileMap[endTile.y+1][i]){
-                if (((int)endTile.y+1)*tile_size - position.y - player_size <= 0){
-                    position.y = ((int)endTile.y+1)*tile_size - player_size;
-                    onGround = true;
-                    velocity.d = 0;
-                    animation_state = previous_animation_state;
-                }
-            }
-        }
-        for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
-            if (startTile.y > 0 && tileMap[startTile.y-1][i]){
-                if (position.y - (int)startTile.y*tile_size <= 0){
-                    position.y = (int)startTile.y*tile_size;
-                    velocity.d = 0;
-                }
-            }
-        }
-    }
-    else{
-        int tmp = false;
-        for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
-            if (endTile.y < map_size - 1 && tileMap[endTile.y+1][i]){
-                if (((int)endTile.y+1)*tile_size - position.y - player_size <= 0){
-                    tmp = true;
-                }
-            }
-        }
-        onGround = tmp;
-    }
+    // if (!onGround){
+    //     velocity.d += gravity;
+    //     position.y += velocity.d;
+    //     for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
+    //         if (endTile.y < map_size - 1 && tileMap[endTile.y+1][i]){
+    //             if (((int)endTile.y+1)*tile_size - position.y - player_size <= 0){
+    //                 position.y = ((int)endTile.y+1)*tile_size - player_size;
+    //                 onGround = true;
+    //                 velocity.d = 0;
+    //                 animation_state = previous_animation_state;
+    //             }
+    //         }
+    //     }
+    //     for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
+    //         if (startTile.y > 0 && tileMap[startTile.y-1][i]){
+    //             if (position.y - (int)startTile.y*tile_size <= 0){
+    //                 position.y = (int)startTile.y*tile_size;
+    //                 velocity.d = 0;
+    //             }
+    //         }
+    //     }
+    // }
+    // else{
+    //     int tmp = false;
+    //     for (int i=std::max(0, (int)startTile.x);i<=std::min(map_size-1, (int)endTile.x);i++){
+    //         if (endTile.y < map_size - 1 && tileMap[endTile.y+1][i]){
+    //             if (((int)endTile.y+1)*tile_size - position.y - player_size <= 0){
+    //                 tmp = true;
+    //             }
+    //         }
+    //     }
+    //     onGround = tmp;
+    // }
 
-    std::cout << onGround << std::endl;
+    // std::cout << onGround << std::endl;
 }

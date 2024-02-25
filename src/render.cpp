@@ -36,14 +36,14 @@ void Renderer::PointGrid(SDL_Color color){
     }
 }
 
-void Sprite::LoadSprite(const char * path, int frames, Vector2 res){
+void Sprite::LoadSprite(const char * path, int maxFrames, Vector2 size){
     SDL_Surface * tmpSurface = IMG_Load(path);
     this->texture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
     
     this->path = path;
-    this->frames = frames;
-    this->res = res;
+    this->maxFrames = maxFrames;
+    this->size = size;
 
     if (this->texture==nullptr){
         std::cout << "Error: SDL failed to load texture " << path << " - " << SDL_GetError();
@@ -53,8 +53,8 @@ void Sprite::LoadSprite(const char * path, int frames, Vector2 res){
     }
 }
 
-void Renderer::DrawSprite(Sprite & sprite, Vector2 position, Vector2 displayRes, int frame, bool flipped){
-    SDL_Rect src = {(frame%sprite.frames)*sprite.res.x, 0, sprite.res.x, sprite.res.y};
-    SDL_Rect dst = {position.x, position.y, displayRes.x, displayRes.y};
-    SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
+void Renderer::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip){
+    SDL_Rect src = {(currentFrame%sprite.maxFrames)*sprite.size.x, 0, sprite.size.x, sprite.size.y};
+    SDL_Rect dst = {position.x, position.y, size.x, size.y};
+    SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }

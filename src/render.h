@@ -1,5 +1,6 @@
 #pragma once
-#include "game.h"
+#include "../include/SDL2/SDL.h"
+#include "../include/SDL2/SDL_image.h"
 
 class Sprite;
 
@@ -31,7 +32,7 @@ public:
     static void Clear(SDL_Color color);
     static void SetDrawColor(SDL_Color color);
     static void PointGrid(SDL_Color color);
-    static void DrawSprite(Sprite & sprite, Vector2 position, Vector2 displayRes, int frame, bool flipped);
+    static void DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip);
     static void Display();
 };
 
@@ -39,7 +40,7 @@ class Sprite{
 public:
     SDL_Texture * texture;
     const char * path;
-    int frames;
-    Vector2 res;
-    void LoadSprite(const char * path, int frames, Vector2 res);
+    int maxFrames;
+    Vector2 size;
+    void LoadSprite(const char * path, int maxFrames, Vector2 size);
 };
