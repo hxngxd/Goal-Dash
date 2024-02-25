@@ -14,6 +14,10 @@ public:
     Vector2 size;
     Direction velocity;
 
+    int currentFrame;
+    int maxFrame;
+    float animation_delay;
+
     static bool isCollide(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2, int error);
 };
 
@@ -24,6 +28,9 @@ public:
     static std::vector<MapTile> Tiles;
     static void Create(std::vector<std::vector<int>> & map);
     static void Draw();
+
+    static Sprite tileSprite_1;
+    static Sprite tileSprite_2;
 };
 
 class Player : public GameObject{
@@ -38,9 +45,6 @@ public:
         right
     };
 
-    int currentFrame;
-    int maxFrame;
-    float animation_delay;
     animation_states current_state = idle;
     animation_states previous_state = idle;
     animation_directions direction = right;

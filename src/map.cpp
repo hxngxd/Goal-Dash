@@ -22,14 +22,18 @@ void MapTile::Create(std::vector<std::vector<int>> & map){
 
 void MapTile::Draw(){
     for (auto tile : Tiles){
-        SDL_Rect rect = {tile.position.x, tile.position.y, tile.size.x, tile.size.y};
+        SDL_Rect rect = {tile.position.x + 1, tile.position.y + 1, tile.size.x - 1, tile.size.y - 1};
         switch (tile.type){
             case 1:
                 Renderer::SetDrawColor(Color::white(255));
+                Renderer::DrawSprite(tileSprite_1, tile.position, tile.size, 0, 0);
+                break;
+            case 2:
+                Renderer::SetDrawColor(Color::yellow(255));
+                SDL_RenderDrawRect(renderer, &rect);
                 break;
             default:
                 break;
         }
-        SDL_RenderDrawRect(renderer, &rect);
     }
 }
