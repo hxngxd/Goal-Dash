@@ -16,9 +16,16 @@ void KeyboardHandler::LeftPlayerInputHandler(Player & player){
             case SDLK_d:
                 player.key_right = true;
                 break;
-            // case SDLK_SPACE:
-            //     key_space = true;
-            //     break;
+            case SDLK_SPACE:
+                if (player.collide_down){
+                    player.collide_down = false;
+                    player.velocity.d = -Game::jump_speed;
+                    player.position.y += player.velocity.d;
+                    player.previous_state = player.current_state
+                    ;
+                    player.current_state = player.jump;
+                }
+                break;
             default:
                 break;
         }
@@ -37,9 +44,8 @@ void KeyboardHandler::LeftPlayerInputHandler(Player & player){
             case SDLK_d:
                 player.key_right = false;
                 break;
-            // case SDLK_SPACE:
-            //     key_space = false;
-            //     break;
+            case SDLK_SPACE:
+                break;
             default:
                 break;
         }

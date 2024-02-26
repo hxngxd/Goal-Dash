@@ -1,7 +1,7 @@
 #include "gameobject.h"
 
 void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::vector<std::vector<bool>> & trace, std::queue<Vector2> & Q){
-    float maxDist = Screen::player_size*sqrt(61)/6*2;
+    float maxDist = Screen::player_size*sqrt(61)/6 * 1.5;
     float eps1 = 1e-2;
     float eps2 = eps1 * 5;
     Vector2 nextCenter = (nextTile + Vector2(0.5)) * Screen::player_size;
@@ -44,9 +44,11 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
                         break;
                     case 3:
                         player.position.y = (nextTile.y - 1) * player.size.y;
+                        player.tmp_collide_down = true;
                         break;
                     case 4:
                         player.position.y = (nextTile.y + 1) * player.size.y;
+                        player.tmp_collide_up = true;
                         break;
                     default:
                         break;

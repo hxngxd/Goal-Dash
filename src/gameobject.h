@@ -59,4 +59,9 @@ public:
     bool key_left;
     bool key_down;
     bool key_up;
+
+    bool collide_down;
+    bool tmp_collide_down;
+    bool collide_up;
+    bool tmp_collide_up;
 };
