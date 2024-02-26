@@ -1,6 +1,8 @@
 #pragma once
 #include "game.h"
 
+class Player;
+
 class GameObject{
 public:
     const char * name;
@@ -11,6 +13,8 @@ public:
     int currentFrame;
     int maxFrame;
     float animation_delay;
+
+    static void BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::vector<std::vector<bool>> & trace, std::queue<Vector2> & Q);
 };
 
 class MapTile : public GameObject{
