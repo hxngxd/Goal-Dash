@@ -28,7 +28,9 @@ void MapTile::Draw(){
         SDL_Rect rect = {tile.position.x, tile.position.y, tile.size.x, tile.size.y};
         switch (tile.type){
             case wall:
-                Renderer::DrawSprite(Sprite::SpriteList[wall], tile.position, tile.size, 0, 0);
+                Renderer::SetDrawColor(Color::white(255));
+                SDL_RenderDrawRect(Game::renderer, &rect);
+                // Renderer::DrawSprite(Sprite::SpriteList[wall], tile.position, tile.size, 0, 0);
                 break;
             case coin:
                 if (currentTicks > tile.animation_delay + 1500/Game::animation_speed){

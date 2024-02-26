@@ -11,6 +11,12 @@ struct Vector2{
     Vector2(float value) : x(value), y(value) {} 
     Vector2(float x, float y) : x(x), y(y) {}
 
+    static const Vector2 right, left, up, down;
+
+    static void Int(Vector2 & v);
+
+    static bool IsInRange(Vector2 & v, float minX, float maxX, float minY, float maxY);
+    
     friend std::ostream & operator << (std::ostream & out, Vector2 & v){
         out << "(" << v.x << ", " << v.y << ")";
     }
@@ -84,6 +90,7 @@ struct Color{
 struct Rect{
     static SDL_Rect Square (int res) { return {0, 0, res, res}; }
     static bool isCollide(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2);
+    static Vector2 RectCenter(Vector2 position, Vector2 size);
 };
 
 class Sprite{

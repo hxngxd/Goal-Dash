@@ -17,7 +17,7 @@ SDL_Event Game::event;
 SDL_Window * Game::window = nullptr;
 SDL_Renderer * Game::renderer = nullptr;
 
-std::vector<std::vector<int>> map = {
+std::vector<std::vector<int>> Game::map = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -56,7 +56,7 @@ void Game::Start(){
     Sprite("img/run.png", 9, Vector2(48));
     Sprite("img/jump.png", 4, Vector2(48));
 
-    MapTile::Create(map);
+    MapTile::Create(Game::map);
 
     player1 = Player("Nguyen Tuong Hung", Vector2(100));
 }

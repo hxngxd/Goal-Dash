@@ -49,7 +49,7 @@ void Player::Movement(){
         if (velocity.l < 0) velocity.l += Game::player_acceleration_rate*1.5;
         else if (velocity.l > 0) velocity.l = 0;
         if (velocity.r > 0) velocity.r -= Game::player_acceleration_rate*1.5;
-        else if (velocity.l < 0) velocity.r = 0;
+        else if (velocity.r < 0) velocity.r = 0;
     }
     else{
         if (key_left){
@@ -97,13 +97,81 @@ void Player::Movement(){
     position.x += (velocity.l + velocity.r) * Game::player_moving_speed;
     position.y += (velocity.u + velocity.d) * Game::player_moving_speed;
 
+    Vector2 playerCenter = Rect::RectCenter(position, size);
+    Vector2 playerCenterTile = playerCenter/(Screen::player_size);
+    Vector2::Int(playerCenterTile);
+
+    float maxDist = 48*3;
+    std::vector<std::vector<bool>> trace(Screen::map_size, std::vector<bool>(Screen::map_size, 0));
+    std::queue<Vector2> Q;
+    trace[playerCenterTile.x][playerCenterTile.y] = 1;
+    Q.push(playerCenterTile);
+
+    Renderer::SetDrawColor(Color::cyan(255));
+
+    while (!Q.empty()){
+        Vector2 u = Q.front();
+        Q.pop();
+        Vector2 rightTile = u + Vector2::right;
+        Vector2 rightCenter = (rightTile + Vector2(0.5)) * Screen::player_size;
+        Vector2 leftTile = u + Vector2::left;
+        Vector2 leftCenter = (leftTile + Vector2(0.5)) * Screen::player_size;
+        Vector2 downTile = u + Vector2::down;
+        Vector2 downCenter = (downTile + Vector2(0.5)) * Screen::player_size;
+        Vector2 upTile = u + Vector2::up;
+        Vector2 upCenter = (upTile + Vector2(0.5)) * Screen::player_size;
+
+        if (Vector2::IsInRange(rightTile, 0, 15, 0, 15) &&
+            !trace[rightTile.x][rightTile.y] &&
+            playerCenter.distance(rightCenter) <= maxDist)
+        {
+            if (Game::map[rightTile.y][rightTile.x]){
+                SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, rightCenter.x, rightCenter.y);
+            }
+            trace[rightTile.x][rightTile.y] = 1;
+            Q.push(rightTile);
+        }
+
+        if (Vector2::IsInRange(leftTile, 0, 15, 0, 15) &&
+            !trace[leftTile.x][leftTile.y] &&
+            playerCenter.distance(leftCenter) <= maxDist)
+        {
+            if (Game::map[leftTile.y][leftTile.x]){
+                SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, leftCenter.x, leftCenter.y);
+            }
+            trace[leftTile.x][leftTile.y] = 1;
+            Q.push(leftTile);
+        }
+
+        if (Vector2::IsInRange(downTile, 0, 15, 0, 15) &&
+            !trace[downTile.x][downTile.y] &&
+            playerCenter.distance(downCenter) <= maxDist)
+        {
+            if (Game::map[downTile.y][downTile.x]){
+                SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, downCenter.x, downCenter.y);
+            }
+            trace[downTile.x][downTile.y] = 1;
+            Q.push(downTile);
+        }
+
+        if (Vector2::IsInRange(upTile, 0, 15, 0, 15) &&
+            !trace[upTile.x][upTile.y] &&
+            playerCenter.distance(upCenter) <= maxDist)
+        {
+            if (Game::map[upTile.y][upTile.x]){
+                SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, upCenter.x, upCenter.y);
+            }
+            trace[upTile.x][upTile.y] = 1;
+            Q.push(upTile);
+        }
+    }
+
 //     float eps = 1e-2;
 //     bool touch_the_ground = false;
 //     bool touch_the_ceiling = false;
 
 //     for (auto & tile : MapTile::Tiles){
 //         Vector2 tileCenter = tile.position + tile.size/2;
-//         Vector2 playerCenter = position + size/2;
 //         bool is_near_player = playerCenter.distance(tileCenter) <= playerCenter.distance(playerCenter + Vector2(size.x/6*5, size.y)) - 1;
 //         if (is_near_player){
 //             // SDL_RenderDrawLine(renderer, playerCenter.x, playerCenter.y, tileCenter.x, tileCenter.y);

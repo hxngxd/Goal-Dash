@@ -21,6 +21,8 @@ public:
     static SDL_Window * window;
     static SDL_Renderer * renderer;
 
+    static std::vector<std::vector<int>> map;
+
     void Start();
     void Init();
     void HandleEvent();
