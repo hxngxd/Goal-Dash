@@ -1,4 +1,5 @@
 #include "game.h"
+#include "gameobject.h"
 
 std::vector<MapTile> MapTile::Tiles;
 
@@ -7,33 +8,44 @@ MapTile::MapTile(Vector2 position, Vector2 size, Direction velocity, int type){
     this->size = size;
     this->velocity = velocity;
     this->type = type;
-    Tiles.push_back(*this);
+    this->currentFrame = 0;
+    this->animation_delay = 0;
 }
 
 void MapTile::Create(std::vector<std::vector<int>> & map){
-    int tile_size = resolution.x/map_size;
-    for (int i=0;i<map_size;i++){
-        for (int j=0;j<map_size;j++){
+    int tile_size = Screen::resolution.x/Screen::map_size;
+    for (int i=0;i<Screen::map_size;i++){
+        for (int j=0;j<Screen::map_size;j++){
             if (!map[i][j]) continue;
-            MapTile newTile(Vector2(j*tile_size, i*tile_size), Vector2(tile_size), Direction(), map[i][j]);
+            Tiles.push_back(MapTile(Vector2(j*tile_size, i*tile_size), Vector2(tile_size), Direction(), map[i][j]));
         }
     }
 }
 
 void MapTile::Draw(){
-    for (auto tile : Tiles){
-        SDL_Rect rect = {tile.position.x + 1, tile.position.y + 1, tile.size.x - 1, tile.size.y - 1};
+    for (auto & tile : MapTile::Tiles){
+        float currentTicks = SDL_GetTicks();
+        SDL_Rect rect = {tile.position.x, tile.position.y, tile.size.x, tile.size.y};
         switch (tile.type){
-            case 1:
-                Renderer::SetDrawColor(Color::white(255));
-                Renderer::DrawSprite(tileSprite_1, tile.position, tile.size, 0, 0);
+            case wall:
+                Renderer::DrawSprite(Sprite::SpriteList[wall], tile.position, tile.size, 0, 0);
                 break;
-            case 2:
+            case coin:
+                if (currentTicks > tile.animation_delay + 1500/Game::animation_speed){
+                    tile.currentFrame += 1;
+                    if (tile.currentFrame >= Sprite::SpriteList[coin].maxFrames) tile.currentFrame = 0;
+                    tile.animation_delay = currentTicks;
+                }
                 Renderer::SetDrawColor(Color::yellow(255));
-                SDL_RenderDrawRect(renderer, &rect);
+                SDL_RenderDrawRect(Game::renderer, &rect);
+                Renderer::DrawSprite(Sprite::SpriteList[coin], tile.position + Vector2(10), tile.size - Vector2(20), tile.currentFrame, 0);
                 break;
             default:
                 break;
         }
     }
+}
+
+void MapTile::Update(){
+    Draw();
 }

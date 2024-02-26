@@ -1,12 +1,6 @@
 #pragma once
 #include "game.h"
 
-struct Direction{
-    float l, r, u, d;
-    Direction () : l(0), r(0), u(0), d(0) {}
-    Direction (float l, float r, float u, float d) : l(l), r(r), u(u), d(d) {}
-};
-
 class GameObject{
 public:
     const char * name;
@@ -17,26 +11,28 @@ public:
     int currentFrame;
     int maxFrame;
     float animation_delay;
-
-    static bool isCollide(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2, int error);
 };
 
 class MapTile : public GameObject{
 public:
-    int type;
-    MapTile(Vector2 position, Vector2 size, Direction velocity, int type);
     static std::vector<MapTile> Tiles;
+
+    enum tile_types{
+        wall=1,
+        coin
+    };
+    int type;
+
+    MapTile(Vector2 position, Vector2 size, Direction velocity, int type);
     static void Create(std::vector<std::vector<int>> & map);
     static void Draw();
-
-    static Sprite tileSprite_1;
-    static Sprite tileSprite_2;
+    static void Update();
 };
 
 class Player : public GameObject{
 public:
     enum animation_states{
-        idle,
+        idle=3,
         run,
         jump
     };
@@ -45,14 +41,18 @@ public:
         right
     };
 
-    animation_states current_state = idle;
-    animation_states previous_state = idle;
-    animation_directions direction = right;
+    animation_states current_state;
+    animation_states previous_state;
+    animation_directions direction;
 
-    Sprite _idle, _run, _jump;
-
-    void Init(const char * name, Vector2 position);
+    Player() = default;
+    Player(const char * name, Vector2 position);
     void Update();
     void Animation();
     void Movement();
+
+    bool key_right;
+    bool key_left;
+    bool key_down;
+    bool key_up;
 };
