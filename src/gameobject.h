@@ -26,8 +26,8 @@ public:
         coin
     };
     int type;
-
-    MapTile(Vector2 position, Vector2 size, Direction velocity, int type);
+    Vector2 tile;
+    MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile);
     static void Create(std::vector<std::vector<int>> & map);
     static void Draw();
     static void Update();

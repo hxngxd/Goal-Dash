@@ -1,9 +1,9 @@
 #include "gameobject.h"
 
 void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::vector<std::vector<bool>> & trace, std::queue<Vector2> & Q){
-    float maxDist = Screen::player_size*sqrt(61)/6 * 1.5;
+    float maxDist = Screen::player_size*sqrt(61)/6-2;
     float eps1 = 1e-2;
-    float eps2 = eps1 * 5;
+    float eps2 = eps1 * 7;
     Vector2 nextCenter = (nextTile + Vector2(0.5)) * Screen::player_size;
     float h = playerCenter.distance(nextCenter);
     if (Vector2::IsInRange(nextTile, 0, 15, 0, 15) &&
@@ -57,6 +57,9 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
         }
         else if (type==2){
             Renderer::SetDrawColor(Color::yellow(255));
+            if (Rect::isCollide(playerCenter, Vector2(player.size.x/6*4, player.size.y), nextCenter, player.size)){
+                Game::map[nextTile.y][nextTile.x] = 0;
+            }
         }
         trace[nextTile.x][nextTile.y] = 1;
         Q.push(nextTile);
