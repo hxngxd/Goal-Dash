@@ -14,9 +14,8 @@ float Vector2::distance(Vector2 other){
     return sqrt(dx*dx + dy*dy);
 }
 
-void Vector2::Int(Vector2 & v){
-    v.x = floor(v.x);
-    v.y = floor(v.y);
+Vector2 Vector2::Int(Vector2 v){
+    return Vector2((int)v.x, (int)v.y);
 }
 
 bool Vector2::IsInRange(Vector2 & v, float minX, float maxX, float minY, float maxY){

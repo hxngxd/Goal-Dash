@@ -13,7 +13,7 @@ struct Vector2{
 
     static const Vector2 right, left, up, down;
 
-    static void Int(Vector2 & v);
+    static Vector2 Int(Vector2 v);
 
     static bool IsInRange(Vector2 & v, float minX, float maxX, float minY, float maxY);
     
@@ -66,6 +66,19 @@ struct Vector2{
     }
 
     float distance(Vector2 other);
+};
+
+struct Vector2Hash {
+    std::size_t operator()(const Vector2& v) const {
+        std::hash<float> hash_fn;
+        return hash_fn(v.x) ^ hash_fn(v.y);
+    }
+};
+
+struct Vector2Equal {
+    bool operator()(const Vector2& lhs, const Vector2& rhs) const {
+        return lhs.x == rhs.x && lhs.y == rhs.y;
+    }
 };
 
 struct Direction{

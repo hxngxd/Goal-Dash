@@ -97,23 +97,25 @@ void Player::Movement(){
 
     position.x += (velocity.l + velocity.r) * Game::player_moving_speed;
 
-    Vector2 playerCenter = Rect::RectCenter(position, size);
-    Vector2 playerCenterTile = playerCenter/(Screen::player_size);
-    Vector2::Int(playerCenterTile);
 
-    std::vector<std::vector<bool>> trace(Screen::map_size, std::vector<bool>(Screen::map_size, 0));
+    Vector2 playerCenter = Rect::RectCenter(position, size);
+    Vector2 playerCenterTile = Vector2::Int(playerCenter/(Screen::player_size));
+
+    std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> visit;
     std::queue<Vector2> Q;
-    trace[playerCenterTile.x][playerCenterTile.y] = 1;
+    visit.insert({playerCenterTile, 1});
     Q.push(playerCenterTile);
 
+    float maxDist = Screen::player_size*sqrt(61)/6-3;
+    float eps = 1e-2;
     tmp_collide_down = tmp_collide_up = false;
     while (!Q.empty()){
         Vector2 u = Q.front();
         Q.pop();
-        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::right, trace, Q);
-        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::left, trace, Q);
-        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::down, trace, Q);
-        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::up, trace, Q);
+        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::down, visit, Q, maxDist, eps);
+        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::up, visit, Q, maxDist, eps);
+        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::right, visit, Q, maxDist, eps);
+        GameObject::BFS_Collision(*this, playerCenter, u + Vector2::left, visit, Q, maxDist, eps);
     }
     collide_down = tmp_collide_down;
     collide_up = tmp_collide_up;

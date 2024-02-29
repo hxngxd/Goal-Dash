@@ -14,7 +14,7 @@ public:
     int maxFrame;
     float animation_delay;
 
-    static void BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::vector<std::vector<bool>> & trace, std::queue<Vector2> & Q);
+    static void BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> & visit, std::queue<Vector2> & Q, float maxDist, float eps);
 };
 
 class MapTile : public GameObject{
