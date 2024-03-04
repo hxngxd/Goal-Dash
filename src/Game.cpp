@@ -12,6 +12,8 @@ float Game::player_acceleration_rate = 0.04;
 float Game::animation_speed = 15;
 float Game::jump_speed = 10;
 float Game::gravity = 0.3;
+int Game::view_mode = 1;
+Vector2 Game::startingPosition = Vector2();
 
 SDL_Event Game::event;
 SDL_Window * Game::window = nullptr;
@@ -20,21 +22,23 @@ SDL_Renderer * Game::renderer = nullptr;
 std::vector<std::vector<int>> Game::map = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1},
     {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 3, 1},
     {1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1},
-    {1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 1, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1},
+    {1, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+    {1, -2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 2, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
+
+AllSprite Sprites;
 
 Player player1;
 
@@ -43,6 +47,7 @@ void Game::Update() {
     Renderer::PointGrid(Color::white(127));
     MapTile::Update();
     player1.Update();
+    Screen::DisplayText("xin chao, qua tuyet voi");
     Renderer::Display();
 }
 
@@ -50,15 +55,11 @@ void Game::Start(){
     Init();
     if (!running) return;
 
-    Sprite("img/wall.png", 1, Vector2(1024));
-    Sprite("img/coin.png", 5, Vector2(16));
-    Sprite("img/idle.png", 10, Vector2(48));
-    Sprite("img/run.png", 9, Vector2(48));
-    Sprite("img/jump.png", 4, Vector2(48));
+    Sprites.LoadAllSprite();
 
     MapTile::Create(Game::map);
 
-    player1 = Player("Nguyen Tuong Hung", Vector2(100));
+    player1 = Player("Nguyen Tuong Hung", Game::startingPosition);
 }
 
 void Game::Init(){
@@ -70,6 +71,8 @@ void Game::Init(){
         std::cout << "Error: SDL_IMAGE failed to initialize - " << SDL_GetError();
         return;
     }
+    std::cout << TTF_Init();
+
     if (!Screen::Init()) return;
     if (!Renderer::Init()) return;
     running = true;
@@ -92,6 +95,7 @@ void Game::Quit(){
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    TTF_Quit();
 }
 
 bool Screen::Init() {
@@ -146,4 +150,22 @@ void Renderer::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int c
     SDL_Rect src = {(currentFrame%sprite.maxFrames)*sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
     SDL_Rect dst = {position.x, position.y, size.x, size.y};
     SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
+}
+
+void Screen::DisplayText(const char * text){
+    TTF_Font * font = TTF_OpenFont("fonts/Roboto-Bold.ttf", 24);
+    SDL_Surface * surface = TTF_RenderText_Solid(font, text, Color::white(255));
+
+    SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    SDL_Rect rect;
+    rect.x = rect.y = 100;
+    rect.w = surface->w;
+    rect.h = surface->h;
+
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+    TTF_CloseFont(font);
 }

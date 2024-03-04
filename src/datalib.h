@@ -108,8 +108,6 @@ struct Rect{
 
 class Sprite{
 public:
-    static std::vector<Sprite> SpriteList;
-
     SDL_Texture * texture;
     const char * path;
     int maxFrames;
@@ -117,4 +115,9 @@ public:
     
     Sprite() = default;
     Sprite(const char * path, int maxFrames, Vector2 realSize);
+};
+
+struct AllSprite{
+    Sprite wall, coin, idle, run, jump;
+    void LoadAllSprite();
 };

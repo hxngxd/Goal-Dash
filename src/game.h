@@ -2,8 +2,11 @@
 #include <bits/stdc++.h>
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
+#include "../include/SDL2/SDL_ttf.h"
 #include "datalib.h"
 #include "gameobject.h"
+
+extern AllSprite Sprites;
 
 class Game {
 private:
@@ -16,12 +19,14 @@ public:
     static float animation_speed;
     static float jump_speed;
     static float gravity;
+    static Vector2 startingPosition;
 
     static SDL_Event event;
     static SDL_Window * window;
     static SDL_Renderer * renderer;
 
     static std::vector<std::vector<int>> map;
+    static int view_mode;
 
     void Start();
     void Init();
@@ -47,6 +52,8 @@ public:
     static const Uint32 resizable = SDL_WINDOW_RESIZABLE;
 
     static bool Init();
+    
+    static void DisplayText(const char * text);
 };
 
 class Renderer : public Game{
@@ -60,4 +67,5 @@ public:
     static void Display();
 
     static bool Init();
+
 };

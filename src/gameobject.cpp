@@ -9,7 +9,7 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
     )
     {
         int type = Game::map[nextTile.y][nextTile.x];
-        if (type==1){
+        if (type==1 || type==3){
             Renderer::SetDrawColor(Color::white(255));
             Vector2 d = nextCenter - playerCenter;
             float cos = d.x/h;
@@ -36,7 +36,7 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
                 Game::map[nextTile.y][nextTile.x] = 0;
             }
         }
-        if (type){
+        if (Game::view_mode && type){
             SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, nextCenter.x, nextCenter.y);
         }
         visit.insert({nextTile, 1});

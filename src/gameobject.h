@@ -21,10 +21,6 @@ class MapTile : public GameObject{
 public:
     static std::vector<MapTile> Tiles;
 
-    enum tile_types{
-        wall=1,
-        coin
-    };
     int type;
     Vector2 tile;
     MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile);
@@ -36,7 +32,7 @@ public:
 class Player : public GameObject{
 public:
     enum animation_states{
-        idle=3,
+        idle,
         run,
         jump
     };

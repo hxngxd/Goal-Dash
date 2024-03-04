@@ -29,13 +29,13 @@ void Player::Animation(){
     Sprite * current = nullptr;
     switch (current_state){
         case idle:
-            current = &Sprite::SpriteList[idle];
+            current = &Sprites.idle;
             break;
         case run:
-            current = &Sprite::SpriteList[run];
+            current = &Sprites.run;
             break;
         case jump:
-            current = &Sprite::SpriteList[jump];
+            current = &Sprites.jump;
             break;
     }
     maxFrame = current->maxFrames;
@@ -133,11 +133,13 @@ void Player::Movement(){
         velocity.d = 0;
     }
 
-    Vector2 startPos(position.x + Screen::player_size/6, position.y);
-    Vector2 endPos(position.x + Screen::player_size/6*5, position.y + Screen::player_size);
-    Renderer::SetDrawColor(Color::white(255));
-    SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, endPos.x, startPos.y);
-    SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, startPos.x, endPos.y);
-    SDL_RenderDrawLine(Game::renderer, endPos.x, endPos.y, endPos.x, startPos.y);
-    SDL_RenderDrawLine(Game::renderer, endPos.x, endPos.y, startPos.x, endPos.y);
+    if (Game::view_mode){
+        Vector2 startPos(position.x + Screen::player_size/6, position.y);
+        Vector2 endPos(position.x + Screen::player_size/6*5, position.y + Screen::player_size);
+        Renderer::SetDrawColor(Color::white(255));
+        SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, endPos.x, startPos.y);
+        SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, startPos.x, endPos.y);
+        SDL_RenderDrawLine(Game::renderer, endPos.x, endPos.y, endPos.x, startPos.y);
+        SDL_RenderDrawLine(Game::renderer, endPos.x, endPos.y, startPos.x, endPos.y);
+    }
 }

@@ -1,8 +1,6 @@
 #include "datalib.h"
 #include "game.h"
 
-std::vector<Sprite> Sprite::SpriteList = {Sprite()};
-
 const Vector2 Vector2::right(1, 0);
 const Vector2 Vector2::left(-1, 0);
 const Vector2 Vector2::down(0, 1);
@@ -41,10 +39,17 @@ Sprite::Sprite(const char * path, int maxFrames, Vector2 realSize){
         std::cout << "Error: SDL failed to load texture " << path << " - " << SDL_GetError();
     }
     else{
-        Sprite::SpriteList.push_back(*this);
         std::cout << "Sprite loaded: " << path << std::endl;
     }
 }
+
+void AllSprite::LoadAllSprite(){
+    wall = Sprite("img/wall.png", 1, Vector2(1024));
+    coin = Sprite("img/coin.png", 5, Vector2(16));
+    idle = Sprite("img/idle.png", 10, Vector2(48));
+    run = Sprite("img/run.png", 9, Vector2(48));
+    jump = Sprite("img/jump.png", 4, Vector2(48));
+};
 
 Vector2 Rect::RectCenter(Vector2 position, Vector2 size){
     return position + size/2;
