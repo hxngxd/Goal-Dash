@@ -1,7 +1,7 @@
 #include "game.h"
 #include "inputhandler.h"
 
-Player::Player(const char * name, Vector2 position){
+Player::Player(std::string name, Vector2 position){
     this->name = name;
     this->position = position;
     this->size = Vector2(48);

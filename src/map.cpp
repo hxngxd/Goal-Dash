@@ -30,19 +30,19 @@ void MapTile::Draw(){
         float currentTicks = SDL_GetTicks();
         SDL_Rect rect = {tile.position.x + 2, tile.position.y + 2, tile.size.x - 2, tile.size.y - 2};
         switch (tile.type){
-            case -2:
+            case win:
                 if (Game::view_mode){
                     Renderer::SetDrawColor(Color::green(255));
                     SDL_RenderDrawRect(Game::renderer, &rect);
                 }
                 break;
-            case -1:
+            case spawn:
                 if (Game::view_mode){
                     Renderer::SetDrawColor(Color::cyan(255));
                     SDL_RenderDrawRect(Game::renderer, &rect);
                 }
                 break;
-            case 1:
+            case wall:
                 if (Game::view_mode){
                     Renderer::SetDrawColor(Color::white(255));
                     SDL_RenderDrawRect(Game::renderer, &rect);
@@ -51,7 +51,7 @@ void MapTile::Draw(){
                     Renderer::DrawSprite(Sprites.wall, tile.position, tile.size, 0, 0);
                 }
                 break;
-            case 2:
+            case coin:
                 if (currentTicks > tile.animation_delay + 1500/Game::animation_speed){
                     tile.currentFrame += 1;
                     if (tile.currentFrame >= Sprites.coin.maxFrames) tile.currentFrame = 0;
@@ -63,7 +63,7 @@ void MapTile::Draw(){
                 }
                 Renderer::DrawSprite(Sprites.coin, tile.position + Vector2(10), tile.size - Vector2(18), tile.currentFrame, 0);
                 break;
-            case 3:
+            case damage:
                 if (Game::view_mode){
                     Renderer::SetDrawColor(Color::red(255));
                     SDL_RenderDrawRect(Game::renderer, &rect);

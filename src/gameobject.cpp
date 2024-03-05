@@ -33,6 +33,7 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
         else if (type==2){
             Renderer::SetDrawColor(Color::yellow(255));
             if (Rect::isCollide(playerCenter, Vector2(player.size.x/6*4, player.size.y), nextCenter, player.size)){
+                Game::player_score++;
                 Game::map[nextTile.y][nextTile.x] = 0;
             }
         }

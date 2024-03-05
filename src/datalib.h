@@ -109,12 +109,12 @@ struct Rect{
 class Sprite{
 public:
     SDL_Texture * texture;
-    const char * path;
+    std::string path;
     int maxFrames;
     Vector2 realSize;
     
     Sprite() = default;
-    Sprite(const char * path, int maxFrames, Vector2 realSize);
+    Sprite(std::string path, int maxFrames, Vector2 realSize);
 };
 
 struct AllSprite{

@@ -1,7 +1,7 @@
 #include "game.h"
 #include "inputhandler.h"
 
-const char * Screen::title = "Game";
+std::string Screen::title = "Game";
 Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
 int Screen::player_size = Screen::resolution.x/Screen::map_size;
@@ -13,6 +13,7 @@ float Game::animation_speed = 15;
 float Game::jump_speed = 10;
 float Game::gravity = 0.3;
 int Game::view_mode = 1;
+int Game::player_score = 0;
 Vector2 Game::startingPosition = Vector2();
 
 SDL_Event Game::event;
@@ -22,12 +23,12 @@ SDL_Renderer * Game::renderer = nullptr;
 std::vector<std::vector<int>> Game::map = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 3, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 3, 1},
     {1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -47,7 +48,7 @@ void Game::Update() {
     Renderer::PointGrid(Color::white(127));
     MapTile::Update();
     player1.Update();
-    Screen::DisplayText("xin chao, qua tuyet voi");
+    Screen::DisplayText(std::to_string(Game::player_score));
     Renderer::Display();
 }
 
@@ -99,7 +100,7 @@ void Game::Quit(){
 }
 
 bool Screen::Init() {
-    window = SDL_CreateWindow(title, x, y, resolution.x, resolution.y, fixedsize);
+    window = SDL_CreateWindow(title.c_str(), x, y, resolution.x, resolution.y, fixedsize);
     if (window==nullptr){
         std::cout << "Error: Failed to open window - " << SDL_GetError();
         return 0;
@@ -152,9 +153,9 @@ void Renderer::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int c
     SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }
 
-void Screen::DisplayText(const char * text){
+void Screen::DisplayText(std::string text){
     TTF_Font * font = TTF_OpenFont("fonts/Roboto-Bold.ttf", 24);
-    SDL_Surface * surface = TTF_RenderText_Solid(font, text, Color::white(255));
+    SDL_Surface * surface = TTF_RenderText_Solid(font, text.c_str(), Color::white(255));
 
     SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
 

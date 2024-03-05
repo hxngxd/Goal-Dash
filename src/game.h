@@ -20,6 +20,7 @@ public:
     static float jump_speed;
     static float gravity;
     static Vector2 startingPosition;
+    static int player_score;
 
     static SDL_Event event;
     static SDL_Window * window;
@@ -40,7 +41,7 @@ class Renderer;
 
 class Screen : public Game{
 public:
-    static const char * title;
+    static std::string title;
     static Vector2 resolution;
     static int map_size;
     static int player_size;
@@ -53,7 +54,7 @@ public:
 
     static bool Init();
     
-    static void DisplayText(const char * text);
+    static void DisplayText(std::string text);
 };
 
 class Renderer : public Game{

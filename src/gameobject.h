@@ -5,7 +5,7 @@ class Player;
 
 class GameObject{
 public:
-    const char * name;
+    std::string name;
     Vector2 position;
     Vector2 size;
     Direction velocity;
@@ -20,7 +20,14 @@ public:
 class MapTile : public GameObject{
 public:
     static std::vector<MapTile> Tiles;
-
+    enum types{
+        spawn = -1,
+        win = -2,
+        empty = 0,
+        wall = 1,
+        coin = 2,
+        damage = 3,
+    };
     int type;
     Vector2 tile;
     MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile);
@@ -46,7 +53,7 @@ public:
     animation_directions direction;
 
     Player() = default;
-    Player(const char * name, Vector2 position);
+    Player(std::string name, Vector2 position);
     void Update();
     void Animation();
     void Movement();

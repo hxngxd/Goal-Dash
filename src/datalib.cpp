@@ -26,8 +26,8 @@ bool Rect::isCollide(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2){
     return c_x <= 0 && c_y <= 0;
 }
 
-Sprite::Sprite(const char * path, int maxFrames, Vector2 realSize){
-    SDL_Surface * tmpSurface = IMG_Load(path);
+Sprite::Sprite(std::string path, int maxFrames, Vector2 realSize){
+    SDL_Surface * tmpSurface = IMG_Load(path.c_str());
     this->texture = SDL_CreateTextureFromSurface(Game::renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
     
