@@ -100,6 +100,7 @@ void Game::Quit(){
     SDL_DestroyWindow(window);
     SDL_Quit();
     TTF_Quit();
+    Mix_CloseAudio();
     Mix_Quit();
 }
 
