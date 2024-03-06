@@ -69,13 +69,16 @@ void Game::Init(){
         return;
     }
     if (!(IMG_Init(IMG_INIT_PNG))) {
-        std::cout << "Error: SDL_IMAGE failed to initialize - " << SDL_GetError();
+        std::cout << "Error: SDL_IMAGE failed to initialize - " << IMG_GetError();
         return;
     }
-    std::cout << TTF_Init();
-
+    if (TTF_Init() != 0){
+        std::cout << "Error: SDL_TTF failed to initialize - " << TTF_GetError();
+        return;
+    }
     if (!Screen::Init()) return;
     if (!Renderer::Init()) return;
+    if (!Sound::Init()) return;
     running = true;
 }
 
@@ -97,6 +100,7 @@ void Game::Quit(){
     SDL_DestroyWindow(window);
     SDL_Quit();
     TTF_Quit();
+    Mix_Quit();
 }
 
 bool Screen::Init() {

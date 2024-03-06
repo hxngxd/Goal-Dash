@@ -17,7 +17,7 @@ struct Vector2{
 
     static bool IsInRange(Vector2 & v, float minX, float maxX, float minY, float maxY);
     
-    friend std::ostream & operator << (std::ostream & out, Vector2 & v){
+    friend std::ostream & operator << (std::ostream & out, const Vector2 & v){
         out << "(" << v.x << ", " << v.y << ")";
     }
 
@@ -49,20 +49,20 @@ struct Vector2{
         return {std::min(v1.x, v2.x), std::min(v1.y, v2.y)};
     }
 
-    friend Vector2 operator + (Vector2 v1, Vector2 v2){
-        return Vector2(v1.x + v2.x, v1.y + v2.y);
+    Vector2 operator + (Vector2 other){
+        return Vector2(x + other.x, y + other.y);
     }
 
-    friend Vector2 operator - (Vector2 v1, Vector2 v2){
-        return Vector2(v1.x - v2.x, v1.y - v2.y);
+    Vector2 operator - (Vector2 other){
+        return Vector2(x - other.x, y - other.y);
     }
 
-    friend Vector2 operator * (Vector2 v, float k){
-        return Vector2(v.x * k, v.y * k);
+    Vector2 operator * (float k){
+        return Vector2(x * k, y * k);
     }
 
-    friend Vector2 operator / (Vector2 v, float k){
-        return Vector2(v.x / k, v.y / k);
+    Vector2 operator / (float k){
+        return Vector2(x / k, y / k);
     }
 
     float distance(Vector2 other);

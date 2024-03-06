@@ -2,6 +2,7 @@
 #include <bits/stdc++.h>
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
+#include "../include/SDL2/SDL_mixer.h"
 #include "../include/SDL2/SDL_ttf.h"
 #include "datalib.h"
 #include "gameobject.h"
@@ -69,4 +70,14 @@ public:
 
     static bool Init();
 
+};
+
+class Sound : public Game{
+public:
+    static int loadMusic(std::string path);
+    static int loadSound(std::string path);
+
+    static int volume;
+
+    static bool Init();
 };
