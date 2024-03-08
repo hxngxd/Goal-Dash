@@ -47,8 +47,13 @@ public:
     static void Clear(SDL_Color color);
     static void SetDrawColor(SDL_Color color);
     static void PointGrid(SDL_Color color);
+    static void Background();
     static void Display();
     static void DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip);
+
+    static Vector2 bg_star_position, bg_cloud_position, bg_margin;
+    static int bg_opacity;
+    static bool bg_toggle;
 };
 
 void ShowMsg(int indent, msg_types type, std::string msg);

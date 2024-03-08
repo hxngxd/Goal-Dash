@@ -31,6 +31,7 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
             }
             
             if (type & DAMAGE){
+                Screen::SetDrawColor(Color::red(255));
                 // ShowMsg(0, logging, "player was damaged.");
             }
         }
@@ -47,6 +48,9 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
             if (Rect::isCollide(playerCenter, Vector2(player.size.x/6*4, player.size.y), nextCenter, player.size)){
                 ShowMsg(0, logging, "player won!");
             }
+        }
+        else if (type & SPAWN){
+            Screen::SetDrawColor(Color::cyan(255));
         }
         if (type){
             SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, nextCenter.x, nextCenter.y);

@@ -53,6 +53,10 @@ Vector2 operator / (const Vector2 & v, float k){
     return Vector2 (v.x / k, v.y / k);
 }
 
+Vector2 operator - (const Vector2 & v){
+    return Vector2(-v.x, -v.y);
+}
+
 Vector2 max(const Vector2 & v1, const Vector2 & v2){
     return {std::max(v1.x, v2.x), std::max(v1.y, v2.y)};
 }
@@ -110,4 +114,10 @@ bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realS
 
     SDL_FreeSurface(sf);
     return 1;
+}
+
+float clamp(float value, float mn, float mx){
+    if (value < mn) return mn;
+    if (value > mx) return mx;
+    return value;
 }

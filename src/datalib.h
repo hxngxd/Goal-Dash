@@ -20,6 +20,7 @@ Vector2 operator + (const Vector2 & v1, const Vector2 & v2);
 Vector2 operator - (const Vector2 & v1, const Vector2 & v2);
 Vector2 operator * (const Vector2 & v, float k);
 Vector2 operator / (const Vector2 & v, float k);
+Vector2 operator - (const Vector2 & v);
 
 Vector2 max(const Vector2 & v1, const Vector2 & v2);
 Vector2 min(const Vector2 & v1, const Vector2 & v2);
@@ -100,3 +101,5 @@ public:
 extern std::map<std::string, Sprite*> Sprites;
 
 bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize);
+
+float clamp(float value, float mn, float mx);

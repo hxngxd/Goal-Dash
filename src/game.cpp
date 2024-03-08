@@ -6,6 +6,9 @@ std::string Screen::title = "Game";
 Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
 int Screen::player_size = Screen::resolution.x/Screen::map_size;
+Vector2 Screen::bg_margin = Vector2(150);
+Vector2 Screen::bg_cloud_position = -Screen::bg_margin;
+Vector2 Screen::bg_star_position = -Screen::bg_margin;
 
 float Game::fps = 60.0;
 float Game::player_move_speed = 5;
@@ -24,7 +27,7 @@ Player player1;
 
 void Game::Update() {
     Screen::Clear(Color::black(255));
-    Screen::PointGrid(Color::white(127));
+    Screen::Background();
     MapTile::Update();
     player1.Update();
     Screen::Display();
@@ -111,10 +114,16 @@ bool Game::InitSDL2(){
 }
 
 bool Game::LoadMedia(){
+    loadSprite("bg_star", "img/bg_star.png", 1, Vector2(4096));
+    loadSprite("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096));
     loadSprite("coin", "img/coin.png", 5, Vector2(16));
     loadSprite("idle", "img/idle.png", 10, Vector2(48));
     loadSprite("run", "img/run.png", 9, Vector2(48));
     loadSprite("jump", "img/jump.png", 4, Vector2(48));
+
+    SDL_SetTextureBlendMode(Sprites["bg_cloud"]->texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(Sprites["bg_star"]->texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureAlphaMod(Sprites["bg_cloud"]->texture, 150);
     return 1;
 }
 
@@ -173,6 +182,22 @@ void Screen::PointGrid(SDL_Color color){
             SDL_RenderDrawPoint(renderer, i, j);
         }
     }
+}
+
+int Screen::bg_opacity = 64;
+bool Screen::bg_toggle = true;
+
+void Screen::Background(){
+    DrawSprite(*Sprites["bg_cloud"], Screen::bg_cloud_position, resolution + Screen::bg_margin*2, 0, 0);
+
+    if (bg_toggle){
+        bg_opacity+=2; if (bg_opacity>=250) bg_toggle = false;
+    }
+    else{
+        bg_opacity-=2; if (bg_opacity<=64) bg_toggle = true;
+    }
+    SDL_SetTextureAlphaMod(Sprites["bg_star"]->texture, bg_opacity);
+    DrawSprite(*Sprites["bg_star"], Screen::bg_star_position, resolution + Screen::bg_margin*2, 0, 0);
 }
 
 void Screen::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip){

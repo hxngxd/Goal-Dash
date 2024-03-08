@@ -76,6 +76,12 @@ void Player::MoveRightLeft(){
         }
     }
     position.x += (velocity.l + velocity.r) * Game::player_move_speed;
+    
+    Screen::bg_star_position.x -= (velocity.l + velocity.r) * 0.5;
+    Screen::bg_star_position.x = clamp(Screen::bg_star_position.x, -Screen::bg_margin.x, 0);
+
+    Screen::bg_cloud_position.x -= (velocity.l + velocity.r) * 0.25;
+    Screen::bg_cloud_position.x = clamp(Screen::bg_cloud_position.x, -Screen::bg_margin.x, 0);
 }
 
 void Player::MoveDownUp(){
@@ -132,6 +138,11 @@ void Player::Jump(){
         if (collide_up) velocity.d = 0;
         velocity.d += Game::gravity;
         position.y += velocity.d;
+        Screen::bg_star_position.y -= velocity.d/20;
+        Screen::bg_star_position.y = clamp(Screen::bg_star_position.y, -Screen::bg_margin.y, 0);
+
+        Screen::bg_cloud_position.y -= velocity.d/40;
+        Screen::bg_cloud_position.y = clamp(Screen::bg_cloud_position.y, -Screen::bg_margin.y, 0);
     }
     else{
         if (current_state == JUMP){
