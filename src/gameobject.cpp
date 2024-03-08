@@ -41,6 +41,7 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
                 Game::player_score++;
                 ShowMsg(0, logging, "player score: " + std::to_string(Game::player_score) + ".");
                 tilemap[nextTile.y][nextTile.x] = 0;
+                playSound("coin", coin_channel);
             }
         }
         else if (type & WIN){

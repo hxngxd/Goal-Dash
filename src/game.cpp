@@ -56,6 +56,9 @@ void Game::Start(){
     player1.Init("Nguyen Tuong Hung", startingPosition);
     ShowMsg(2, success, "done.");
 
+    ShowMsg(1, normal, "playing background music...");
+    playMusic("bg_music", -1);
+    
     running = true;
 }
 
@@ -81,6 +84,15 @@ bool Game::InitSDL2(){
     ShowMsg(2, normal, "initializing SDL_TTF...");
     if (TTF_Init() != 0){
         ShowMsg(3, fail, "sdl_ttf failed.");
+        return 0;
+    }
+    else{
+        ShowMsg(3, success, "done.");
+    }
+
+    ShowMsg(2, normal, "initializing SDL_Mixer...");
+    if (Mix_OpenAudio(44100, AUDIO_U8, 2, 4096) < 0){
+        ShowMsg(3, fail, "sdl_mixer failed.");
         return 0;
     }
     else{
@@ -114,16 +126,21 @@ bool Game::InitSDL2(){
 }
 
 bool Game::LoadMedia(){
-    loadSprite("bg_star", "img/bg_star.png", 1, Vector2(4096));
-    loadSprite("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096));
-    loadSprite("coin", "img/coin.png", 5, Vector2(16));
-    loadSprite("idle", "img/idle.png", 10, Vector2(48));
-    loadSprite("run", "img/run.png", 9, Vector2(48));
-    loadSprite("jump", "img/jump.png", 4, Vector2(48));
-
+    if (!loadSprite("bg_star", "img/bg_star.png", 1, Vector2(4096))) return 0;
+    if (!loadSprite("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096))) return 0;
+    if (!loadSprite("coin", "img/coin.png", 5, Vector2(16))) return 0;
+    if (!loadSprite("idle", "img/idle.png", 10, Vector2(48))) return 0;
+    if (!loadSprite("run", "img/run.png", 9, Vector2(48))) return 0;
+    if (!loadSprite("jump", "img/jump.png", 4, Vector2(48))) return 0;
+    
     SDL_SetTextureBlendMode(Sprites["bg_cloud"]->texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureBlendMode(Sprites["bg_star"]->texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureAlphaMod(Sprites["bg_cloud"]->texture, 150);
+
+    if (!loadSoundEffect("coin", "sound/coin.wav")) return 0;
+    if (!loadSoundEffect("jump", "sound/jump.wav")) return 0;
+    if (!loadMusic("bg_music", "sound/bg_music.wav")) return 0;
+
     return 1;
 }
 
@@ -146,11 +163,34 @@ void Game::Quit(){
     for (auto & sprite : Sprites){
         std::string path = sprite.second->path;
         delete sprite.second;
-        if (!sprite.second){
+        sprite.second = nullptr;
+        if (sprite.second){
             ShowMsg(1, fail, "failed to delete " + path + ".");
         }
         else{
             ShowMsg(1, success, "deleted " + path + "!");
+        }
+    }
+
+    ShowMsg(0, normal, "deleting all sounds and musics...");
+    for (auto & sound : Sounds){
+        Mix_FreeChunk(sound.second);
+        sound.second = nullptr;
+        if (sound.second){
+            ShowMsg(1, fail, "failed to delete " + sound.first + ".");
+        }
+        else{
+            ShowMsg(1, success, "deleted " + sound.first + "!");
+        }
+    }
+    for (auto & music : Musics){
+        Mix_FreeMusic(music.second);
+        music.second = nullptr;
+        if (music.second){
+            ShowMsg(1, fail, "failed to delete " + music.first + ".");
+        }
+        else{
+            ShowMsg(1, success, "deleted " + music.first + "!");
         }
     }
 
@@ -159,6 +199,8 @@ void Game::Quit(){
     SDL_Quit();
     IMG_Quit();
     TTF_Quit();
+    Mix_CloseAudio();
+    Mix_Quit();
 }
 
 void Screen::SetDrawColor(SDL_Color color){

@@ -2,7 +2,8 @@
 #include "game.h"
 
 std::map<std::string, Sprite*> Sprites;
-
+std::map<std::string, Mix_Chunk*> Sounds;
+std::map<std::string, Mix_Music*> Musics;
 
 Vector2 v2right = Vector2(1, 0);
 Vector2 v2left = Vector2(-1, 0);
@@ -99,7 +100,7 @@ bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realS
     SDL_Surface * sf = IMG_Load(path.c_str());
     Sprites[name]->texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
 
-    if (Sprites[name]->texture==nullptr){
+    if (!Sprites[name]->texture){
         delete Sprites[name];
         Sprites[name] = nullptr;
         Sprites.erase(name);
@@ -114,6 +115,43 @@ bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realS
 
     SDL_FreeSurface(sf);
     return 1;
+}
+
+bool loadSoundEffect(std::string name, std::string path){
+    ShowMsg(2, normal, "trying to load " + path + "...");
+    Sounds[name] = Mix_LoadWAV(path.c_str());
+    if (!Sounds[name]){
+        Mix_FreeChunk(Sounds[name]);
+        Sounds.erase(name);
+        ShowMsg(3, fail, "failed.");
+        return 0;
+    }
+    
+    ShowMsg(3, success, "done.");
+    return 1;
+}
+
+bool loadMusic(std::string name, std::string path){
+    ShowMsg(2, normal, "trying to load " + path + "...");
+    Musics[name] = Mix_LoadMUS(path.c_str());
+    if (!Musics[name]){
+        Mix_FreeMusic(Musics[name]);
+        Musics.erase(name);
+        ShowMsg(3, fail, "failed.");
+        return 0;
+    }
+    
+    ShowMsg(3, success, "done.");
+    return 1;
+}
+
+void playSound(std::string name, int channel){
+    Mix_HaltChannel(channel);
+    Mix_PlayChannel(channel, Sounds[name], 0);
+}
+
+void playMusic(std::string name, int loop){
+    Mix_PlayMusic(Musics[name], loop);
 }
 
 float clamp(float value, float mn, float mx){

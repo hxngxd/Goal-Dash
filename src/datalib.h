@@ -2,6 +2,7 @@
 #include <bits/stdc++.h>
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
+#include "../include/SDL2/SDL_mixer.h"
 
 struct Vector2{
     float x, y;
@@ -101,5 +102,19 @@ public:
 extern std::map<std::string, Sprite*> Sprites;
 
 bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize);
+
+extern std::map<std::string, Mix_Chunk*> Sounds;
+extern std::map<std::string, Mix_Music*> Musics;
+
+bool loadSoundEffect(std::string name, std::string path);
+void playSound(std::string name, int channel);
+
+bool loadMusic(std::string name, std::string path);
+void playMusic(std::string name, int loop);
+
+enum mixer_channels{
+    coin_channel = 0,
+    jump_channel
+};
 
 float clamp(float value, float mn, float mx);

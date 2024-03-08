@@ -24,6 +24,7 @@ void KeyboardHandler::LeftPlayerInputHandler(Player & player){
                     player.previous_state = player.current_state
                     ;
                     player.current_state = JUMP;
+                    playSound("jump", jump_channel);
                 }
                 break;
             default:
