@@ -1,5 +1,6 @@
 #include "game.h"
 #include "inputhandler.h"
+#include "gameobject.h"
 
 std::string Screen::title = "Game";
 Vector2 Screen::resolution(768, 768);
@@ -7,12 +8,11 @@ int Screen::map_size = 16;
 int Screen::player_size = Screen::resolution.x/Screen::map_size;
 
 float Game::fps = 60.0;
-float Game::player_moving_speed = 5;
-float Game::player_acceleration_rate = 0.04;
+float Game::player_move_speed = 5;
+float Game::player_acceleration = 0.04;
 float Game::animation_speed = 15;
 float Game::jump_speed = 10;
 float Game::gravity = 0.3;
-int Game::view_mode = 1;
 int Game::player_score = 0;
 Vector2 Game::startingPosition = Vector2();
 
@@ -20,66 +20,102 @@ SDL_Event Game::event;
 SDL_Window * Game::window = nullptr;
 SDL_Renderer * Game::renderer = nullptr;
 
-std::vector<std::vector<int>> Game::map = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 3, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 3, 1},
-    {1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 1, 1, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1},
-    {1, -2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 2, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
-
-AllSprite Sprites;
-
 Player player1;
 
 void Game::Update() {
-    Renderer::Clear(Color::black(255));
-    Renderer::PointGrid(Color::white(127));
+    Screen::Clear(Color::black(255));
+    Screen::PointGrid(Color::white(127));
     MapTile::Update();
     player1.Update();
-    Screen::DisplayText(std::to_string(Game::player_score));
-    Renderer::Display();
+    Screen::Display();
 }
 
 void Game::Start(){
-    Init();
-    if (!running) return;
+    ShowMsg(1, normal, "trying to initializing SDL2...");
+    if (!InitSDL2()){
+        ShowMsg(1, fail, "init sdl2 failed.");
+        return;
+    }
+    ShowMsg(1, success, "sdl2 ok!");
 
-    Sprites.LoadAllSprite();
+    ShowMsg(1, normal, "loading all medias...");
+    if (!LoadMedia()){
+        ShowMsg(1, fail, "failed to load medias.");
+        return;
+    }
+    ShowMsg(1, success, "medias ok!");
 
-    MapTile::Create(Game::map);
+    ShowMsg(1, normal, "creating map...");
+    MapTile::Create();
+    ShowMsg(2, success, "done.");
 
-    player1 = Player("Nguyen Tuong Hung", Game::startingPosition);
+    ShowMsg(1, normal, "creating player...");
+    player1.Init("Nguyen Tuong Hung", startingPosition);
+    ShowMsg(2, success, "done.");
+
+    running = true;
 }
 
-void Game::Init(){
+bool Game::InitSDL2(){
+    ShowMsg(2, normal, "initializing SDL...");
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0){
-        std::cout << "Error: SDL failed to initialize - " << SDL_GetError();
-        return;
+        ShowMsg(3, fail, "sdl failed.");
+        return 0;
     }
+    else{
+        ShowMsg(3, success, "done.");
+    }
+
+    ShowMsg(2, normal, "initializing SDL_Image...");
     if (!(IMG_Init(IMG_INIT_PNG))) {
-        std::cout << "Error: SDL_IMAGE failed to initialize - " << IMG_GetError();
-        return;
+        ShowMsg(3, fail, "sdl_image failed.");
+        return 0;
     }
+    else{
+        ShowMsg(3, success, "done.");
+    }
+
+    ShowMsg(2, normal, "initializing SDL_TTF...");
     if (TTF_Init() != 0){
-        std::cout << "Error: SDL_TTF failed to initialize - " << TTF_GetError();
-        return;
+        ShowMsg(3, fail, "sdl_ttf failed.");
+        return 0;
     }
-    if (!Screen::Init()) return;
-    if (!Renderer::Init()) return;
-    if (!Sound::Init()) return;
-    running = true;
+    else{
+        ShowMsg(3, success, "done.");
+    }
+
+    ShowMsg(2, normal, "creating window...");
+    window = SDL_CreateWindow(Screen::title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Screen::resolution.x, Screen::resolution.y, 0);
+    if (!window){
+        ShowMsg(3, fail, "failed to create window.");
+        return 0;
+    }
+    else{
+        ShowMsg(3, success, "done.");
+    }
+    
+    ShowMsg(2, normal, "creating renderer...");
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!renderer){
+        ShowMsg(3, fail, "failed to create renderer.");
+        return 0;
+    }
+    else{
+        ShowMsg(3, success, "done.");
+    }
+    
+    ShowMsg(2, normal, "turned on blend mode.");
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    return 1;
+}
+
+bool Game::LoadMedia(){
+    loadSprite("coin", "img/coin.png", 5, Vector2(16));
+    loadSprite("idle", "img/idle.png", 10, Vector2(48));
+    loadSprite("run", "img/run.png", 9, Vector2(48));
+    loadSprite("jump", "img/jump.png", 4, Vector2(48));
+    return 1;
 }
 
 bool Game::isRunning(){
@@ -96,53 +132,40 @@ void Game::HandleEvent(){
 }
 
 void Game::Quit(){
+
+    ShowMsg(0, normal, "deleting all sprites...");
+    for (auto & sprite : Sprites){
+        std::string path = sprite.second->path;
+        delete sprite.second;
+        if (!sprite.second){
+            ShowMsg(1, fail, "failed to delete " + path + ".");
+        }
+        else{
+            ShowMsg(1, success, "deleted " + path + "!");
+        }
+    }
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    IMG_Quit();
     TTF_Quit();
-    Mix_CloseAudio();
-    Mix_Quit();
 }
 
-bool Screen::Init() {
-    window = SDL_CreateWindow(title.c_str(), x, y, resolution.x, resolution.y, fixedsize);
-    if (window==nullptr){
-        std::cout << "Error: Failed to open window - " << SDL_GetError();
-        return 0;
-    }
-    else{
-        std::cout << "Window created!" << std::endl;
-        return 1;
-    }
-}
-
-bool Renderer::Init(){
-    renderer = SDL_CreateRenderer(window, -1, flags);
-    if (renderer==nullptr){
-        std::cout << "Error: Failed to create renderer - " << SDL_GetError();
-        return 0;
-    }
-    else{
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        std::cout << "Renderer created!" << std::endl;
-        return 1;
-    }
-}
-
-void Renderer::SetDrawColor(SDL_Color color){
+void Screen::SetDrawColor(SDL_Color color){
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 }
 
-void Renderer::Clear(SDL_Color color){
+void Screen::Clear(SDL_Color color){
     SetDrawColor(color);
     SDL_RenderClear(renderer);
 }
 
-void Renderer::Display(){
+void Screen::Display(){
     SDL_RenderPresent(renderer);
 }
 
-void Renderer::PointGrid(SDL_Color color){
+void Screen::PointGrid(SDL_Color color){
     SetDrawColor(color);
     int sqr = Screen::resolution.x/Screen::map_size;
     for (int i=sqr;i<Screen::resolution.x;i+=sqr){
@@ -152,26 +175,32 @@ void Renderer::PointGrid(SDL_Color color){
     }
 }
 
-void Renderer::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip){
+void Screen::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip){
     SDL_Rect src = {(currentFrame%sprite.maxFrames)*sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
     SDL_Rect dst = {position.x, position.y, size.x, size.y};
     SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }
 
-void Screen::DisplayText(std::string text){
-    TTF_Font * font = TTF_OpenFont("fonts/Roboto-Bold.ttf", 24);
-    SDL_Surface * surface = TTF_RenderText_Solid(font, text.c_str(), Color::white(255));
-
-    SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    SDL_Rect rect;
-    rect.x = rect.y = 100;
-    rect.w = surface->w;
-    rect.h = surface->h;
-
-    SDL_RenderCopy(renderer, texture, NULL, &rect);
-
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
-    TTF_CloseFont(font);
+void ShowMsg(int indent, msg_types type, std::string msg){
+    std::cout << std::string(indent*2, ' ');
+    switch (type){
+        case normal:
+            std::cout << "> ";
+            break;
+        case success:
+            std::cout << "$ ";
+            break;
+        case fail:
+            std::cout << "@ ";
+            break;
+        case error:
+            std::cout << "! ";
+            break;
+        case logging:
+            std::cout << "# ";
+            break;
+        default:
+            break;
+    }
+    std::cout << msg << std::endl;
 }

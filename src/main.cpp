@@ -1,15 +1,14 @@
 #include "game.h"
 
-Game * game;
-
 int main(int argc, char* argv[]){
 
-    game = new Game();
+    ShowMsg(0, normal, "starting new game...");
+    Game * game = new Game();
     game->Start();
 
-    if (game->isRunning()) std::cout << "Game is running!" << std::endl;
+    if (game->isRunning()) ShowMsg(0, success, "game is running!");
 
-    float frameStart, frameTime, frameDelay = 1000.0/Game::fps;
+    float frameStart, frameTime, frameDelay = 1000.0/game->fps;
 
     while (game->isRunning()){
 
@@ -28,6 +27,6 @@ int main(int argc, char* argv[]){
     game->Quit();
     delete game;
     game = nullptr;
-
+    ShowMsg(0, normal, "quit game.");
     return 0;
 }

@@ -23,7 +23,7 @@ void KeyboardHandler::LeftPlayerInputHandler(Player & player){
                     player.position.y += player.velocity.d;
                     player.previous_state = player.current_state
                     ;
-                    player.current_state = player.jump;
+                    player.current_state = JUMP;
                 }
                 break;
             default:

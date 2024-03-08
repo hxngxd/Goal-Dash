@@ -1,7 +1,11 @@
 #pragma once
-#include "game.h"
+#include "datalib.h"
 
 class Player;
+class MapTile;
+
+extern std::vector<std::vector<int>> tilemap;
+extern std::vector<MapTile> Tiles;
 
 class GameObject{
 public:
@@ -11,7 +15,7 @@ public:
     Direction velocity;
 
     int currentFrame;
-    int maxFrame;
+    int maxFrames;
     float animation_delay;
 
     static void BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> & visit, std::queue<Vector2> & Q, float maxDist, float eps);
@@ -19,44 +23,30 @@ public:
 
 class MapTile : public GameObject{
 public:
-    static std::vector<MapTile> Tiles;
-    enum types{
-        spawn = -1,
-        win = -2,
-        empty = 0,
-        wall = 1,
-        coin = 2,
-        damage = 3,
-    };
     int type;
     Vector2 tile;
     MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile);
-    static void Create(std::vector<std::vector<int>> & map);
+    static void Create();
     static void Draw();
     static void Update();
 };
 
 class Player : public GameObject{
 public:
-    enum animation_states{
-        idle,
-        run,
-        jump
-    };
-    enum animation_directions{
-        left,
-        right
-    };
-
     animation_states current_state;
     animation_states previous_state;
     animation_directions direction;
 
     Player() = default;
-    Player(std::string name, Vector2 position);
+
+    void Init(std::string name, Vector2 position);
     void Update();
     void Animation();
-    void Movement();
+    void MoveRightLeft();
+    void MoveDownUp();
+    void Collision();
+    void Jump();
+    void DrawBox();
 
     bool key_right;
     bool key_left;
