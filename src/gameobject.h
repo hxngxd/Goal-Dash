@@ -18,6 +18,9 @@ public:
     int maxFrames;
     float animation_delay;
 
+    Vector2 size_animation;
+    float wait_for_animation;
+    
     static void BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> & visit, std::queue<Vector2> & Q, float maxDist, float eps);
 };
 
@@ -25,8 +28,10 @@ class MapTile : public GameObject{
 public:
     int type;
     Vector2 tile;
-    MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile);
+
+    MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile, float wait_for_animation);
     static void Create();
+    static void CreateATile(int i, int j, int & wait);
     static void Draw();
     static void Update();
 };

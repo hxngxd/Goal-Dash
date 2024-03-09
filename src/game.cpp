@@ -48,6 +48,10 @@ void Game::Start(){
     }
     ShowMsg(1, success, "medias ok!");
 
+    ShowMsg(1, normal, "playing background music...");
+    playMusic("bg_music", -1);
+    ShowMsg(2, success, "done.");
+
     ShowMsg(1, normal, "creating map...");
     MapTile::Create();
     ShowMsg(2, success, "done.");
@@ -55,9 +59,6 @@ void Game::Start(){
     ShowMsg(1, normal, "creating player...");
     player1.Init("Nguyen Tuong Hung", startingPosition);
     ShowMsg(2, success, "done.");
-
-    ShowMsg(1, normal, "playing background music...");
-    playMusic("bg_music", -1);
     
     running = true;
 }
