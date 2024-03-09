@@ -46,9 +46,9 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
         }
         else if (type & WIN){
             Screen::SetDrawColor(Color::green(255));
-            if (Rect::isCollide(playerCenter, Vector2(player.size.x/6*4, player.size.y), nextCenter, player.size)){
-                ShowMsg(0, logging, "player won!");
-            }
+            // if (Rect::isCollide(playerCenter, Vector2(player.size.x/6*4, player.size.y), nextCenter, player.size)){
+            //     ShowMsg(0, logging, "player won!");
+            // }
         }
         else if (type & SPAWN){
             Screen::SetDrawColor(Color::cyan(255));

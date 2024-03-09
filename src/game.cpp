@@ -51,6 +51,7 @@ void Game::Start(){
 
     ShowMsg(1, normal, "playing background music...");
     playMusic("bg_music", -1);
+    Mix_VolumeMusic(64);
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating map...");
@@ -153,8 +154,8 @@ bool Game::LoadMedia(){
 
     if (!loadSoundEffect("coin", "sound/coin.ogg")) return 0;
     if (!loadSoundEffect("jump", "sound/jump.ogg")) return 0;
-    // if (!loadSoundEffect("run", "sound/run.ogg")) return 0;
-    // if (!loadSoundEffect("fall", "sound/fall.wav")) return 0;
+    if (!loadSoundEffect("run", "sound/run.ogg")) return 0;
+    if (!loadSoundEffect("fall", "sound/fall.ogg")) return 0;
     if (!loadMusic("bg_music", "sound/bg_music.ogg")) return 0;
 
     return 1;

@@ -12,7 +12,6 @@ void Player::Init(std::string name, Vector2 position){
     this->previous_state = IDLE;
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
-    this->isMovingSound = false;
 }
 
 void Player::Update(){
@@ -87,21 +86,21 @@ void Player::MoveRightLeft(){
     Screen::bg_cloud_position.x -= (velocity.l + velocity.r) * 0.3;
     Screen::bg_cloud_position.x = clamp(Screen::bg_cloud_position.x, -Screen::bg_margin.x, 0);
 
-
     if (velocity.l + velocity.r != 0){
-        if (!isMovingSound && collide_down){
-            playSound("run", run_channel, -1);
-            isMovingSound = true;
+        if (!collide_down){
+            if (Mix_Playing(run_channel)){
+                stopSound(run_channel);
+            }
         }
-        if (!collide_down && isMovingSound){
-            stopSound(run_channel);
-            isMovingSound = false;
+        else{
+            if (!Mix_Playing(run_channel)){
+                playSound("run", run_channel, -1);
+            }
         }
     }
     else{
-        if (isMovingSound){
+        if (Mix_Playing(run_channel)){
             stopSound(run_channel);
-            isMovingSound = false;
         }
     }
 }

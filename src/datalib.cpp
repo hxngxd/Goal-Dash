@@ -146,12 +146,12 @@ bool loadMusic(std::string name, std::string path){
 }
 
 void playSound(std::string name, int channel, int loop){
-    Mix_HaltChannel(channel);
-    Mix_PlayChannel(channel, Sounds[name], loop);
+    stopSound(channel);
+    Mix_FadeInChannel(channel, Sounds[name], loop, 25);
 }
 
 void stopSound(int channel){
-    Mix_HaltChannel(channel);
+    Mix_FadeOutChannel(channel, 50);
 }
 
 void playMusic(std::string name, int loop){
