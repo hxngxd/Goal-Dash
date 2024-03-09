@@ -107,14 +107,17 @@ extern std::map<std::string, Mix_Chunk*> Sounds;
 extern std::map<std::string, Mix_Music*> Musics;
 
 bool loadSoundEffect(std::string name, std::string path);
-void playSound(std::string name, int channel);
+void playSound(std::string name, int channel, int loop);
+void stopSound(int channel);
 
 bool loadMusic(std::string name, std::string path);
 void playMusic(std::string name, int loop);
+void stopMusic();
 
 enum mixer_channels{
     coin_channel = 0,
-    jump_channel
+    jump_channel,
+    run_channel
 };
 
 float clamp(float value, float mn, float mx);

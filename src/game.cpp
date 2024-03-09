@@ -139,6 +139,7 @@ bool Game::LoadMedia(){
 
     if (!loadSoundEffect("coin", "sound/coin.wav")) return 0;
     if (!loadSoundEffect("jump", "sound/jump.wav")) return 0;
+    if (!loadSoundEffect("run", "sound/run.wav")) return 0;
     if (!loadMusic("bg_music", "sound/bg_music.wav")) return 0;
 
     return 1;

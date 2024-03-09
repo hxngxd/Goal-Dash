@@ -57,4 +57,6 @@ public:
     bool tmp_collide_down;
     bool collide_up;
     bool tmp_collide_up;
+
+    bool isMovingSound;
 };

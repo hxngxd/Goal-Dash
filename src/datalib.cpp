@@ -145,13 +145,21 @@ bool loadMusic(std::string name, std::string path){
     return 1;
 }
 
-void playSound(std::string name, int channel){
+void playSound(std::string name, int channel, int loop){
     Mix_HaltChannel(channel);
-    Mix_PlayChannel(channel, Sounds[name], 0);
+    Mix_PlayChannel(channel, Sounds[name], loop);
+}
+
+void stopSound(int channel){
+    Mix_HaltChannel(channel);
 }
 
 void playMusic(std::string name, int loop){
     Mix_PlayMusic(Musics[name], loop);
+}
+
+void stopMusic(){
+    Mix_HaltMusic();
 }
 
 float clamp(float value, float mn, float mx){
