@@ -9,6 +9,7 @@ int Screen::player_size = Screen::resolution.x/Screen::map_size;
 Vector2 Screen::bg_margin = Vector2(150);
 Vector2 Screen::bg_cloud_position = -Screen::bg_margin;
 Vector2 Screen::bg_star_position = -Screen::bg_margin;
+Vector2 Screen::bg_star_position1 = -Screen::bg_margin;
 
 float Game::fps = 60.0;
 float Game::player_move_speed = 5;
@@ -91,9 +92,19 @@ bool Game::InitSDL2(){
         ShowMsg(3, success, "done.");
     }
 
-    ShowMsg(2, normal, "initializing SDL_Mixer...");
-    if (Mix_OpenAudio(44100, AUDIO_U8, 2, 4096) < 0){
-        ShowMsg(3, fail, "sdl_mixer failed.");
+    ShowMsg(2, normal, "initializing SDL_Mixer format...");
+    int format = MIX_INIT_OGG;
+    if (Mix_Init(format) & format != format){
+        ShowMsg(3, fail, "sdl_mixer format failed.");
+        return 0;
+    }
+    else{
+        ShowMsg(3, success, "done.");
+    }
+
+    ShowMsg(2, normal, "initializing SDL_Mixer audio device...");
+    if (Mix_OpenAudio(44100, AUDIO_S32SYS, 2, 4096) < 0){
+        ShowMsg(3, fail, "sdl_mixer audio device failed.");
         return 0;
     }
     else{
@@ -128,6 +139,7 @@ bool Game::InitSDL2(){
 
 bool Game::LoadMedia(){
     if (!loadSprite("bg_star", "img/bg_star.png", 1, Vector2(4096))) return 0;
+    if (!loadSprite("bg_star1", "img/bg_star.png", 1, Vector2(4096))) return 0;
     if (!loadSprite("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096))) return 0;
     if (!loadSprite("coin", "img/coin.png", 5, Vector2(16))) return 0;
     if (!loadSprite("idle", "img/idle.png", 10, Vector2(48))) return 0;
@@ -135,13 +147,15 @@ bool Game::LoadMedia(){
     if (!loadSprite("jump", "img/jump.png", 4, Vector2(48))) return 0;
     
     SDL_SetTextureBlendMode(Sprites["bg_cloud"]->texture, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureBlendMode(Sprites["bg_star"]->texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureAlphaMod(Sprites["bg_cloud"]->texture, 150);
+    SDL_SetTextureBlendMode(Sprites["bg_star"]->texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(Sprites["bg_star1"]->texture, SDL_BLENDMODE_BLEND);
 
-    if (!loadSoundEffect("coin", "sound/coin.wav")) return 0;
-    if (!loadSoundEffect("jump", "sound/jump.wav")) return 0;
-    if (!loadSoundEffect("run", "sound/run.wav")) return 0;
-    if (!loadMusic("bg_music", "sound/bg_music.wav")) return 0;
+    if (!loadSoundEffect("coin", "sound/coin.ogg")) return 0;
+    if (!loadSoundEffect("jump", "sound/jump.ogg")) return 0;
+    // if (!loadSoundEffect("run", "sound/run.ogg")) return 0;
+    // if (!loadSoundEffect("fall", "sound/fall.wav")) return 0;
+    if (!loadMusic("bg_music", "sound/bg_music.ogg")) return 0;
 
     return 1;
 }
@@ -235,13 +249,16 @@ void Screen::Background(){
     DrawSprite(*Sprites["bg_cloud"], Screen::bg_cloud_position, resolution + Screen::bg_margin*2, 0, 0);
 
     if (bg_toggle){
-        bg_opacity+=2; if (bg_opacity>=250) bg_toggle = false;
+        bg_opacity+=2; if (bg_opacity>=248) bg_toggle = false;
     }
     else{
-        bg_opacity-=2; if (bg_opacity<=64) bg_toggle = true;
+        bg_opacity-=2; if (bg_opacity<=8) bg_toggle = true;
     }
     SDL_SetTextureAlphaMod(Sprites["bg_star"]->texture, bg_opacity);
     DrawSprite(*Sprites["bg_star"], Screen::bg_star_position, resolution + Screen::bg_margin*2, 0, 0);
+
+    SDL_SetTextureAlphaMod(Sprites["bg_star1"]->texture, 256-bg_opacity);
+    DrawSprite(*Sprites["bg_star1"], Screen::bg_star_position1, resolution + Screen::bg_margin*2, 0, 1);
 }
 
 void Screen::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip){

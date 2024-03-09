@@ -59,7 +59,7 @@ void Player::MoveRightLeft(){
     else{
         if (key_left){
             // std::cout << "Player moved left" << std::endl;
-            current_state = RUN;
+            if (current_state != JUMP) current_state = RUN;
             direction = LEFT;
             velocity.l -= Game::player_acceleration;
             velocity.l = velocity.l < -1 ? -1 : velocity.l;
@@ -68,7 +68,7 @@ void Player::MoveRightLeft(){
         }
         if (key_right){
             // std::cout << "Player moved right" << std::endl;
-            current_state = RUN;
+             if (current_state != JUMP) current_state = RUN;
             direction = RIGHT;
             if (velocity.l < 0) velocity.l += Game::player_acceleration*1.5;
             else if (velocity.l > 0) velocity.l = 0;
@@ -78,10 +78,13 @@ void Player::MoveRightLeft(){
     }
     position.x += (velocity.l + velocity.r) * Game::player_move_speed;
     
-    Screen::bg_star_position.x -= (velocity.l + velocity.r) * 0.5;
+    Screen::bg_star_position.x -= (velocity.l + velocity.r) * 0.6;
     Screen::bg_star_position.x = clamp(Screen::bg_star_position.x, -Screen::bg_margin.x, 0);
 
-    Screen::bg_cloud_position.x -= (velocity.l + velocity.r) * 0.25;
+    Screen::bg_star_position1.x -= (velocity.l + velocity.r) * 0.45;
+    Screen::bg_star_position1.x = clamp(Screen::bg_star_position1.x, -Screen::bg_margin.x, 0);
+
+    Screen::bg_cloud_position.x -= (velocity.l + velocity.r) * 0.3;
     Screen::bg_cloud_position.x = clamp(Screen::bg_cloud_position.x, -Screen::bg_margin.x, 0);
 
 
@@ -157,8 +160,12 @@ void Player::Jump(){
         if (collide_up) velocity.d = 0;
         velocity.d += Game::gravity;
         position.y += velocity.d;
+
         Screen::bg_star_position.y -= velocity.d/20;
         Screen::bg_star_position.y = clamp(Screen::bg_star_position.y, -Screen::bg_margin.y, 0);
+
+        Screen::bg_star_position1.y -= velocity.d/30;
+        Screen::bg_star_position1.y = clamp(Screen::bg_star_position1.y, -Screen::bg_margin.y, 0);
 
         Screen::bg_cloud_position.y -= velocity.d/40;
         Screen::bg_cloud_position.y = clamp(Screen::bg_cloud_position.y, -Screen::bg_margin.y, 0);
@@ -168,6 +175,7 @@ void Player::Jump(){
             current_state = previous_state;
             previous_state = JUMP;
         }
+        if (velocity.d > 11) playSound("fall", fall_channel, 0);
         velocity.d = 0;
     }
 }

@@ -117,7 +117,8 @@ void stopMusic();
 enum mixer_channels{
     coin_channel = 0,
     jump_channel,
-    run_channel
+    run_channel,
+    fall_channel
 };
 
 float clamp(float value, float mn, float mx);
