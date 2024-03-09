@@ -25,12 +25,14 @@ SDL_Window * Game::window = nullptr;
 SDL_Renderer * Game::renderer = nullptr;
 
 Player player1;
+// Player player2;
 
 void Game::Update() {
     Screen::Clear(Color::black(255));
     Screen::Background();
     MapTile::Update();
     player1.Update();
+    // player2.Update();
     Screen::Display();
 }
 
@@ -58,9 +60,13 @@ void Game::Start(){
     MapTile::Create();
     ShowMsg(2, success, "done.");
 
-    ShowMsg(1, normal, "creating player...");
+    ShowMsg(1, normal, "creating player 1...");
     player1.Init("Nguyen Tuong Hung", startingPosition);
     ShowMsg(2, success, "done.");
+
+    // ShowMsg(1, normal, "creating player 2...");
+    // player2.Init("Hehehe", startingPosition);
+    // ShowMsg(2, success, "done.");
     
     running = true;
 }
@@ -171,6 +177,7 @@ void Game::HandleEvent(){
             running = false;
         }
         KeyboardHandler::LeftPlayerInputHandler(player1);
+        // KeyboardHandler::RighdwatPlayerInputHandler(player2);
     }
 }
 
