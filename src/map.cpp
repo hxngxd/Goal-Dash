@@ -2,52 +2,53 @@
 #include "gameobject.h"
 #include "game.h"
 
-std::vector<std::vector<int>> tilemap = {
-    {4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4},
-    {4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4},
-    {4,  0,  0,  0,  4,  8,  0, 16,  0,  0,  0,  0,  0,  0,  0,  4},
-    {4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 16,  8,  0,  4},
-    {4,  0,  8,  0,  0,  0,  4,  0,  0,  0, 16,  0,  0,  0,  0,  4},
-    {4, 16,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4},
-    {4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4},
-    {4,  0,  0,  0,  0,  0,  0,  4,  0,  0,  0,  0,  0,  0,  0,  4},
-    {4,  0,  4,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  4},
-    {4,  0,  0,  0,  0,  0,  8,  0,  8,  0,  0,  4,  0,  0,  0,  4},
-    {4,  0,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4},
-    {4,  0,  0,  0,  0,  0,  4,  0,  0,  0,  0,  0,  0,  8,  0,  4},
-    {4,  0,  0,  0,  0,  0,  0,  0,  0,  8,  0,  0,  4,  4,  0,  4},
-    {4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4},
-    {4,  0,  8,  0,  0,  0,  0, 16,  0,  2,  0,  0,  0,  0,  0,  4},
-    {4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4}
-};
-
+std::vector<std::vector<int>> TileMap;
 std::vector<MapTile> Tiles;
+std::vector<Background> Backgrounds;
 
-MapTile::MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile, float wait_for_animation){
+MapTile::MapTile(Vector2 position, Vector2 size, Vector2 index, int type, float wait){
     this->position = position;
     this->size = size;
-    this->velocity = velocity;
     this->type = type;
     this->currentFrame = 0;
     this->animation_delay = 0;
-    this->tile = tile;
-    this->size_animation = (Screen::resolution.x / Screen::map_size) / 2;
-    this->wait_for_animation = wait_for_animation;
+    this->animation_speed = 10;
+    this->index = index;
+    this->scale = 0;
+    this->wait_for_animation = wait;
 }
 
-int MapTile::Create(){
-    int mpsz = Screen::map_size;
-    int tile_sz = Screen::resolution.x/mpsz;
-    int wait = SDL_GetTicks() + 500;
-    for (int i=0;i<mpsz;i++) CreateATile(0, i, wait);
-    for (int i=1;i<mpsz;i++) CreateATile(i, mpsz-1, wait);
-    for (int i=mpsz-2;i>=0;i--) CreateATile(mpsz-1, i, wait);
-    for (int i=mpsz-2;i>0;i--) CreateATile(i, 0, wait);
+int MapTile::CreateTiles(){
+    int mp_size = Screen::map_size;
+
+    TileMap.resize(mp_size, std::vector<int>(mp_size, 0));
+    std::ifstream in;
+    in.open("map/1.map");
+    for (int i=0;i<mp_size;i++){
+        for (int j=0;j<mp_size;j++){
+            in >> TileMap[i][j];
+        }
+    }
+    in.close();
+
+    float wait = SDL_GetTicks() + 500;
+    for (int i=0;i<mp_size;i++){
+        CreateATile(0, i, wait);
+    }
+    for (int i=1;i<mp_size;i++){
+        CreateATile(i, mp_size-1, wait);
+    }
+    for (int i=mp_size-2;i>=0;i--){
+        CreateATile(mp_size-1, i, wait);
+    }
+    for (int i=mp_size-2;i>0;i--){
+        CreateATile(i, 0, wait);
+    }
 
     int spawn_i, spawn_j;
-    for (int i=1;i<mpsz-1;i++){
-        for (int j=1;j<mpsz-1;j++){
-            if (tilemap[i][j]==SPAWN){
+    for (int i=1;i<mp_size-1;i++){
+        for (int j=1;j<mp_size-1;j++){
+            if (TileMap[i][j]==SPAWN){
                 spawn_i = i;
                 spawn_j = j;
                 continue;
@@ -56,26 +57,37 @@ int MapTile::Create(){
         }
     }
     
-    Game::startingPosition = Vector2(spawn_j*tile_sz, spawn_i*tile_sz);
+    std::cout << spawn_i << " " << spawn_j << std::endl;
     CreateATile(spawn_i, spawn_j, wait);
     return wait;
 }
 
-void MapTile::CreateATile(int i, int j, int & wait){
-    if (!tilemap[i][j]) return;
-    int tile_sz = Screen::resolution.x/Screen::map_size;
-    Tiles.push_back(MapTile(Vector2(j*tile_sz, i*tile_sz), Vector2(tile_sz), Direction(), tilemap[i][j], Vector2(i,j), wait));
+void MapTile::CreateATile(int i, int j, float & wait){
+    if (!TileMap[i][j]) return;
+    Tiles.push_back(
+        MapTile(
+            Vector2(j*Screen::tile_size, i*Screen::tile_size),
+            Screen::tile_size,
+            Vector2(i,j),
+            TileMap[i][j],
+            wait
+        )
+    );
     wait += 50;
 }
 
 void MapTile::Draw(){
     for (auto & tile : Tiles){
-        if (tile.type != tilemap[tile.tile.x][tile.tile.y]) continue;
+        if (tile.type != TileMap[tile.index.x][tile.index.y]) continue;
+
         float currentTicks = SDL_GetTicks();
         if (currentTicks <= tile.wait_for_animation) continue;
-        SDL_Rect rect = {tile.position.x + tile.size_animation.x + 1, tile.position.y + tile.size_animation.y + 1, tile.size.x - 2*tile.size_animation.x - 2, tile.size.y - 2*tile.size_animation.y - 2};
-        if (tile.size_animation.x > 0) tile.size_animation -= Vector2(1);
-        if (tile.size_animation.x < 0) tile.size_animation = Vector2();
+        
+        SDL_Rect rect = Rect::reScale(tile.position, tile.size, tile.scale * 0.9);
+        if (tile.scale < 0.5) tile.scale += 0.1;
+        else if (tile.scale < 0.75) tile.scale += 0.05;
+        else if (tile.scale < 1) tile.scale += 0.025;
+        else if (tile.scale > 1) tile.scale = 1;
         switch (tile.type){
             case WIN:
                 Screen::SetDrawColor(Color::green(255));
@@ -90,14 +102,14 @@ void MapTile::Draw(){
                 SDL_RenderDrawRect(Game::renderer, &rect);
                 break;
             case COIN:
-                if (currentTicks > tile.animation_delay + 1500/Game::animation_speed){
+                if (currentTicks > tile.animation_delay + 1000/tile.animation_speed){
                     tile.currentFrame += 1;
                     if (tile.currentFrame >= Sprites["coin"]->maxFrames) tile.currentFrame = 0;
                     tile.animation_delay = currentTicks;
                 }
                 Screen::SetDrawColor(Color::yellow(255));
                 SDL_RenderDrawRect(Game::renderer, &rect);
-                Screen::DrawSprite(*Sprites["coin"], tile.position + Vector2(10) + tile.size_animation, tile.size - Vector2(20) - tile.size_animation * 2, tile.currentFrame, 0);
+                Screen::DrawSprite(*Sprites["coin"], tile.position, tile.size, tile.scale * 0.5, tile.currentFrame, 0);
                 break;
             case DAMAGE:
                 Screen::SetDrawColor(Color::red(255));
@@ -112,3 +124,4 @@ void MapTile::Draw(){
 void MapTile::Update(){
     Draw();
 }
+

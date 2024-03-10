@@ -1,38 +1,29 @@
 #include "game.h"
-#include "inputhandler.h"
 #include "gameobject.h"
 
 std::string Screen::title = "Game";
 Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
-int Screen::player_size = Screen::resolution.x/Screen::map_size;
-Vector2 Screen::bg_margin = Vector2(150);
-Vector2 Screen::bg_cloud_position = -Screen::bg_margin;
-Vector2 Screen::bg_star_position = -Screen::bg_margin;
-Vector2 Screen::bg_star_position1 = -Screen::bg_margin;
+int Screen::tile_size = 48;
+// Vector2 Screen::bg_margin = Vector2(150);
+// Vector2 Screen::bg_cloud_position = -Screen::bg_margin;
+// Vector2 Screen::bg_star_position = -Screen::bg_margin;
+// Vector2 Screen::bg_star_position1 = -Screen::bg_margin;
 
 float Game::fps = 60.0;
-float Game::player_move_speed = 5;
-float Game::player_acceleration = 0.04;
-float Game::animation_speed = 15;
-float Game::jump_speed = 10;
 float Game::gravity = 0.3;
-int Game::player_score = 0;
-Vector2 Game::startingPosition = Vector2();
 
 SDL_Event Game::event;
 SDL_Window * Game::window = nullptr;
 SDL_Renderer * Game::renderer = nullptr;
 
 Player player1;
-// Player player2;
 
 void Game::Update() {
     Screen::Clear(Color::black(255));
     Screen::Background();
     MapTile::Update();
-    player1.Update();
-    // player2.Update();
+    // player1.Update();
     Screen::Display();
 }
 
@@ -57,15 +48,15 @@ void Game::Start(){
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating map...");
-    int wait = MapTile::Create();
+    int wait = MapTile::CreateTiles();
     ShowMsg(2, success, "done.");
 
-    ShowMsg(1, normal, "creating player 1...");
-    player1.Init("Nguyen Tuong Hung", startingPosition, wait + 100);
-    ShowMsg(2, success, "done.");
+    // ShowMsg(1, normal, "creating player 1...");
+    // player1.Init("Nguyen Tuong Hung", startingPosition, wait + 100);
+    // ShowMsg(2, success, "done.");
 
     // ShowMsg(1, normal, "creating player 2...");
-    // player2.Init("Hehehe", startingPosition);
+    // player2.Init("Hehehe", startingPosition, wait + 100);
     // ShowMsg(2, success, "done.");
     
     running = true;
@@ -145,23 +136,25 @@ bool Game::InitSDL2(){
 }
 
 bool Game::LoadMedia(){
-    if (!loadSprite("bg_star", "img/bg_star.png", 1, Vector2(4096))) return 0;
-    if (!loadSprite("bg_star1", "img/bg_star.png", 1, Vector2(4096))) return 0;
-    if (!loadSprite("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096))) return 0;
     if (!loadSprite("coin", "img/coin.png", 5, Vector2(16))) return 0;
     if (!loadSprite("idle", "img/idle.png", 10, Vector2(48))) return 0;
     if (!loadSprite("run", "img/run.png", 9, Vector2(48))) return 0;
     if (!loadSprite("jump", "img/jump.png", 4, Vector2(48))) return 0;
-    
+
+    if (!loadSprite("bg_star", "img/bg_star.png", 1, Vector2(4096))) return 0;
+    Backgrounds.push_back(Background("bg_star"));
+    if (!loadSprite("bg_star1", "img/bg_star.png", 1, Vector2(4096))) return 0;
+    if (!loadSprite("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096))) return 0;
+
     SDL_SetTextureBlendMode(Sprites["bg_cloud"]->texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureAlphaMod(Sprites["bg_cloud"]->texture, 150);
     SDL_SetTextureBlendMode(Sprites["bg_star"]->texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureBlendMode(Sprites["bg_star1"]->texture, SDL_BLENDMODE_BLEND);
 
-    if (!loadSoundEffect("coin", "sound/coin.ogg")) return 0;
-    if (!loadSoundEffect("jump", "sound/jump.ogg")) return 0;
-    if (!loadSoundEffect("run", "sound/run.ogg")) return 0;
-    if (!loadSoundEffect("fall", "sound/fall.ogg")) return 0;
+    if (!loadSound("coin", "sound/coin.ogg")) return 0;
+    if (!loadSound("jump", "sound/jump.ogg")) return 0;
+    if (!loadSound("run", "sound/run.ogg")) return 0;
+    if (!loadSound("fall", "sound/fall.ogg")) return 0;
     if (!loadMusic("bg_music", "sound/bg_music.ogg")) return 0;
 
     return 1;
@@ -176,8 +169,7 @@ void Game::HandleEvent(){
         if (event.type == SDL_QUIT){
             running = false;
         }
-        KeyboardHandler::LeftPlayerInputHandler(player1);
-        // KeyboardHandler::RighdwatPlayerInputHandler(player2);
+        // KeyboardHandler::PlayerInputHandler(player1);
     }
 }
 
@@ -254,7 +246,7 @@ int Screen::bg_opacity = 64;
 bool Screen::bg_toggle = true;
 
 void Screen::Background(){
-    DrawSprite(*Sprites["bg_cloud"], Screen::bg_cloud_position, resolution + Screen::bg_margin*2, 0, 0);
+    // DrawSprite(*Sprites["bg_cloud"], Screen::bg_cloud_position, resolution + Screen::bg_margin*2, 0, 0);
 
     if (bg_toggle){
         bg_opacity+=2; if (bg_opacity>=248) bg_toggle = false;
@@ -265,13 +257,20 @@ void Screen::Background(){
     SDL_SetTextureAlphaMod(Sprites["bg_star"]->texture, bg_opacity);
     DrawSprite(*Sprites["bg_star"], Screen::bg_star_position, resolution + Screen::bg_margin*2, 0, 0);
 
-    SDL_SetTextureAlphaMod(Sprites["bg_star1"]->texture, 256-bg_opacity);
-    DrawSprite(*Sprites["bg_star1"], Screen::bg_star_position1, resolution + Screen::bg_margin*2, 0, 1);
+    // SDL_SetTextureAlphaMod(Sprites["bg_star1"]->texture, 256-bg_opacity);
+    // DrawSprite(*Sprites["bg_star1"], Screen::bg_star_position1, resolution + Screen::bg_margin*2, 0, 1);
 }
 
-void Screen::DrawSprite(Sprite & sprite, Vector2 position, Vector2 size, int currentFrame, bool flip){
+void Screen::DrawSprite(
+    Sprite & sprite,
+    const Vector2 & position,
+    const Vector2 & size,
+    float scale,
+    int currentFrame,
+    bool flip)
+{
     SDL_Rect src = {(currentFrame%sprite.maxFrames)*sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
-    SDL_Rect dst = {position.x, position.y, size.x, size.y};
+    SDL_Rect dst = Rect::reScale(position, size, scale);
     SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }
 
@@ -297,4 +296,9 @@ void ShowMsg(int indent, msg_types type, std::string msg){
             break;
     }
     std::cout << msg << std::endl;
+}
+
+Background::Background(std::string sprite_name){
+    this->sprite_name = sprite_name;
+    scale = 1;
 }

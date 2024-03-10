@@ -4,6 +4,7 @@
 #include "../include/SDL2/SDL_image.h"
 #include "../include/SDL2/SDL_mixer.h"
 
+//Vector2
 struct Vector2{
     float x, y;
     Vector2() : x(0.0), y(0.0) {}
@@ -11,7 +12,6 @@ struct Vector2{
     Vector2(float x, float y) : x(x), y(y) {}
     float distance(const Vector2 & other);
 };
-
 std::ostream & operator << (std::ostream & out, const Vector2 & v);
 void operator += (Vector2 & v1, const Vector2 & v2);
 void operator -= (Vector2 & v1, const Vector2 & v2);
@@ -21,30 +21,27 @@ Vector2 operator + (const Vector2 & v1, const Vector2 & v2);
 Vector2 operator - (const Vector2 & v1, const Vector2 & v2);
 Vector2 operator * (const Vector2 & v, float k);
 Vector2 operator / (const Vector2 & v, float k);
+Vector2 operator * (float k, const Vector2 & v);
 Vector2 operator - (const Vector2 & v);
-
 Vector2 max(const Vector2 & v1, const Vector2 & v2);
 Vector2 min(const Vector2 & v1, const Vector2 & v2);
-
 Vector2 IntV2(const Vector2 & v);
 bool IsV2InRange(Vector2 & v, const Vector2 & mn, const Vector2 & mx);
-
-extern Vector2 v2right, v2left, v2down, v2up;
-
 struct Vector2Hash {
     std::size_t operator()(const Vector2 & v) const;
 };
-
 struct Vector2Equal {
     bool operator()(const Vector2 & lhs, const Vector2 & rhs) const;
 };
 
+//Direction
 struct Direction{
     float l, r, u, d;
     Direction () : l(0), r(0), u(0), d(0) {}
     Direction (float l, float r, float u, float d) : l(l), r(r), u(u), d(d) {}
 };
 
+//Color
 struct Color{
     static SDL_Color white  (Uint8 a) { return {255, 255, 255, a}; }
     static SDL_Color black  (Uint8 a) { return {  0,   0,   0, a}; }
@@ -58,12 +55,41 @@ struct Color{
     static SDL_Color cyan   (Uint8 a) { return {  0, 255, 255, a}; }
 };
 
+//Rect
 struct Rect{
     static SDL_Rect Square (int res) { return {0, 0, res, res}; }
 
     static bool isCollide(const Vector2 & first_position, const Vector2 & first_size, const Vector2 & second_position, const Vector2 & second_size);
 
     static Vector2 getCenter(const Vector2 & position, const Vector2 & size);
+
+    static SDL_Rect reScale(const Vector2 & position, const Vector2 & size, float scale);
+};
+
+//Sprite
+class Sprite{
+public:
+    SDL_Texture * texture;
+    std::string path;
+    int maxFrames;
+    Vector2 realSize;
+};
+bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize);
+
+//Mixer
+bool loadSound(std::string name, std::string path);
+void playSound(std::string name, int channel, int loop);
+void stopSound(int channel);
+bool loadMusic(std::string name, std::string path);
+void playMusic(std::string name, int loop);
+void stopMusic();
+
+//enums
+enum mixer_channels{
+    coin_channel = 0,
+    jump_channel,
+    run_channel,
+    fall_channel
 };
 
 enum map_types{
@@ -91,34 +117,19 @@ enum msg_types{
     logging
 };
 
-class Sprite{
-public:
-    SDL_Texture * texture;
-    std::string path;
-    int maxFrames;
-    Vector2 realSize;
+//math
+float clamp(float value, float mn, float mx);
+
+//input keys
+struct Keys{
+    SDL_KeyCode right, left, down, up, space;
+    Keys() = default;
+    Keys(SDL_KeyCode right, SDL_KeyCode left, SDL_KeyCode down, SDL_KeyCode up, SDL_KeyCode space) : right(right), left(left), down(down), up(up), space(space) {}
 };
 
-extern std::map<std::string, Sprite*> Sprites;
-
-bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize);
-
+//extern variables
 extern std::map<std::string, Mix_Chunk*> Sounds;
 extern std::map<std::string, Mix_Music*> Musics;
-
-bool loadSoundEffect(std::string name, std::string path);
-void playSound(std::string name, int channel, int loop);
-void stopSound(int channel);
-
-bool loadMusic(std::string name, std::string path);
-void playMusic(std::string name, int loop);
-void stopMusic();
-
-enum mixer_channels{
-    coin_channel = 0,
-    jump_channel,
-    run_channel,
-    fall_channel
-};
-
-float clamp(float value, float mn, float mx);
+extern std::map<std::string, Sprite*> Sprites;
+extern Vector2 v2right, v2left, v2down, v2up;
+extern Keys leftKeys, rightKeys;
