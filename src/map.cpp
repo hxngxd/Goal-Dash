@@ -35,7 +35,7 @@ MapTile::MapTile(Vector2 position, Vector2 size, Direction velocity, int type, V
     this->wait_for_animation = wait_for_animation;
 }
 
-void MapTile::Create(){
+int MapTile::Create(){
     int mpsz = Screen::map_size;
     int tile_sz = Screen::resolution.x/mpsz;
     int wait = 100;
@@ -44,21 +44,28 @@ void MapTile::Create(){
     for (int i=mpsz-2;i>=0;i--) CreateATile(mpsz-1, i, wait);
     for (int i=mpsz-2;i>0;i--) CreateATile(i, 0, wait);
 
+    int spawn_i, spawn_j;
     for (int i=1;i<mpsz-1;i++){
         for (int j=1;j<mpsz-1;j++){
+            if (tilemap[i][j]==SPAWN){
+                spawn_i = i;
+                spawn_j = j;
+                continue;
+            }
             CreateATile(i, j, wait);
         }
     }
+    
+    Game::startingPosition = Vector2(spawn_j*tile_sz, spawn_i*tile_sz);
+    CreateATile(spawn_i, spawn_j, wait);
+    return wait;
 }
 
 void MapTile::CreateATile(int i, int j, int & wait){
-    int tile_sz = Screen::resolution.x/Screen::map_size;
     if (!tilemap[i][j]) return;
+    int tile_sz = Screen::resolution.x/Screen::map_size;
     Tiles.push_back(MapTile(Vector2(j*tile_sz, i*tile_sz), Vector2(tile_sz), Direction(), tilemap[i][j], Vector2(i,j), wait));
     wait += 100;
-    if (tilemap[i][j]==SPAWN){
-        Game::startingPosition = Vector2(j*tile_sz, i*tile_sz);
-    }
 }
 
 void MapTile::Draw(){
@@ -67,6 +74,7 @@ void MapTile::Draw(){
         float currentTicks = SDL_GetTicks();
         SDL_Rect rect = {tile.position.x + tile.size_animation.x + 1, tile.position.y + tile.size_animation.y + 1, tile.size.x - 2*tile.size_animation.x - 2, tile.size.y - 2*tile.size_animation.y - 2};
         if (tile.size_animation.x > 0 && currentTicks > tile.wait_for_animation) tile.size_animation -= Vector2(0.75);
+        if (tile.size_animation.x < 0) tile.size_animation = 0;
         if (currentTicks <= tile.wait_for_animation) continue;
         switch (tile.type){
             case WIN:

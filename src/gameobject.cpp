@@ -2,6 +2,7 @@
 #include "game.h"
 
 void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> & visit, std::queue<Vector2> & Q, float maxDist, float eps){
+    bool draw = false;
     Vector2 nextCenter = (nextTile + Vector2(0.5)) * Screen::player_size;
     float h = playerCenter.distance(nextCenter);
     if (IsV2InRange(nextTile, Vector2(), Vector2(15)) &&
@@ -10,7 +11,6 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
     {
         int type = tilemap[nextTile.y][nextTile.x];
         if (type & (WALL | DAMAGE)){
-            Screen::SetDrawColor(Color::white(255));
             Vector2 d = nextCenter - playerCenter;
             float cos = d.x/h;
             float angle = acos(cos);
@@ -29,14 +29,13 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
                 player.position.y = std::max(player.position.y, (float)(nextTile.y + 1) * player.size.y);
                 if (abs(playerCenter.y - nextCenter.y) - player.size.y <= 0) player.tmp_collide_up = true;
             }
-            
-            if (type & DAMAGE){
-                Screen::SetDrawColor(Color::red(255));
-                // ShowMsg(0, logging, "player was damaged.");
+            if (draw){
+                if (type & WALL) Screen::SetDrawColor(Color::white(255));
+                else Screen::SetDrawColor(Color::red(255));
             }
         }
         else if (type & COIN){
-            Screen::SetDrawColor(Color::yellow(255));
+            if (draw) Screen::SetDrawColor(Color::yellow(255));
             if (Rect::isCollide(playerCenter, Vector2(player.size.x/6*4, player.size.y), nextCenter, player.size)){
                 Game::player_score++;
                 ShowMsg(0, logging, "player score: " + std::to_string(Game::player_score) + ".");
@@ -45,15 +44,15 @@ void GameObject::BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 
             }
         }
         else if (type & WIN){
-            Screen::SetDrawColor(Color::green(255));
+            if (draw) Screen::SetDrawColor(Color::green(255));
             // if (Rect::isCollide(playerCenter, Vector2(player.size.x/6*4, player.size.y), nextCenter, player.size)){
             //     ShowMsg(0, logging, "player won!");
             // }
         }
         else if (type & SPAWN){
-            Screen::SetDrawColor(Color::cyan(255));
+            if (draw) Screen::SetDrawColor(Color::cyan(255));
         }
-        if (type){
+        if (draw && type){
             SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, nextCenter.x, nextCenter.y);
         }
         visit.insert({nextTile, 1});

@@ -30,7 +30,7 @@ public:
     Vector2 tile;
 
     MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile, float wait_for_animation);
-    static void Create();
+    static int Create();
     static void CreateATile(int i, int j, int & wait);
     static void Draw();
     static void Update();
@@ -44,7 +44,7 @@ public:
 
     Player() = default;
 
-    void Init(std::string name, Vector2 position);
+    void Init(std::string name, Vector2 position, int way);
     void Update();
     void Animation();
     void MoveRightLeft();

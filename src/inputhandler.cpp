@@ -2,6 +2,7 @@
 #include "inputhandler.h"
 
 void KeyboardHandler::LeftPlayerInputHandler(Player & player){
+    if (SDL_GetTicks() <= player.wait_for_animation) return;
     if (Game::event.type==SDL_KEYDOWN){
         switch (Game::event.key.keysym.sym){
             case SDLK_w:
@@ -54,6 +55,7 @@ void KeyboardHandler::LeftPlayerInputHandler(Player & player){
 }
 
 void KeyboardHandler::RightPlayerInputHandler(Player & player){
+    if (SDL_GetTicks() <= player.wait_for_animation) return;
     if (Game::event.type==SDL_KEYDOWN){
         switch (Game::event.key.keysym.sym){
             case SDLK_UP:

@@ -53,15 +53,15 @@ void Game::Start(){
 
     ShowMsg(1, normal, "playing background music...");
     playMusic("bg_music", -1);
-    Mix_VolumeMusic(64);
+    Mix_VolumeMusic(32);
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating map...");
-    MapTile::Create();
+    int wait = MapTile::Create();
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating player 1...");
-    player1.Init("Nguyen Tuong Hung", startingPosition);
+    player1.Init("Nguyen Tuong Hung", startingPosition, wait + 100);
     ShowMsg(2, success, "done.");
 
     // ShowMsg(1, normal, "creating player 2...");

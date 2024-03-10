@@ -1,7 +1,7 @@
 #include "game.h"
 #include "inputhandler.h"
 
-void Player::Init(std::string name, Vector2 position){
+void Player::Init(std::string name, Vector2 position, int wait){
     this->name = name;
     this->position = position;
     this->size = Vector2(48);
@@ -12,15 +12,18 @@ void Player::Init(std::string name, Vector2 position){
     this->previous_state = IDLE;
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
+    this->size_animation = (Screen::resolution.x / Screen::map_size) / 2;
+    this->wait_for_animation = wait;
 }
 
 void Player::Update(){
+    Animation();
+    if (SDL_GetTicks() <= wait_for_animation) return;
     MoveRightLeft();
     // MoveDownUp();
     Collision();
     Jump();
-    DrawBox();
-    Animation();
+    // DrawBox();
 }
 
 void Player::Animation(){
@@ -43,7 +46,9 @@ void Player::Animation(){
             break;
     }
     maxFrames = current->maxFrames;
-    Screen::DrawSprite(*current, position, Screen::player_size, std::min(currentFrame, maxFrames), (direction==LEFT));
+    Screen::DrawSprite(*current, position + size_animation, Screen::player_size - size_animation*2, std::min(currentFrame, maxFrames), (direction==LEFT));
+    if (size_animation.x > 0 && SDL_GetTicks() > wait_for_animation) size_animation -= Vector2(0.75);
+    if (size_animation.x < 0) size_animation = Vector2();
 }
 
 void Player::MoveRightLeft(){
