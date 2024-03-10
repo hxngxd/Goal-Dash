@@ -28,7 +28,6 @@ class MapTile : public GameObject{
 public:
     int type;
     Vector2 tile;
-
     MapTile(Vector2 position, Vector2 size, Direction velocity, int type, Vector2 tile, float wait_for_animation);
     static int Create();
     static void CreateATile(int i, int j, int & wait);

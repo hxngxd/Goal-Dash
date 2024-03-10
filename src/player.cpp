@@ -47,7 +47,7 @@ void Player::Animation(){
     }
     maxFrames = current->maxFrames;
     Screen::DrawSprite(*current, position + size_animation, Screen::player_size - size_animation*2, std::min(currentFrame, maxFrames), (direction==LEFT));
-    if (size_animation.x > 0 && SDL_GetTicks() > wait_for_animation) size_animation -= Vector2(0.75);
+    if (size_animation.x > 0 && SDL_GetTicks() > wait_for_animation) size_animation -= Vector2(1.25);
     if (size_animation.x < 0) size_animation = Vector2();
 }
 

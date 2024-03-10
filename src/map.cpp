@@ -38,7 +38,7 @@ MapTile::MapTile(Vector2 position, Vector2 size, Direction velocity, int type, V
 int MapTile::Create(){
     int mpsz = Screen::map_size;
     int tile_sz = Screen::resolution.x/mpsz;
-    int wait = 100;
+    int wait = SDL_GetTicks() + 500;
     for (int i=0;i<mpsz;i++) CreateATile(0, i, wait);
     for (int i=1;i<mpsz;i++) CreateATile(i, mpsz-1, wait);
     for (int i=mpsz-2;i>=0;i--) CreateATile(mpsz-1, i, wait);
@@ -65,17 +65,17 @@ void MapTile::CreateATile(int i, int j, int & wait){
     if (!tilemap[i][j]) return;
     int tile_sz = Screen::resolution.x/Screen::map_size;
     Tiles.push_back(MapTile(Vector2(j*tile_sz, i*tile_sz), Vector2(tile_sz), Direction(), tilemap[i][j], Vector2(i,j), wait));
-    wait += 100;
+    wait += 50;
 }
 
 void MapTile::Draw(){
     for (auto & tile : Tiles){
         if (tile.type != tilemap[tile.tile.x][tile.tile.y]) continue;
         float currentTicks = SDL_GetTicks();
-        SDL_Rect rect = {tile.position.x + tile.size_animation.x + 1, tile.position.y + tile.size_animation.y + 1, tile.size.x - 2*tile.size_animation.x - 2, tile.size.y - 2*tile.size_animation.y - 2};
-        if (tile.size_animation.x > 0 && currentTicks > tile.wait_for_animation) tile.size_animation -= Vector2(0.75);
-        if (tile.size_animation.x < 0) tile.size_animation = 0;
         if (currentTicks <= tile.wait_for_animation) continue;
+        SDL_Rect rect = {tile.position.x + tile.size_animation.x + 1, tile.position.y + tile.size_animation.y + 1, tile.size.x - 2*tile.size_animation.x - 2, tile.size.y - 2*tile.size_animation.y - 2};
+        if (tile.size_animation.x > 0) tile.size_animation -= Vector2(1);
+        if (tile.size_animation.x < 0) tile.size_animation = Vector2();
         switch (tile.type){
             case WIN:
                 Screen::SetDrawColor(Color::green(255));
