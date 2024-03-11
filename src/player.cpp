@@ -81,25 +81,31 @@ void Player::MoveRightLeft(){
             velocity.r = velocity.r > 1 ? 1 : velocity.r;
         }
     }
-    position.x += (velocity.l + velocity.r) * move_speed;
+    float vx = (velocity.l + velocity.r);
+
+    position.x += vx * move_speed;
     
-    // if (velocity.l + velocity.r != 0){
-    //     if (!collide_down){
-    //         if (Mix_Playing(run_channel)){
-    //             stopSound(run_channel);
-    //         }
-    //     }
-    //     else{
-    //         if (!Mix_Playing(run_channel)){
-    //             playSound("run", run_channel, -1);
-    //         }
-    //     }
-    // }
-    // else{
-    //     if (Mix_Playing(run_channel)){
-    //         stopSound(run_channel);
-    //     }
-    // }
+    Background::Move(Vector2(-vx, 0), 0, 0.25);
+    Background::Move(Vector2(-vx, 0), 1, 0.5);
+    Background::Move(Vector2(-vx, 0), 2, 0.75);
+
+    if (velocity.l + velocity.r != 0){
+        if (!collide_down.second){
+            if (Mix_Playing(run_channel)){
+                stopSound(run_channel);
+            }
+        }
+        else{
+            if (!Mix_Playing(run_channel)){
+                playSound("run", run_channel, -1);
+            }
+        }
+    }
+    else{
+        if (Mix_Playing(run_channel)){
+            stopSound(run_channel);
+        }
+    }
 }
 
 void Player::MoveDownUp(){
@@ -244,6 +250,9 @@ void Player::Jump(){
         if (collide_up.second) velocity.d = 0;
         velocity.d += Game::gravity;
         position.y += velocity.d;
+        Background::Move(Vector2(0, -velocity.d), 0, 0.1);
+        Background::Move(Vector2(0, -velocity.d), 1, 0.15);
+        Background::Move(Vector2(0, -velocity.d), 2, 0.2);
     }
     else{
         if (current_state == JUMP){

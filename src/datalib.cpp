@@ -91,8 +91,8 @@ SDL_Rect Rect::reScale(
     float scale
 ){
     SDL_Rect newRect;
-    newRect.x = position.x + (1-scale) * size.x / 2;
-    newRect.y = position.y + (1-scale) * size.y / 2;
+    newRect.x = position.x + (1-scale) * size.x * 0.5;
+    newRect.y = position.y + (1-scale) * size.y * 0.5;
     newRect.w = scale * size.x;
     newRect.h = scale * size.y;
     return newRect;

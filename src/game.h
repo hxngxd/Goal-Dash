@@ -73,8 +73,31 @@ class Hub : public Game{
 
 };
 
+template <class T>
 void ShowMsg(
     int indent,
     msg_types type,
-    std::string msg
-);
+    T msg
+){
+    std::cout << std::string(indent * 2, ' ');
+    switch (type){
+        case normal:
+            std::cout << "> ";
+            break;
+        case success:
+            std::cout << "$ ";
+            break;
+        case fail:
+            std::cout << "@ ";
+            break;
+        case error:
+            std::cout << "! ";
+            break;
+        case logging:
+            std::cout << "# ";
+            break;
+        default:
+            break;
+    }
+    std::cout << msg << std::endl;
+}

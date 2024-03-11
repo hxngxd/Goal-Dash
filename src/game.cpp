@@ -46,7 +46,7 @@ void Game::Start(){
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating map...");
-    auto m = MapTile::CreateTiles();
+    auto m = MapTile::CreateTiles(1);
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating player 1...");
@@ -137,9 +137,9 @@ bool Game::LoadMedia(){
     if (!loadSprite("run", "img/run.png", 9, Vector2(48))) return 0;
     if (!loadSprite("jump", "img/jump.png", 4, Vector2(48))) return 0;
 
-    if (!Background::loadBackground("bg_star", "img/bg_star.png", 1, Vector2(4096), 2)) return 0;
-    if (!Background::loadBackground("bg_star1", "img/bg_star.png", 1, Vector2(4096), 1.5)) return 0;
     if (!Background::loadBackground("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096), 1.25)) return 0;
+    if (!Background::loadBackground("bg_star1", "img/bg_star.png", 1, Vector2(4096), 1.5)) return 0;
+    if (!Background::loadBackground("bg_star", "img/bg_star.png", 1, Vector2(4096), 2)) return 0;
 
     if (!loadSound("coin", "sound/coin.ogg")) return 0;
     if (!loadSound("jump", "sound/jump.ogg")) return 0;
@@ -248,32 +248,4 @@ void Screen::DrawSprite(
     SDL_Rect src = {(currentFrame % sprite.maxFrames) * sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
     SDL_Rect dst = Rect::reScale(position, size, scale);
     SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
-}
-
-void ShowMsg(
-    int indent,
-    msg_types type,
-    std::string msg
-){
-    std::cout << std::string(indent * 2, ' ');
-    switch (type){
-        case normal:
-            std::cout << "> ";
-            break;
-        case success:
-            std::cout << "$ ";
-            break;
-        case fail:
-            std::cout << "@ ";
-            break;
-        case error:
-            std::cout << "! ";
-            break;
-        case logging:
-            std::cout << "# ";
-            break;
-        default:
-            break;
-    }
-    std::cout << msg << std::endl;
 }

@@ -41,6 +41,11 @@ public:
     );
 
     void setOpacity();
+    static void Move(
+        Vector2 velocity,
+        int index,
+        float ratio
+    );
     static void Draw();
 };
 
@@ -56,7 +61,7 @@ public:
         int type,
         float wait
     );
-    static std::pair<float, Vector2> CreateTiles();
+    static std::pair<float, Vector2> CreateTiles(int map);
     static void CreateATile(
         int i,
         int j,
