@@ -84,7 +84,7 @@ void MapTile::CreateATile(
             wait
         )
     );
-    wait += 50;
+    wait += 25;
 }
 
 void MapTile::Draw(){

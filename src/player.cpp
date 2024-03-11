@@ -165,7 +165,7 @@ void Player::MapCollision(
     std::queue<Vector2> & Q
 ){
     float maxDist = Screen::tile_size * sqrt(61) / 6 - 3;
-    float eps = 1e-2;
+    float eps = 0;
     bool draw = true;
     Vector2 playerCenter = Rect::getCenter(position, size);
     Vector2 nextCenter = (nextTile + Vector2(0.5)) * Screen::tile_size;
@@ -266,7 +266,7 @@ void Player::MapCollision(
 
 void Player::Jump(){
     if (!collide_down.second){
-        if (collide_up.second) velocity.d = 0;
+        if (collide_up.second && velocity.d < -1) velocity.d = 0;
         velocity.d += Game::gravity;
         position.y += velocity.d;
         Background::Move(Vector2(0, -velocity.d), 0, 0.1);
