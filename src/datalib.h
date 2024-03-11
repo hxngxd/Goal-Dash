@@ -59,11 +59,23 @@ struct Color{
 struct Rect{
     static SDL_Rect Square (int res) { return {0, 0, res, res}; }
 
-    static bool isCollide(const Vector2 & first_position, const Vector2 & first_size, const Vector2 & second_position, const Vector2 & second_size);
+    static bool isCollide(
+        const Vector2 & first_position,
+        const Vector2 & first_size,
+        const Vector2 & second_position,
+        const Vector2 & second_size
+    );
 
-    static Vector2 getCenter(const Vector2 & position, const Vector2 & size);
+    static Vector2 getCenter(
+        const Vector2 & position,
+        const Vector2 & size
+    );
 
-    static SDL_Rect reScale(const Vector2 & position, const Vector2 & size, float scale);
+    static SDL_Rect reScale(
+        const Vector2 & position,
+        const Vector2 & size,
+        float scale
+    );
 };
 
 //Sprite
@@ -74,14 +86,34 @@ public:
     int maxFrames;
     Vector2 realSize;
 };
-bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize);
+bool loadSprite(
+    std::string name,
+    std::string path,
+    int maxFrames,
+    Vector2 realSize
+);
 
 //Mixer
-bool loadSound(std::string name, std::string path);
-void playSound(std::string name, int channel, int loop);
-void stopSound(int channel);
-bool loadMusic(std::string name, std::string path);
-void playMusic(std::string name, int loop);
+bool loadSound(
+    std::string name,
+    std::string path
+);
+void playSound(
+    std::string name,
+    int channel,
+    int loop
+);
+void stopSound(
+    int channel
+);
+bool loadMusic(
+    std::string name,
+    std::string path
+);
+void playMusic(
+    std::string name,
+    int loop
+);
 void stopMusic();
 
 //enums
@@ -118,13 +150,26 @@ enum msg_types{
 };
 
 //math
-float clamp(float value, float mn, float mx);
+float clamp(
+    float value,
+    float mn,
+    float mx
+);
+void incScale(
+    float & scale
+);
 
 //input keys
 struct Keys{
     SDL_KeyCode right, left, down, up, space;
     Keys() = default;
-    Keys(SDL_KeyCode right, SDL_KeyCode left, SDL_KeyCode down, SDL_KeyCode up, SDL_KeyCode space) : right(right), left(left), down(down), up(up), space(space) {}
+    Keys(
+        SDL_KeyCode right,
+        SDL_KeyCode left,
+        SDL_KeyCode down,
+        SDL_KeyCode up,
+        SDL_KeyCode space
+    ) : right(right), left(left), down(down), up(up), space(space) {}
 };
 
 //extern variables

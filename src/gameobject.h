@@ -19,18 +19,19 @@ public:
 
     int currentFrame, maxFrames;
     float animation_delay;
-    float wait_for_animation;
     float animation_speed;
-    
-    static void BFS_Collision(Player & player, Vector2 & playerCenter, Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> & visit, std::queue<Vector2> & Q, float maxDist, float eps);
+    float wait_for_animation;
 };
 
 class Background : public GameObject{
 public:
     int opacity;
     bool toggle;
-    Background(std::string name, float scale);
-    void setOpacity();
+
+    Background(
+        std::string name,
+        float scale
+    );
     static bool loadBackground(
         std::string name,
         std::string path,
@@ -38,6 +39,8 @@ public:
         Vector2 realSize,
         float scale
     );
+
+    void setOpacity();
     static void Draw();
 };
 
@@ -45,6 +48,7 @@ class MapTile : public GameObject{
 public:
     int type;
     Vector2 index;
+
     MapTile(
         Vector2 position,
         Vector2 size,
@@ -52,12 +56,13 @@ public:
         int type,
         float wait
     );
-    static int CreateTiles();
+    static std::pair<float, Vector2> CreateTiles();
     static void CreateATile(
         int i,
         int j,
         float & wait
     );
+
     static void Draw();
     static void Update();
 };
@@ -73,7 +78,12 @@ public:
     float acceleration;
     float jump_speed;
 
-    void Init(std::string name, Vector2 position, int way);
+    int score;
+
+    void Init(
+        std::string name
+    );
+
     void Update();
     void Animation();
     void MoveRightLeft();
@@ -81,10 +91,16 @@ public:
     void Collision();
     void Jump();
     void DrawBox();
-    void Damaged();
 
     bool key_right, key_left, key_down, key_up;
 
+    void MapCollision(
+        Vector2 nextTile,
+        std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> & visit,
+        std::queue<Vector2> & Q
+    );
+
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
+
 };

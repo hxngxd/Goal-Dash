@@ -1,14 +1,10 @@
 #include "game.h"
 #include "gameobject.h"
 
-std::string Screen::title = "Game";
+std::string Screen::title = "hxngxd";
 Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
 int Screen::tile_size = 48;
-// Vector2 Screen::bg_margin = Vector2(150);
-// Vector2 Screen::bg_cloud_position = -Screen::bg_margin;
-// Vector2 Screen::bg_star_position = -Screen::bg_margin;
-// Vector2 Screen::bg_star_position1 = -Screen::bg_margin;
 
 float Game::fps = 60.0;
 float Game::gravity = 0.3;
@@ -23,7 +19,9 @@ void Game::Update() {
     Screen::Clear(Color::black(255));
     Background::Draw();
     MapTile::Update();
-    // player1.Update();
+
+    player1.Update();
+
     Screen::Display();
 }
 
@@ -48,16 +46,14 @@ void Game::Start(){
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating map...");
-    int wait = MapTile::CreateTiles();
+    auto m = MapTile::CreateTiles();
     ShowMsg(2, success, "done.");
 
-    // ShowMsg(1, normal, "creating player 1...");
-    // player1.Init("Nguyen Tuong Hung", startingPosition, wait + 100);
-    // ShowMsg(2, success, "done.");
-
-    // ShowMsg(1, normal, "creating player 2...");
-    // player2.Init("Hehehe", startingPosition, wait + 100);
-    // ShowMsg(2, success, "done.");
+    ShowMsg(1, normal, "creating player 1...");
+    player1.wait_for_animation = m.first;
+    player1.starting_position = Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
+    player1.Init("Nguyen Tuong Hung");
+    ShowMsg(2, success, "done.");
     
     running = true;
 }
@@ -163,12 +159,11 @@ void Game::HandleEvent(){
         if (event.type == SDL_QUIT){
             running = false;
         }
-        // KeyboardHandler::PlayerInputHandler(player1);
+        KeyboardHandler::PlayerInputHandler(player1, leftKeys);
     }
 }
 
 void Game::Quit(){
-
     ShowMsg(0, normal, "deleting all sprites...");
     for (auto & sprite : Sprites){
         std::string path = sprite.second->path;
@@ -213,11 +208,15 @@ void Game::Quit(){
     Mix_Quit();
 }
 
-void Screen::SetDrawColor(SDL_Color color){
+void Screen::SetDrawColor(
+    SDL_Color color
+){
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 }
 
-void Screen::Clear(SDL_Color color){
+void Screen::Clear(
+    SDL_Color color
+){
     SetDrawColor(color);
     SDL_RenderClear(renderer);
 }
@@ -226,7 +225,9 @@ void Screen::Display(){
     SDL_RenderPresent(renderer);
 }
 
-void Screen::PointGrid(SDL_Color color){
+void Screen::PointGrid(
+    SDL_Color color
+){
     SetDrawColor(color);
     int sqr = Screen::resolution.x/Screen::map_size;
     for (int i=sqr;i<Screen::resolution.x;i+=sqr){
@@ -244,13 +245,17 @@ void Screen::DrawSprite(
     int currentFrame,
     bool flip)
 {
-    SDL_Rect src = {(currentFrame%sprite.maxFrames)*sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
+    SDL_Rect src = {(currentFrame % sprite.maxFrames) * sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
     SDL_Rect dst = Rect::reScale(position, size, scale);
     SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }
 
-void ShowMsg(int indent, msg_types type, std::string msg){
-    std::cout << std::string(indent*2, ' ');
+void ShowMsg(
+    int indent,
+    msg_types type,
+    std::string msg
+){
+    std::cout << std::string(indent * 2, ' ');
     switch (type){
         case normal:
             std::cout << "> ";

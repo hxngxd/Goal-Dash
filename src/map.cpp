@@ -6,7 +6,14 @@ std::vector<std::vector<int>> TileMap;
 std::vector<MapTile> Tiles;
 std::vector<Background> Backgrounds;
 
-MapTile::MapTile(Vector2 position, Vector2 size, Vector2 index, int type, float wait){
+MapTile::MapTile(
+    Vector2 position,
+    Vector2 size,
+    Vector2 index,
+    int type,
+    float
+    wait
+){
     this->position = position;
     this->size = size;
     this->type = type;
@@ -18,7 +25,7 @@ MapTile::MapTile(Vector2 position, Vector2 size, Vector2 index, int type, float 
     this->wait_for_animation = wait;
 }
 
-int MapTile::CreateTiles(){
+std::pair<float, Vector2> MapTile::CreateTiles(){
     int mp_size = Screen::map_size;
 
     TileMap.resize(mp_size, std::vector<int>(mp_size, 0));
@@ -57,12 +64,16 @@ int MapTile::CreateTiles(){
         }
     }
     
-    std::cout << spawn_i << " " << spawn_j << std::endl;
     CreateATile(spawn_i, spawn_j, wait);
-    return wait;
+
+    return std::make_pair(wait + 50, Vector2(spawn_i, spawn_j));
 }
 
-void MapTile::CreateATile(int i, int j, float & wait){
+void MapTile::CreateATile(
+    int i,
+    int j,
+    float & wait
+){
     if (!TileMap[i][j]) return;
     Tiles.push_back(
         MapTile(
@@ -84,22 +95,16 @@ void MapTile::Draw(){
         if (currentTicks <= tile.wait_for_animation) continue;
         
         SDL_Rect rect = Rect::reScale(tile.position, tile.size, tile.scale * 0.9);
-        if (tile.scale < 0.5) tile.scale += 0.1;
-        else if (tile.scale < 0.75) tile.scale += 0.05;
-        else if (tile.scale < 1) tile.scale += 0.025;
-        else if (tile.scale > 1) tile.scale = 1;
+        incScale(tile.scale);
         switch (tile.type){
             case WIN:
                 Screen::SetDrawColor(Color::green(255));
-                SDL_RenderDrawRect(Game::renderer, &rect);
                 break;
             case SPAWN:
                 Screen::SetDrawColor(Color::cyan(255));
-                SDL_RenderDrawRect(Game::renderer, &rect);
                 break;
             case WALL:
                 Screen::SetDrawColor(Color::white(255));
-                SDL_RenderDrawRect(Game::renderer, &rect);
                 break;
             case COIN:
                 if (currentTicks > tile.animation_delay + 1000/tile.animation_speed){
@@ -108,16 +113,15 @@ void MapTile::Draw(){
                     tile.animation_delay = currentTicks;
                 }
                 Screen::SetDrawColor(Color::yellow(255));
-                SDL_RenderDrawRect(Game::renderer, &rect);
                 Screen::DrawSprite(*Sprites["coin"], tile.position, tile.size, tile.scale * 0.5, tile.currentFrame, 0);
                 break;
             case DAMAGE:
                 Screen::SetDrawColor(Color::red(255));
-                SDL_RenderDrawRect(Game::renderer, &rect);
                 break;
             default:
                 break;
         }
+        SDL_RenderDrawRect(Game::renderer, &rect);
     }
 }
 
@@ -125,7 +129,10 @@ void MapTile::Update(){
     Draw();
 }
 
-Background::Background(std::string name, float scale){
+Background::Background(
+    std::string name,
+    float scale
+){
     this->opacity = 64;
     this->toggle = true;
     this->name = name;
@@ -140,7 +147,13 @@ void Background::setOpacity(){
     SDL_SetTextureAlphaMod(Sprites[name]->texture, opacity);
 }
 
-bool Background::loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale){
+bool Background::loadBackground(
+    std::string name,
+    std::string path,
+    int maxFrames,
+    Vector2 realSize,
+    float scale
+){
     if (!loadSprite(name, path, maxFrames, realSize)) return 0;
     ShowMsg(2, normal, "creating background " + name);
     Backgrounds.push_back(Background(name, scale));

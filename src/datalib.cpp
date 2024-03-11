@@ -69,15 +69,27 @@ bool Vector2Equal::operator()(const Vector2 & lhs, const Vector2 & rhs) const {
 }
 
 //Rect
-bool Rect::isCollide(const Vector2 & first_position, const Vector2 & first_size, const Vector2 & second_position, const Vector2 & second_size){
+bool Rect::isCollide(
+    const Vector2 & first_position,
+    const Vector2 & first_size,
+    const Vector2 & second_position,
+    const Vector2 & second_size
+){
     float c_x = abs(first_position.x - second_position.x) - first_size.x/2 - second_size.x/2;
     float c_y = abs(first_position.y - second_position.y) - first_size.y/2 - second_size.y/2;
     return c_x <= 0 && c_y <= 0;
 }
-Vector2 Rect::getCenter(const Vector2 & position, const Vector2 & size){
+Vector2 Rect::getCenter(
+    const Vector2 & position,
+    const Vector2 & size
+){
     return position + size/2;
 }
-SDL_Rect Rect::reScale(const Vector2 & position, const Vector2 & size, float scale){
+SDL_Rect Rect::reScale(
+    const Vector2 & position,
+    const Vector2 & size,
+    float scale
+){
     SDL_Rect newRect;
     newRect.x = position.x + (1-scale) * size.x / 2;
     newRect.y = position.y + (1-scale) * size.y / 2;
@@ -87,7 +99,12 @@ SDL_Rect Rect::reScale(const Vector2 & position, const Vector2 & size, float sca
 }
 
 //Sprite
-bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize){
+bool loadSprite(
+    std::string name,
+    std::string path,
+    int maxFrames,
+    Vector2 realSize
+){
     ShowMsg(2, normal, "trying to load " + path + "...");
     Sprites[name] = new Sprite();
     SDL_Surface * sf = IMG_Load(path.c_str());
@@ -111,7 +128,10 @@ bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realS
 }
 
 //Mixer
-bool loadSound(std::string name, std::string path){
+bool loadSound(
+    std::string name,
+    std::string path
+){
     ShowMsg(2, normal, "trying to load " + path + "...");
     Sounds[name] = Mix_LoadWAV(path.c_str());
     if (!Sounds[name]){
@@ -124,15 +144,24 @@ bool loadSound(std::string name, std::string path){
     ShowMsg(3, success, "done.");
     return 1;
 }
-void playSound(std::string name, int channel, int loop){
+void playSound(
+    std::string name,
+    int channel,
+    int loop
+){
     stopSound(channel);
     Mix_FadeInChannel(channel, Sounds[name], loop, 25);
 }
 
-void stopSound(int channel){
+void stopSound(
+    int channel
+){
     Mix_FadeOutChannel(channel, 50);
 }
-bool loadMusic(std::string name, std::string path){
+bool loadMusic(
+    std::string name,
+    std::string path
+){
     ShowMsg(2, normal, "trying to load " + path + "...");
     Musics[name] = Mix_LoadMUS(path.c_str());
     if (!Musics[name]){
@@ -145,7 +174,10 @@ bool loadMusic(std::string name, std::string path){
     ShowMsg(3, success, "done.");
     return 1;
 }
-void playMusic(std::string name, int loop){
+void playMusic(
+    std::string name,
+    int loop
+){
     Mix_PlayMusic(Musics[name], loop);
 }
 void stopMusic(){
@@ -153,10 +185,22 @@ void stopMusic(){
 }
 
 //math
-float clamp(float value, float mn, float mx){
+float clamp(
+    float value,
+    float mn,
+    float mx
+){
     if (value < mn) return mn;
     if (value > mx) return mx;
     return value;
+}
+void incScale(
+    float & scale
+){
+    if (scale < 0.5) scale += 0.1;
+    else if (scale < 0.75) scale += 0.05;
+    else if (scale < 1) scale += 0.025;
+    else if (scale > 1) scale = 1;
 }
 
 //input keys

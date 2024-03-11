@@ -18,15 +18,15 @@ public:
     static float fps;
     static float gravity;
 
-    static Vector2 startingPosition;
     static SDL_Event event;
     static SDL_Window * window;
     static SDL_Renderer * renderer;
 
     void Start();
+    void Quit();
+
     bool InitSDL2();
     bool LoadMedia();
-    void Quit();
 
     void HandleEvent();
     void Update();
@@ -41,9 +41,15 @@ public:
     static int map_size;
     static int tile_size;
 
-    static void Clear(SDL_Color color);
-    static void SetDrawColor(SDL_Color color);
-    static void PointGrid(SDL_Color color);
+    static void Clear(
+        SDL_Color color
+    );
+    static void SetDrawColor(
+        SDL_Color color
+    );
+    static void PointGrid(
+        SDL_Color color
+    );
     static void Display();
     static void DrawSprite(
         Sprite & sprite,
@@ -53,19 +59,22 @@ public:
         int currentFrame,
         bool flip
     );
-
-    static Vector2 bg_star_position, bg_star_position1, bg_cloud_position, bg_margin;
-    static int bg_opacity;
-    static bool bg_toggle;
 };
 
 class KeyboardHandler : public Game{
 public:
-    static void PlayerInputHandler(Player & player, Keys & keys);
+    static void PlayerInputHandler(
+        Player & player, 
+        Keys & keys
+    );
 };
 
 class Hub : public Game{
 
 };
 
-void ShowMsg(int indent, msg_types type, std::string msg);
+void ShowMsg(
+    int indent,
+    msg_types type,
+    std::string msg
+);
