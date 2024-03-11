@@ -13,15 +13,16 @@ SDL_Event Game::event;
 SDL_Window * Game::window = nullptr;
 SDL_Renderer * Game::renderer = nullptr;
 
+std::map<int, DelayFunction*> DelayFunctions;
+
 Player player1;
 
 void Game::Update() {
     Screen::Clear(Color::black(255));
     Background::Draw();
     MapTile::Update();
-
+    DelayFunction::Update();
     player1.Update();
-
     Screen::Display();
 }
 

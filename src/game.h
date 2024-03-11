@@ -73,6 +73,20 @@ class Hub : public Game{
 
 };
 
+class DelayFunction{
+public:
+    int start_time;
+    int delay_time;
+    std::function<void()> function;
+    void static Update();
+    void static CreateDelayFunction(
+        int delay_time,
+        std::function<void()> function
+    );
+};
+
+extern std::map<int, DelayFunction*> DelayFunctions;
+
 template <class T>
 void ShowMsg(
     int indent,
