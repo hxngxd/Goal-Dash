@@ -27,8 +27,18 @@ public:
 
 class Background : public GameObject{
 public:
-    std::string sprite_name;
-    Background(std::string sprite_name) : sprite_name(sprite_name) {}
+    int opacity;
+    bool toggle;
+    Background(std::string name, float scale);
+    void setOpacity();
+    static bool loadBackground(
+        std::string name,
+        std::string path,
+        int maxFrames,
+        Vector2 realSize,
+        float scale
+    );
+    static void Draw();
 };
 
 class MapTile : public GameObject{

@@ -73,7 +73,7 @@ void MapTile::CreateATile(int i, int j, float & wait){
             wait
         )
     );
-    wait += 50;
+    wait += 0;
 }
 
 void MapTile::Draw(){
@@ -125,3 +125,51 @@ void MapTile::Update(){
     Draw();
 }
 
+Background::Background(std::string name, float scale){
+    this->opacity = 64;
+    this->toggle = true;
+    this->name = name;
+    this->position = Vector2(0);
+    this->size = Screen::resolution;
+    this->currentFrame = 0;
+    this->maxFrames = Sprites[name]->maxFrames;
+    this->scale = scale;
+}
+
+void Background::setOpacity(){
+    SDL_SetTextureAlphaMod(Sprites[name]->texture, opacity);
+}
+
+bool Background::loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale){
+    if (!loadSprite(name, path, maxFrames, realSize)) return 0;
+    ShowMsg(2, normal, "creating background " + name);
+    Backgrounds.push_back(Background(name, scale));
+    ShowMsg(3, success, "done.");
+    SDL_SetTextureBlendMode(Sprites[name]->texture, SDL_BLENDMODE_BLEND);
+    return 1;
+}
+
+void Background::Draw(){
+    Background & bg0 = Backgrounds[0];
+    Background & bg1 = Backgrounds[1];
+    Background & bg2 = Backgrounds[2];
+
+    bg2.opacity = 150;
+    bg2.setOpacity();
+    Screen::DrawSprite(*Sprites[bg2.name], bg2.position, bg2.size, bg2.scale, bg2.maxFrames, 0);
+
+    if (bg0.toggle){
+        bg0.opacity+=2;
+        if (bg0.opacity >= 248) bg0.toggle = false;
+    }
+    else{
+        bg0.opacity-=2;
+        if (bg0.opacity <= 8) bg0.toggle = true;
+    }
+    bg0.setOpacity();
+    Screen::DrawSprite(*Sprites[bg0.name], bg0.position, bg0.size, bg0.scale, bg0.maxFrames, 0);
+
+    bg1.opacity = 256-bg0.opacity;
+    bg1.setOpacity();
+    Screen::DrawSprite(*Sprites[bg1.name], bg1.position, bg1.size, bg1.scale, bg1.maxFrames, 1);
+}

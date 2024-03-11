@@ -21,7 +21,7 @@ Player player1;
 
 void Game::Update() {
     Screen::Clear(Color::black(255));
-    Screen::Background();
+    Background::Draw();
     MapTile::Update();
     // player1.Update();
     Screen::Display();
@@ -141,15 +141,9 @@ bool Game::LoadMedia(){
     if (!loadSprite("run", "img/run.png", 9, Vector2(48))) return 0;
     if (!loadSprite("jump", "img/jump.png", 4, Vector2(48))) return 0;
 
-    if (!loadSprite("bg_star", "img/bg_star.png", 1, Vector2(4096))) return 0;
-    Backgrounds.push_back(Background("bg_star"));
-    if (!loadSprite("bg_star1", "img/bg_star.png", 1, Vector2(4096))) return 0;
-    if (!loadSprite("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096))) return 0;
-
-    SDL_SetTextureBlendMode(Sprites["bg_cloud"]->texture, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureAlphaMod(Sprites["bg_cloud"]->texture, 150);
-    SDL_SetTextureBlendMode(Sprites["bg_star"]->texture, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureBlendMode(Sprites["bg_star1"]->texture, SDL_BLENDMODE_BLEND);
+    if (!Background::loadBackground("bg_star", "img/bg_star.png", 1, Vector2(4096), 2)) return 0;
+    if (!Background::loadBackground("bg_star1", "img/bg_star.png", 1, Vector2(4096), 1.5)) return 0;
+    if (!Background::loadBackground("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096), 1.25)) return 0;
 
     if (!loadSound("coin", "sound/coin.ogg")) return 0;
     if (!loadSound("jump", "sound/jump.ogg")) return 0;
@@ -242,25 +236,6 @@ void Screen::PointGrid(SDL_Color color){
     }
 }
 
-int Screen::bg_opacity = 64;
-bool Screen::bg_toggle = true;
-
-void Screen::Background(){
-    // DrawSprite(*Sprites["bg_cloud"], Screen::bg_cloud_position, resolution + Screen::bg_margin*2, 0, 0);
-
-    if (bg_toggle){
-        bg_opacity+=2; if (bg_opacity>=248) bg_toggle = false;
-    }
-    else{
-        bg_opacity-=2; if (bg_opacity<=8) bg_toggle = true;
-    }
-    SDL_SetTextureAlphaMod(Sprites["bg_star"]->texture, bg_opacity);
-    DrawSprite(*Sprites["bg_star"], Screen::bg_star_position, resolution + Screen::bg_margin*2, 0, 0);
-
-    // SDL_SetTextureAlphaMod(Sprites["bg_star1"]->texture, 256-bg_opacity);
-    // DrawSprite(*Sprites["bg_star1"], Screen::bg_star_position1, resolution + Screen::bg_margin*2, 0, 1);
-}
-
 void Screen::DrawSprite(
     Sprite & sprite,
     const Vector2 & position,
@@ -296,9 +271,4 @@ void ShowMsg(int indent, msg_types type, std::string msg){
             break;
     }
     std::cout << msg << std::endl;
-}
-
-Background::Background(std::string sprite_name){
-    this->sprite_name = sprite_name;
-    scale = 1;
 }

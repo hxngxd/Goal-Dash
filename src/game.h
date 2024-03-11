@@ -44,7 +44,6 @@ public:
     static void Clear(SDL_Color color);
     static void SetDrawColor(SDL_Color color);
     static void PointGrid(SDL_Color color);
-    static void Background();
     static void Display();
     static void DrawSprite(
         Sprite & sprite,
