@@ -63,7 +63,8 @@ struct Rect{
         const Vector2 & first_position,
         const Vector2 & first_size,
         const Vector2 & second_position,
-        const Vector2 & second_size
+        const Vector2 & second_size,
+        float eps
     );
 
     static Vector2 getCenter(

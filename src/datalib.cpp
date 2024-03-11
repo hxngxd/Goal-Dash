@@ -73,11 +73,12 @@ bool Rect::isCollide(
     const Vector2 & first_position,
     const Vector2 & first_size,
     const Vector2 & second_position,
-    const Vector2 & second_size
+    const Vector2 & second_size,
+    float eps
 ){
     float c_x = abs(first_position.x - second_position.x) - first_size.x/2 - second_size.x/2;
     float c_y = abs(first_position.y - second_position.y) - first_size.y/2 - second_size.y/2;
-    return c_x <= 0 && c_y <= 0;
+    return c_x <= eps && c_y <= eps;
 }
 Vector2 Rect::getCenter(
     const Vector2 & position,

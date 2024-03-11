@@ -16,16 +16,17 @@ void Player::Init(std::string name){
     this->acceleration = 0.04;
     this->jump_speed = 10;
     this->score = 0;
+    memset(isDamaged, 0, sizeof(isDamaged));
 }
 
 void Player::Update(){
     if (SDL_GetTicks() <= wait_for_animation) return;
-    Animation();
     MoveRightLeft();
     // MoveDownUp();
     Collision();
     Jump();
     DrawBox();
+    Animation();
 }
 
 void Player::Animation(){
@@ -50,6 +51,9 @@ void Player::Animation(){
     maxFrames = current->maxFrames;
     Screen::DrawSprite(*current, position, size, scale, std::min(currentFrame, maxFrames), (direction==LEFT));
     incScale(scale);
+
+    if (isDamaged[1] || isDamaged[2]) Damaged(true);
+    else Damaged(false);
 }
 
 void Player::MoveRightLeft(){
@@ -141,6 +145,7 @@ void Player::Collision(){
     Q.push(playerCenterTile);
 
     collide_down.first = collide_up.first = false;
+    isDamaged[0] = false;
     while (!Q.empty()){
         Vector2 u = Q.front();
         Q.pop();
@@ -151,6 +156,7 @@ void Player::Collision(){
     }
     collide_down.second = collide_down.first;
     collide_up.second = collide_up.first;
+    isDamaged[1] = isDamaged[0];
 }
 
 void Player::MapCollision(
@@ -209,6 +215,17 @@ void Player::MapCollision(
                 if (type & WALL) Screen::SetDrawColor(Color::white(255));
                 else Screen::SetDrawColor(Color::red(255));
             }
+            if (type & DAMAGE){
+                if (Rect::isCollide(
+                    playerCenter,
+                    Vector2(size.x/6*4, size.y),
+                    nextCenter,
+                    Vector2(Screen::tile_size),
+                    3)
+                ){
+                    isDamaged[0] = true;
+                }
+            }
         }
         else if (type & COIN){
             if (draw) Screen::SetDrawColor(Color::yellow(255));
@@ -216,7 +233,8 @@ void Player::MapCollision(
                     playerCenter,
                     Vector2(size.x/6*4, size.y),
                     nextCenter,
-                    Vector2(Screen::tile_size))
+                    Vector2(Screen::tile_size),
+                    0)
                 ){
                 score++;
                 TileMap[nextTile.y][nextTile.x] = 0;
@@ -229,7 +247,8 @@ void Player::MapCollision(
                 playerCenter,
                 Vector2(size.x/6*4, size.y),
                 nextCenter,
-                Vector2(Screen::tile_size))
+                Vector2(Screen::tile_size),
+                0)
             ){
                 ShowMsg(0, logging, "player won!");
             }
@@ -259,7 +278,14 @@ void Player::Jump(){
             current_state = previous_state;
             previous_state = JUMP;
         }
-        if (velocity.d > 11) playSound("fall", fall_channel, 0);
+        if (velocity.d > 11){
+            isDamaged[2] = true;
+            auto notDamage = [](Player * player){
+                player->isDamaged[2] = false;
+            };
+            DelayFunction::CreateDelayFunction(500, std::bind(notDamage, this));
+            playSound("fall", fall_channel, 0);
+        }
         velocity.d = 0;
     }
 }
@@ -272,4 +298,14 @@ void Player::DrawBox(){
     SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, startPos.x, endPos.y);
     SDL_RenderDrawLine(Game::renderer, endPos.x, endPos.y, endPos.x, startPos.y);
     SDL_RenderDrawLine(Game::renderer, endPos.x, endPos.y, startPos.x, endPos.y);
+}
+
+void Player::Damaged(bool c){
+    Uint8 r=255, g=114, b=118;
+    if (!c){
+        r = g = b = 255;
+    }
+    SDL_SetTextureColorMod(Sprites["idle"]->texture, r, g, b);
+    SDL_SetTextureColorMod(Sprites["run"]->texture, r, g, b);
+    SDL_SetTextureColorMod(Sprites["jump"]->texture, r, g, b);
 }

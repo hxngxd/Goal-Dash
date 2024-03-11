@@ -96,6 +96,7 @@ public:
     void Collision();
     void Jump();
     void DrawBox();
+    void Damaged(bool c);
 
     bool key_right, key_left, key_down, key_up;
 
@@ -107,5 +108,5 @@ public:
 
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
-
+    bool isDamaged[3];
 };
