@@ -8,7 +8,7 @@ int main(int argc, char* argv[]){
 
     if (game->isRunning()) ShowMsg(0, success, "game is running!");
 
-    float frameStart, frameTime, frameDelay = 1000.0/game->fps;
+    float frameStart, frameTime, frameDelay = 1000.0/Game::Properties["fps"].f;
 
     while (game->isRunning()){
 

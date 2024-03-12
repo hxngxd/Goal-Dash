@@ -1,25 +1,23 @@
 #include "game.h"
 #include "gameobject.h"
 
-std::string Screen::title = "hxngxd";
 Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
 int Screen::tile_size = 48;
-
-float Game::fps = 60.0;
-float Game::gravity = 0.3;
 
 SDL_Event Game::event;
 SDL_Window * Game::window = nullptr;
 SDL_Renderer * Game::renderer = nullptr;
 
 std::map<int, DelayFunction*> DelayFunctions;
+std::map<std::string, PropertiesType> Game::Properties;
 
 Player player1;
 
 void Game::Update() {
     Screen::Clear(Color::black(255));
-    Background::Draw();
+    if (Game::Properties["point_grid"].b) Screen::PointGrid(Color::white(255));
+    if (Game::Properties["background"].b) Background::Draw();
     MapTile::Update();
     DelayFunction::Update();
     player1.Update();
@@ -27,6 +25,14 @@ void Game::Update() {
 }
 
 void Game::Start(){
+
+    ShowMsg(1, normal, "loading config file...");
+    if (!LoadConfig()){
+        ShowMsg(1, fail, "load config failed.");
+        return;
+    }
+    ShowMsg(1, success, "config loaded!");
+
     ShowMsg(1, normal, "trying to initializing SDL2...");
     if (!InitSDL2()){
         ShowMsg(1, fail, "init sdl2 failed.");
@@ -41,19 +47,21 @@ void Game::Start(){
     }
     ShowMsg(1, success, "medias ok!");
 
-    ShowMsg(1, normal, "playing background music...");
-    playMusic("bg_music", -1);
-    Mix_VolumeMusic(32);
-    ShowMsg(2, success, "done.");
+    if (Game::Properties["music"].b){
+        ShowMsg(1, normal, "playing background music...");
+        playMusic("bg_music", -1);
+        Mix_VolumeMusic(clamp(Game::Properties["music_volume"].i, 0, MIX_MAX_VOLUME));
+        ShowMsg(2, success, "done.");
+    }
 
     ShowMsg(1, normal, "creating map...");
-    auto m = MapTile::CreateTiles(1);
+    auto m = MapTile::CreateTiles(Game::Properties["map"].s);
     ShowMsg(2, success, "done.");
 
-    ShowMsg(1, normal, "creating player 1...");
+    ShowMsg(1, normal, "creating player 1: " + Game::Properties["player_name"].s + "...");
     player1.wait_for_animation = m.first;
     player1.starting_position = Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
-    player1.Init("Nguyen Tuong Hung");
+    player1.Init(Game::Properties["player_name"].s);
     ShowMsg(2, success, "done.");
     
     running = true;
@@ -107,7 +115,7 @@ bool Game::InitSDL2(){
     }
 
     ShowMsg(2, normal, "creating window...");
-    window = SDL_CreateWindow(Screen::title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Screen::resolution.x, Screen::resolution.y, 0);
+    window = SDL_CreateWindow("Goal Dash", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Screen::resolution.x, Screen::resolution.y, 0);
     if (!window){
         ShowMsg(3, fail, "failed to create window.");
         return 0;

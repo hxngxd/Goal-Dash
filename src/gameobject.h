@@ -61,7 +61,7 @@ public:
         int type,
         float wait
     );
-    static std::pair<float, Vector2> CreateTiles(int map);
+    static std::pair<float, Vector2> CreateTiles(std::string map);
     static void CreateATile(
         int i,
         int j,
@@ -78,12 +78,6 @@ public:
 
     animation_states current_state, previous_state;
     animation_directions direction;
-
-    float move_speed;
-    float acceleration;
-    float jump_speed;
-
-    int score;
 
     void Init(
         std::string name

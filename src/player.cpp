@@ -12,20 +12,16 @@ void Player::Init(std::string name){
     this->current_state = this->previous_state = IDLE;
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
-    this->move_speed = 5;
-    this->acceleration = 0.04;
-    this->jump_speed = 10;
-    this->score = 0;
     memset(isDamaged, 0, sizeof(isDamaged));
 }
 
 void Player::Update(){
     if (SDL_GetTicks() <= wait_for_animation) return;
     MoveRightLeft();
-    // MoveDownUp();
+    if (Game::Properties["no_gravity"].b) MoveDownUp();
+    else Jump();
     Collision();
-    Jump();
-    DrawBox();
+    if (Game::Properties["draw_ray"].b) DrawBox();
     Animation();
 }
 
@@ -52,17 +48,22 @@ void Player::Animation(){
     Screen::DrawSprite(*current, position, size, scale, std::min(currentFrame, maxFrames), (direction==LEFT));
     incScale(scale);
 
-    if (isDamaged[1] || isDamaged[2]) Damaged(true);
-    else Damaged(false);
+    if (!Game::Properties["immortal"].b){
+        if (isDamaged[1] || isDamaged[2]) Damaged(true);
+        else Damaged(false);
+    }
 }
 
 void Player::MoveRightLeft(){
     if (!(key_left ^ key_right)){
         // std::cout << "Player stopped" << std::endl;
         if (current_state != JUMP) current_state = IDLE;
-        if (velocity.l < 0) velocity.l += acceleration * 1.5;
+        else{
+            if (collide_down.second) current_state = IDLE;
+        }
+        if (velocity.l < 0) velocity.l += Game::Properties["player_acceleration"].f * 1.5;
         else if (velocity.l > 0) velocity.l = 0;
-        if (velocity.r > 0) velocity.r -= acceleration * 1.5;
+        if (velocity.r > 0) velocity.r -= Game::Properties["player_acceleration"].f * 1.5;
         else if (velocity.r < 0) velocity.r = 0;
     }
     else{
@@ -70,28 +71,30 @@ void Player::MoveRightLeft(){
             // std::cout << "Player moved left" << std::endl;
             if (current_state != JUMP) current_state = RUN;
             direction = LEFT;
-            velocity.l -= acceleration;
+            velocity.l -= Game::Properties["player_acceleration"].f;
             velocity.l = velocity.l < -1 ? -1 : velocity.l;
-            if (velocity.r > 0) velocity.r -= acceleration * 1.5;
+            if (velocity.r > 0) velocity.r -= Game::Properties["player_acceleration"].f * 1.5;
             else if (velocity.l < 0) velocity.r = 0;
         }
         if (key_right){
             // std::cout << "Player moved right" << std::endl;
              if (current_state != JUMP) current_state = RUN;
             direction = RIGHT;
-            if (velocity.l < 0) velocity.l += acceleration * 1.5;
+            if (velocity.l < 0) velocity.l += Game::Properties["player_acceleration"].f * 1.5;
             else if (velocity.l > 0) velocity.l = 0;
-            velocity.r += acceleration;
+            velocity.r += Game::Properties["player_acceleration"].f;
             velocity.r = velocity.r > 1 ? 1 : velocity.r;
         }
     }
     float vx = (velocity.l + velocity.r);
 
-    position.x += vx * move_speed;
+    position.x += vx * Game::Properties["player_move_speed"].f;
     
-    Background::Move(Vector2(-vx, 0), 0, 0.25);
-    Background::Move(Vector2(-vx, 0), 1, 0.5);
-    Background::Move(Vector2(-vx, 0), 2, 0.75);
+    if (Game::Properties["moving_background"].b){
+        Background::Move(Vector2(-vx, 0), 0, 0.25);
+        Background::Move(Vector2(-vx, 0), 1, 0.5);
+        Background::Move(Vector2(-vx, 0), 2, 0.75);
+    }
 
     if (velocity.l + velocity.r != 0){
         if (!collide_down.second){
@@ -101,7 +104,7 @@ void Player::MoveRightLeft(){
         }
         else{
             if (!Mix_Playing(run_channel)){
-                playSound("run", run_channel, -1);
+                if (Game::Properties["sound"].b) playSound("run", run_channel, -1);
             }
         }
     }
@@ -115,29 +118,32 @@ void Player::MoveRightLeft(){
 void Player::MoveDownUp(){
     if (!(key_up ^ key_down)){
         // std::cout << "Player stopped" << std::endl;
-        current_state = IDLE;
         velocity.u = velocity.d = 0;
     }
     else{ 
         if (key_up){
             // std::cout << "Player moved up" << std::endl;
-            current_state = RUN;
-            velocity.u -= acceleration;
+            velocity.u -= Game::Properties["player_acceleration"].f;
             velocity.u = velocity.u < -1 ? -1 : velocity.u;
             velocity.d = 0;
         }
         if (key_down){
             // std::cout << "Player moved down" << std::endl;
-            current_state = RUN;
             velocity.u = 0;
-            velocity.d += acceleration;
+            velocity.d += Game::Properties["player_acceleration"].f;
             velocity.d = velocity.d > 1 ? 1 : velocity.d;
         }
     }
-    position.y += (velocity.u + velocity.d) * move_speed;
+    position.y += (velocity.u + velocity.d) * Game::Properties["player_move_speed"].f;
 }
 
 void Player::Collision(){
+    if (!Game::Properties["collision"].b){
+        position.x = clamp(position.x, -size.x/6, Screen::resolution.x - size.x);
+        position.y = clamp(position.y, 0, Screen::resolution.y - size.y);
+        return;
+    }
+
     Vector2 playerCenterTile = IntV2(Rect::getCenter(position, size) / Screen::tile_size);
     std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> visit;
     std::queue<Vector2> Q;
@@ -166,7 +172,6 @@ void Player::MapCollision(
 ){
     float maxDist = Screen::tile_size * sqrt(61) / 6 - 3;
     float eps = 0;
-    bool draw = true;
     Vector2 playerCenter = Rect::getCenter(position, size);
     Vector2 nextCenter = (nextTile + Vector2(0.5)) * Screen::tile_size;
     float h = playerCenter.distance(nextCenter);
@@ -211,11 +216,11 @@ void Player::MapCollision(
                     collide_up.first = true;
                 }
             }
-            if (draw){
+            if (Game::Properties["draw_ray"].b){
                 if (type & WALL) Screen::SetDrawColor(Color::white(255));
                 else Screen::SetDrawColor(Color::red(255));
             }
-            if (type & DAMAGE){
+            if (!Game::Properties["immortal"].b && type & DAMAGE){
                 if (Rect::isCollide(
                     playerCenter,
                     Vector2(size.x/6*4, size.y),
@@ -228,7 +233,7 @@ void Player::MapCollision(
             }
         }
         else if (type & COIN){
-            if (draw) Screen::SetDrawColor(Color::yellow(255));
+            if (Game::Properties["draw_ray"].b) Screen::SetDrawColor(Color::yellow(255));
             if (Rect::isCollide(
                     playerCenter,
                     Vector2(size.x/6*4, size.y),
@@ -236,13 +241,13 @@ void Player::MapCollision(
                     Vector2(Screen::tile_size),
                     0)
                 ){
-                score++;
+                Game::Properties["player_score"].i++;
                 TileMap[nextTile.y][nextTile.x] = 0;
-                playSound("coin", coin_channel, 0);
+                if (Game::Properties["sound"].b) playSound("coin", coin_channel, 0);
             }
         }
         else if (type & WIN){
-            if (draw) Screen::SetDrawColor(Color::green(255));
+            if (Game::Properties["draw_ray"].b) Screen::SetDrawColor(Color::green(255));
             if (Rect::isCollide(
                 playerCenter,
                 Vector2(size.x/6*4, size.y),
@@ -254,9 +259,9 @@ void Player::MapCollision(
             }
         }
         else if (type & SPAWN){
-            if (draw) Screen::SetDrawColor(Color::cyan(255));
+            if (Game::Properties["draw_ray"].b) Screen::SetDrawColor(Color::cyan(255));
         }
-        if (draw && type){
+        if (Game::Properties["draw_ray"].b && type){
             SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, nextCenter.x, nextCenter.y);
         }
         visit.insert({nextTile, 1});
@@ -267,11 +272,13 @@ void Player::MapCollision(
 void Player::Jump(){
     if (!collide_down.second){
         if (collide_up.second && velocity.d < -1) velocity.d = 0;
-        velocity.d += Game::gravity;
+        velocity.d += Game::Properties["gravity"].f;
         position.y += velocity.d;
-        Background::Move(Vector2(0, -velocity.d), 0, 0.1);
-        Background::Move(Vector2(0, -velocity.d), 1, 0.15);
-        Background::Move(Vector2(0, -velocity.d), 2, 0.2);
+        if (Game::Properties["moving_background"].b){
+            Background::Move(Vector2(0, -velocity.d), 0, 0.1);
+            Background::Move(Vector2(0, -velocity.d), 1, 0.15);
+            Background::Move(Vector2(0, -velocity.d), 2, 0.2);
+        }
     }
     else{
         if (current_state == JUMP){
@@ -279,12 +286,14 @@ void Player::Jump(){
             previous_state = JUMP;
         }
         if (velocity.d > 11){
-            isDamaged[2] = true;
-            auto notDamage = [](Player * player){
-                player->isDamaged[2] = false;
-            };
-            DelayFunction::CreateDelayFunction(500, std::bind(notDamage, this));
-            playSound("fall", fall_channel, 0);
+            if (!Game::Properties["immortal"].b){
+                isDamaged[2] = true;
+                auto notDamage = [](Player * player){
+                    player->isDamaged[2] = false;
+                };
+                DelayFunction::CreateDelayFunction(500, std::bind(notDamage, this));
+            }
+            if (Game::Properties["sound"].b) playSound("fall", fall_channel, 0);
         }
         velocity.d = 0;
     }

@@ -16,12 +16,12 @@ void KeyboardHandler::PlayerInputHandler(Player & player, Keys & keys){
             player.key_up = true;
         }
         else if (key == keys.space){
-            if (player.collide_down.second){
-                player.velocity.d = -player.jump_speed;
+            if (player.collide_down.second && !Game::Properties["no_gravity"].b){
+                player.velocity.d = -Game::Properties["player_jump_speed"].f;
                 player.position.y += player.velocity.d;
                 player.previous_state = player.current_state;
                 player.current_state = JUMP;
-                playSound("jump", jump_channel, 0);
+                if (Game::Properties["sound"].b) playSound("jump", jump_channel, 0);
                 player.collide_down.second = false;
             }
         }

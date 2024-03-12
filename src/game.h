@@ -15,8 +15,7 @@ private:
     bool running = false;
 
 public:
-    static float fps;
-    static float gravity;
+    static std::map<std::string, PropertiesType> Properties;
 
     static SDL_Event event;
     static SDL_Window * window;
@@ -25,6 +24,7 @@ public:
     void Start();
     void Quit();
 
+    bool LoadConfig();
     bool InitSDL2();
     bool LoadMedia();
 
@@ -36,7 +36,6 @@ public:
 
 class Screen : public Game{
 public:
-    static std::string title;
     static Vector2 resolution;
     static int map_size;
     static int tile_size;
@@ -93,6 +92,7 @@ void ShowMsg(
     msg_types type,
     T msg
 ){
+    if (!Game::Properties["show_msg"].b) return;
     std::cout << std::string(indent * 2, ' ');
     switch (type){
         case normal:

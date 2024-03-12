@@ -173,6 +173,16 @@ struct Keys{
     ) : right(right), left(left), down(down), up(up), space(space) {}
 };
 
+//config type
+struct PropertiesType{
+    std::string datatype;
+    int i;
+    std::string s;
+    float f;
+    bool b;
+    auto get();
+};
+
 //extern variables
 extern std::map<std::string, Mix_Chunk*> Sounds;
 extern std::map<std::string, Mix_Music*> Musics;

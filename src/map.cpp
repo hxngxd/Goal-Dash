@@ -25,12 +25,12 @@ MapTile::MapTile(
     this->wait_for_animation = wait;
 }
 
-std::pair<float, Vector2> MapTile::CreateTiles(int map){
+std::pair<float, Vector2> MapTile::CreateTiles(std::string map){
     int mp_size = Screen::map_size;
 
     TileMap.resize(mp_size, std::vector<int>(mp_size, 0));
     std::ifstream in;
-    in.open("map/" + std::to_string(map) + ".map");
+    in.open("map/" + map + ".map");
     for (int i=0;i<mp_size;i++){
         for (int j=0;j<mp_size;j++){
             in >> TileMap[i][j];
@@ -38,7 +38,7 @@ std::pair<float, Vector2> MapTile::CreateTiles(int map){
     }
     in.close();
 
-    float wait = SDL_GetTicks() + 500;
+    float wait = SDL_GetTicks() + Game::Properties["map_animation_delay"].f;
     for (int i=0;i<mp_size;i++){
         CreateATile(0, i, wait);
     }
@@ -66,7 +66,7 @@ std::pair<float, Vector2> MapTile::CreateTiles(int map){
     
     CreateATile(spawn_i, spawn_j, wait);
 
-    return std::make_pair(wait + 50, Vector2(spawn_i, spawn_j));
+    return std::make_pair(wait + Game::Properties["map_animation_delay"].f, Vector2(spawn_i, spawn_j));
 }
 
 void MapTile::CreateATile(
@@ -84,7 +84,7 @@ void MapTile::CreateATile(
             wait
         )
     );
-    wait += 25;
+    wait += Game::Properties["map_animation_delay"].f;
 }
 
 void MapTile::Draw(){
