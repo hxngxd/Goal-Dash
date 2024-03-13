@@ -57,7 +57,10 @@ void Player::Animation(){
 void Player::MoveRightLeft(){
     if (!(key_left ^ key_right)){
         // std::cout << "Player stopped" << std::endl;
-        if (current_state != JUMP) current_state = IDLE;
+        if (current_state != JUMP){
+            if (!collide_down.second) current_state = JUMP;
+            else current_state = IDLE;
+        }
         else{
             if (collide_down.second) current_state = IDLE;
         }
