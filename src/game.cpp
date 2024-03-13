@@ -9,7 +9,7 @@ SDL_Event Game::event;
 SDL_Window * Game::window = nullptr;
 SDL_Renderer * Game::renderer = nullptr;
 
-std::map<int, DelayFunction*> DelayFunctions;
+std::map<float, DelayFunction*> DelayFunctions;
 std::map<std::string, PropertiesType> Game::Properties;
 
 Player player1;
@@ -59,9 +59,9 @@ void Game::Start(){
     ShowMsg(2, success, "done.");
 
     ShowMsg(1, normal, "creating player 1: " + Game::Properties["player_name"].s + "...");
-    player1.wait_for_animation = m.first;
     player1.starting_position = Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
     player1.Init(Game::Properties["player_name"].s);
+    DelayFunction::CreateDelayFunction(m.first, std::bind(GameObject::inScale, &player1));
     ShowMsg(2, success, "done.");
     
     running = true;
@@ -173,6 +173,13 @@ void Game::HandleEvent(){
 }
 
 void Game::Quit(){
+    ShowMsg(0, normal, "deleting all tiles...");
+    for (auto & tile : Tiles){
+        delete tile;
+        tile = nullptr;
+    }
+    ShowMsg(1, success, "done");
+
     ShowMsg(0, normal, "deleting all sprites...");
     for (auto & sprite : Sprites){
         std::string path = sprite.second->path;
@@ -185,6 +192,7 @@ void Game::Quit(){
             ShowMsg(1, success, "deleted " + path + "!");
         }
     }
+    ShowMsg(1, success, "done");
 
     ShowMsg(0, normal, "deleting all sounds and musics...");
     for (auto & sound : Sounds){
@@ -197,6 +205,8 @@ void Game::Quit(){
             ShowMsg(1, success, "deleted " + sound.first + "!");
         }
     }
+    ShowMsg(1, success, "done");
+
     for (auto & music : Musics){
         Mix_FreeMusic(music.second);
         music.second = nullptr;
@@ -207,6 +217,7 @@ void Game::Quit(){
             ShowMsg(1, success, "deleted " + music.first + "!");
         }
     }
+    ShowMsg(1, success, "done");
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

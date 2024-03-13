@@ -1,6 +1,7 @@
 #include "game.h"
 
 void KeyboardHandler::PlayerInputHandler(Player & player, Keys & keys){
+    if (!player.scale) return;
     if (Game::event.type==SDL_KEYDOWN){
         auto key = Game::event.key.keysym.sym;
         if (key == keys.right){

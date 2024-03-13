@@ -159,6 +159,9 @@ void stopSound(
 ){
     Mix_FadeOutChannel(channel, 50);
 }
+void stopAllSound(){
+    stopSound(-1);
+}
 bool loadMusic(
     std::string name,
     std::string path
@@ -194,14 +197,6 @@ float clamp(
     if (value < mn) return mn;
     if (value > mx) return mx;
     return value;
-}
-void incScale(
-    float & scale
-){
-    if (scale < 0.5) scale += 0.1;
-    else if (scale < 0.75) scale += 0.05;
-    else if (scale < 1) scale += 0.025;
-    else if (scale > 1) scale = 1;
 }
 
 //input keys

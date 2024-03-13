@@ -107,6 +107,7 @@ void playSound(
 void stopSound(
     int channel
 );
+void stopAllSound();
 bool loadMusic(
     std::string name,
     std::string path
@@ -155,9 +156,6 @@ float clamp(
     float value,
     float mn,
     float mx
-);
-void incScale(
-    float & scale
 );
 
 //input keys

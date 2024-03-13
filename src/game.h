@@ -76,15 +76,15 @@ class DelayFunction{
 public:
     int start_time;
     int delay_time;
-    std::function<void()> function;
+    std::function<bool()> function;
     void static Update();
     void static CreateDelayFunction(
         int delay_time,
-        std::function<void()> function
+        std::function<bool()> function
     );
 };
 
-extern std::map<int, DelayFunction*> DelayFunctions;
+extern std::map<float, DelayFunction*> DelayFunctions;
 
 template <class T>
 void ShowMsg(

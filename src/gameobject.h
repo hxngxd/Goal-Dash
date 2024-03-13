@@ -6,7 +6,7 @@ class MapTile;
 class Background;
 
 extern std::vector<std::vector<int>> TileMap;
-extern std::vector<MapTile> Tiles;
+extern std::vector<MapTile*> Tiles;
 extern std::vector<Background> Backgrounds;
 
 class GameObject{
@@ -20,7 +20,8 @@ public:
     int currentFrame, maxFrames;
     float animation_delay;
     float animation_speed;
-    float wait_for_animation;
+    static bool inScale(GameObject * gameobj);
+    static bool deScale(GameObject * gameobj);
 };
 
 class Background : public GameObject{

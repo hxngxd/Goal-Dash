@@ -16,7 +16,7 @@ void Player::Init(std::string name){
 }
 
 void Player::Update(){
-    if (SDL_GetTicks() <= wait_for_animation) return;
+    if (!scale) return;
     MoveRightLeft();
     if (Game::Properties["no_gravity"].b) MoveDownUp();
     else Jump();
@@ -46,7 +46,6 @@ void Player::Animation(){
     }
     maxFrames = current->maxFrames;
     Screen::DrawSprite(*current, position, size, scale, std::min(currentFrame, maxFrames), (direction==LEFT));
-    incScale(scale);
 
     if (!Game::Properties["immortal"].b){
         if (isDamaged[1] || isDamaged[2]) Damaged(true);
@@ -256,9 +255,20 @@ void Player::MapCollision(
                 Vector2(size.x/6*4, size.y),
                 nextCenter,
                 Vector2(Screen::tile_size),
-                0)
+                0) &&
+                !Game::Properties["player_won"].b &&
+                Game::Properties["player_score"].i == Game::Properties["coin"].i
             ){
                 ShowMsg(0, logging, "player won!");
+                DelayFunction::CreateDelayFunction(0, std::bind(GameObject::deScale, this));
+                for (int i=(Screen::map_size-2)*4+4;i<Tiles.size();i++){
+                    DelayFunction::CreateDelayFunction(i * Game::Properties["map_animation_delay"].f, std::bind(GameObject::deScale, Tiles[i]));
+                }
+                Game::Properties["player_won"].b = 1;
+                DelayFunction::CreateDelayFunction(1000, [](){
+                    stopAllSound();
+                    return 1;
+                });
             }
         }
         else if (type & SPAWN){
@@ -293,6 +303,7 @@ void Player::Jump(){
                 isDamaged[2] = true;
                 auto notDamage = [](Player * player){
                     player->isDamaged[2] = false;
+                    return 1;
                 };
                 DelayFunction::CreateDelayFunction(500, std::bind(notDamage, this));
             }

@@ -2,13 +2,15 @@
 
 void DelayFunction::CreateDelayFunction(
     int delay_time,
-    std::function<void()> function
+    std::function<bool()> function
 ){
     int currentTime = SDL_GetTicks();
-    DelayFunctions[currentTime + delay_time] = new DelayFunction();
-    DelayFunctions[currentTime + delay_time]->start_time = currentTime;
-    DelayFunctions[currentTime + delay_time]->delay_time = delay_time;
-    DelayFunctions[currentTime + delay_time]->function = function;
+    float id = currentTime + delay_time;
+    while (DelayFunctions.find(id)!=DelayFunctions.end()) id += 0.01;
+    DelayFunctions[id] = new DelayFunction();
+    DelayFunctions[id]->start_time = currentTime;
+    DelayFunctions[id]->delay_time = delay_time;
+    DelayFunctions[id]->function = function;
 }
 
 void DelayFunction::Update(){
@@ -16,8 +18,9 @@ void DelayFunction::Update(){
     std::vector<int> tasks;
     for (auto & func : DelayFunctions){
         if (SDL_GetTicks() - func.second->start_time >= func.second->delay_time){
-            tasks.push_back(func.first);
-            func.second->function();
+            if (func.second->function()){
+                tasks.push_back(func.first);
+            }
         }
     }
     if (tasks.empty()) return;

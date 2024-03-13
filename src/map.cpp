@@ -3,7 +3,7 @@
 #include "game.h"
 
 std::vector<std::vector<int>> TileMap;
-std::vector<MapTile> Tiles;
+std::vector<MapTile*> Tiles;
 std::vector<Background> Backgrounds;
 
 MapTile::MapTile(
@@ -22,12 +22,12 @@ MapTile::MapTile(
     this->animation_speed = 10;
     this->index = index;
     this->scale = 0;
-    this->wait_for_animation = wait;
 }
 
 std::pair<float, Vector2> MapTile::CreateTiles(std::string map){
     int mp_size = Screen::map_size;
-
+    Game::Properties["coin"].i = 0;
+    TileMap.clear();
     TileMap.resize(mp_size, std::vector<int>(mp_size, 0));
     std::ifstream in;
     in.open("map/" + map + ".map");
@@ -38,7 +38,7 @@ std::pair<float, Vector2> MapTile::CreateTiles(std::string map){
     }
     in.close();
 
-    float wait = SDL_GetTicks() + Game::Properties["map_animation_delay"].f;
+    float wait = 0;
     for (int i=0;i<mp_size;i++){
         CreateATile(0, i, wait);
     }
@@ -75,28 +75,28 @@ void MapTile::CreateATile(
     float & wait
 ){
     if (!TileMap[i][j]) return;
-    Tiles.push_back(
-        MapTile(
-            Vector2(j*Screen::tile_size, i*Screen::tile_size),
-            Screen::tile_size,
-            Vector2(i,j),
-            TileMap[i][j],
-            wait
-        )
+    if (TileMap[i][j]==COIN) Game::Properties["coin"].i++;
+    MapTile * newTile = new MapTile(
+        Vector2(j*Screen::tile_size, i*Screen::tile_size),
+        Screen::tile_size,
+        Vector2(i,j),
+        TileMap[i][j],
+        wait
     );
+    Tiles.push_back(newTile);
     wait += Game::Properties["map_animation_delay"].f;
+    DelayFunction::CreateDelayFunction(wait, std::bind(GameObject::inScale, newTile));
 }
 
 void MapTile::Draw(){
     for (auto & tile : Tiles){
-        if (tile.type != TileMap[tile.index.x][tile.index.y]) continue;
+        if (tile->type != TileMap[tile->index.x][tile->index.y]) continue;
 
         float currentTicks = SDL_GetTicks();
-        if (currentTicks <= tile.wait_for_animation) continue;
+        if (!tile->scale) continue;
         
-        SDL_Rect rect = Rect::reScale(tile.position, tile.size, tile.scale * 0.9);
-        incScale(tile.scale);
-        switch (tile.type){
+        SDL_Rect rect = Rect::reScale(tile->position, tile->size, tile->scale * 0.9);
+        switch (tile->type){
             case WIN:
                 Screen::SetDrawColor(Color::green(255));
                 break;
@@ -107,13 +107,13 @@ void MapTile::Draw(){
                 Screen::SetDrawColor(Color::white(255));
                 break;
             case COIN:
-                if (currentTicks > tile.animation_delay + 1000/tile.animation_speed){
-                    tile.currentFrame += 1;
-                    if (tile.currentFrame >= Sprites["coin"]->maxFrames) tile.currentFrame = 0;
-                    tile.animation_delay = currentTicks;
+                if (currentTicks > tile->animation_delay + 1000/tile->animation_speed){
+                    tile->currentFrame += 1;
+                    if (tile->currentFrame >= Sprites["coin"]->maxFrames) tile->currentFrame = 0;
+                    tile->animation_delay = currentTicks;
                 }
                 Screen::SetDrawColor(Color::yellow(255));
-                Screen::DrawSprite(*Sprites["coin"], tile.position, tile.size, tile.scale * 0.5, tile.currentFrame, 0);
+                Screen::DrawSprite(*Sprites["coin"], tile->position, tile->size, tile->scale * 0.5, tile->currentFrame, 0);
                 break;
             case DAMAGE:
                 Screen::SetDrawColor(Color::red(255));
