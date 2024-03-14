@@ -61,7 +61,13 @@ void Game::Start(){
     ShowMsg(1, normal, "creating player 1: " + Game::Properties["player_name"].s + "...");
     player1.starting_position = Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
     player1.Init(Game::Properties["player_name"].s);
-    DelayFunction::CreateDelayFunction(m.first, std::bind(GameObject::inScale, &player1));
+    DelayFunction::CreateDelayFunction(m.first, std::bind([](Player * player){
+        if (GameObject::inScale(player)){
+            Game::Properties["playable"].b = true;
+            return 1;
+        }
+        return 0;
+    }, &player1));
     ShowMsg(2, success, "done.");
     
     running = true;
@@ -174,9 +180,12 @@ void Game::HandleEvent(){
 
 void Game::Quit(){
     ShowMsg(0, normal, "deleting all tiles...");
-    for (auto & tile : Tiles){
-        delete tile;
-        tile = nullptr;
+    for (int i=0;i<Screen::map_size;i++){
+        for (int j=0;j<Screen::map_size;j++){
+            if (!TileMap[i][j].second) continue;
+            delete TileMap[i][j].second;
+            TileMap[i][j].second = nullptr;
+        }
     }
     ShowMsg(1, success, "done");
 

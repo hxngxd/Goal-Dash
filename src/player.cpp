@@ -13,10 +13,11 @@ void Player::Init(std::string name){
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
     memset(isDamaged, 0, sizeof(isDamaged));
+    Game::Properties["playable"].b = false;
 }
 
 void Player::Update(){
-    if (!scale) return;
+    if (!Game::Properties["playable"].b) return;
     MoveRightLeft();
     if (Game::Properties["no_gravity"].b) MoveDownUp();
     else Jump();
@@ -97,24 +98,6 @@ void Player::MoveRightLeft(){
         Background::Move(Vector2(-vx, 0), 1, 0.5);
         Background::Move(Vector2(-vx, 0), 2, 0.75);
     }
-
-    if (velocity.l + velocity.r != 0){
-        if (!collide_down.second){
-            if (Mix_Playing(run_channel)){
-                stopSound(run_channel);
-            }
-        }
-        else{
-            if (!Mix_Playing(run_channel)){
-                if (Game::Properties["sound"].b) playSound("run", run_channel, -1);
-            }
-        }
-    }
-    else{
-        if (Mix_Playing(run_channel)){
-            stopSound(run_channel);
-        }
-    }
 }
 
 void Player::MoveDownUp(){
@@ -182,7 +165,7 @@ void Player::MapCollision(
         visit.find(nextTile) == visit.end() &&
         h <= maxDist)
     {
-        int type = TileMap[nextTile.y][nextTile.x];
+        int type = TileMap[nextTile.y][nextTile.x].first;
         if (type & (WALL | DAMAGE)){
             Vector2 d = nextCenter - playerCenter;
             float cos = d.x/h;
@@ -244,7 +227,9 @@ void Player::MapCollision(
                     0)
                 ){
                 Game::Properties["player_score"].i++;
-                TileMap[nextTile.y][nextTile.x] = 0;
+                TileMap[nextTile.y][nextTile.x].first = 0;
+                delete TileMap[nextTile.y][nextTile.x].second;
+                TileMap[nextTile.y][nextTile.x].second = nullptr;
                 if (Game::Properties["sound"].b) playSound("coin", coin_channel, 0);
             }
         }
@@ -256,19 +241,24 @@ void Player::MapCollision(
                 nextCenter,
                 Vector2(Screen::tile_size),
                 0) &&
-                !Game::Properties["player_won"].b &&
-                Game::Properties["player_score"].i == Game::Properties["coin"].i
+                !Game::Properties["player_won"].b
             ){
                 ShowMsg(0, logging, "player won!");
-                DelayFunction::CreateDelayFunction(0, std::bind(GameObject::deScale, this));
-                for (int i=(Screen::map_size-2)*4+4;i<Tiles.size();i++){
-                    DelayFunction::CreateDelayFunction(i * Game::Properties["map_animation_delay"].f, std::bind(GameObject::deScale, Tiles[i]));
-                }
-                Game::Properties["player_won"].b = 1;
-                DelayFunction::CreateDelayFunction(1000, [](){
+                DelayFunction::CreateDelayFunction(100, std::bind(GameObject::deScale, this));
+                DelayFunction::CreateDelayFunction(500, [](){
+                    Game::Properties["playable"].b = 0;
                     stopAllSound();
                     return 1;
                 });
+                float wait = 500;
+                for (int i=1;i<Screen::map_size-1;i++){
+                    for (int j=1;j<Screen::map_size-1;j++){
+                        if (!TileMap[i][j].first) continue;
+                        DelayFunction::CreateDelayFunction(wait, std::bind(GameObject::deScale, TileMap[i][j].second));
+                        wait += Game::Properties["map_animation_delay"].f;
+                    }
+                }
+                Game::Properties["player_won"].b = 1;
             }
         }
         else if (type & SPAWN){

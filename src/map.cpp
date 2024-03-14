@@ -2,25 +2,19 @@
 #include "gameobject.h"
 #include "game.h"
 
-std::vector<std::vector<int>> TileMap;
-std::vector<MapTile*> Tiles;
+std::vector<std::vector<std::pair<int, MapTile*>>> TileMap;
 std::vector<Background> Backgrounds;
 
 MapTile::MapTile(
     Vector2 position,
     Vector2 size,
-    Vector2 index,
-    int type,
-    float
-    wait
+    float wait
 ){
     this->position = position;
     this->size = size;
-    this->type = type;
     this->currentFrame = 0;
     this->animation_delay = 0;
     this->animation_speed = 10;
-    this->index = index;
     this->scale = 0;
 }
 
@@ -28,12 +22,12 @@ std::pair<float, Vector2> MapTile::CreateTiles(std::string map){
     int mp_size = Screen::map_size;
     Game::Properties["coin"].i = 0;
     TileMap.clear();
-    TileMap.resize(mp_size, std::vector<int>(mp_size, 0));
+    TileMap.resize(mp_size, std::vector<std::pair<int, MapTile*>>(mp_size, std::make_pair(0, nullptr)));
     std::ifstream in;
     in.open("map/" + map + ".map");
     for (int i=0;i<mp_size;i++){
         for (int j=0;j<mp_size;j++){
-            in >> TileMap[i][j];
+            in >> TileMap[i][j].first;
         }
     }
     in.close();
@@ -55,7 +49,7 @@ std::pair<float, Vector2> MapTile::CreateTiles(std::string map){
     int spawn_i, spawn_j;
     for (int i=1;i<mp_size-1;i++){
         for (int j=1;j<mp_size-1;j++){
-            if (TileMap[i][j]==SPAWN){
+            if (TileMap[i][j].first==SPAWN){
                 spawn_i = i;
                 spawn_j = j;
                 continue;
@@ -74,54 +68,53 @@ void MapTile::CreateATile(
     int j,
     float & wait
 ){
-    if (!TileMap[i][j]) return;
-    if (TileMap[i][j]==COIN) Game::Properties["coin"].i++;
-    MapTile * newTile = new MapTile(
+    if (!TileMap[i][j].first) return;
+    if (TileMap[i][j].first==COIN) Game::Properties["coin"].i++;
+    TileMap[i][j].second = new MapTile(
         Vector2(j*Screen::tile_size, i*Screen::tile_size),
         Screen::tile_size,
-        Vector2(i,j),
-        TileMap[i][j],
         wait
     );
-    Tiles.push_back(newTile);
     wait += Game::Properties["map_animation_delay"].f;
-    DelayFunction::CreateDelayFunction(wait, std::bind(GameObject::inScale, newTile));
+    DelayFunction::CreateDelayFunction(wait, std::bind(GameObject::inScale, TileMap[i][j].second));
 }
 
 void MapTile::Draw(){
-    for (auto & tile : Tiles){
-        if (tile->type != TileMap[tile->index.x][tile->index.y]) continue;
+    for (int i=0;i<Screen::map_size;i++){
+        for (int j=0;j<Screen::map_size;j++){
+            if (!TileMap[i][j].first) continue;
 
-        float currentTicks = SDL_GetTicks();
-        if (!tile->scale) continue;
-        
-        SDL_Rect rect = Rect::reScale(tile->position, tile->size, tile->scale * 0.9);
-        switch (tile->type){
-            case WIN:
-                Screen::SetDrawColor(Color::green(255));
-                break;
-            case SPAWN:
-                Screen::SetDrawColor(Color::cyan(255));
-                break;
-            case WALL:
-                Screen::SetDrawColor(Color::white(255));
-                break;
-            case COIN:
-                if (currentTicks > tile->animation_delay + 1000/tile->animation_speed){
-                    tile->currentFrame += 1;
-                    if (tile->currentFrame >= Sprites["coin"]->maxFrames) tile->currentFrame = 0;
-                    tile->animation_delay = currentTicks;
-                }
-                Screen::SetDrawColor(Color::yellow(255));
-                Screen::DrawSprite(*Sprites["coin"], tile->position, tile->size, tile->scale * 0.5, tile->currentFrame, 0);
-                break;
-            case DAMAGE:
-                Screen::SetDrawColor(Color::red(255));
-                break;
-            default:
-                break;
+            float currentTicks = SDL_GetTicks();
+            if (!TileMap[i][j].second->scale) continue;
+            
+            SDL_Rect rect = Rect::reScale(TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale * 0.9);
+            switch (TileMap[i][j].first){
+                case WIN:
+                    Screen::SetDrawColor(Color::green(255));
+                    break;
+                case SPAWN:
+                    Screen::SetDrawColor(Color::cyan(255));
+                    break;
+                case WALL:
+                    Screen::SetDrawColor(Color::white(255));
+                    break;
+                case COIN:
+                    if (currentTicks > TileMap[i][j].second->animation_delay + 1000/TileMap[i][j].second->animation_speed){
+                        TileMap[i][j].second->currentFrame += 1;
+                        if (TileMap[i][j].second->currentFrame >= Sprites["coin"]->maxFrames) TileMap[i][j].second->currentFrame = 0;
+                        TileMap[i][j].second->animation_delay = currentTicks;
+                    }
+                    Screen::SetDrawColor(Color::yellow(255));
+                    Screen::DrawSprite(*Sprites["coin"], TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale * 0.5, TileMap[i][j].second->currentFrame, 0);
+                    break;
+                case DAMAGE:
+                    Screen::SetDrawColor(Color::red(255));
+                    break;
+                default:
+                    break;
+            }
+            SDL_RenderDrawRect(Game::renderer, &rect);
         }
-        SDL_RenderDrawRect(Game::renderer, &rect);
     }
 }
 

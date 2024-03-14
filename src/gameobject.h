@@ -5,8 +5,7 @@ class Player;
 class MapTile;
 class Background;
 
-extern std::vector<std::vector<int>> TileMap;
-extern std::vector<MapTile*> Tiles;
+extern std::vector<std::vector<std::pair<int, MapTile*>>> TileMap;
 extern std::vector<Background> Backgrounds;
 
 class GameObject{
@@ -52,14 +51,9 @@ public:
 
 class MapTile : public GameObject{
 public:
-    int type;
-    Vector2 index;
-
     MapTile(
         Vector2 position,
         Vector2 size,
-        Vector2 index,
-        int type,
         float wait
     );
     static std::pair<float, Vector2> CreateTiles(std::string map);
