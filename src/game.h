@@ -77,10 +77,12 @@ public:
     int start_time;
     int delay_time;
     std::function<bool()> function;
-    void static Update();
-    void static CreateDelayFunction(
+    std::function<void()> post_function;
+    static void Update();
+    static void CreateDelayFunction(
         int delay_time,
-        std::function<bool()> function
+        std::function<bool()> function,
+        std::function<void()> post_function = [](){}
     );
 };
 

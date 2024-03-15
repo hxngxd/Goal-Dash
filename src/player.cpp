@@ -17,13 +17,13 @@ void Player::Init(std::string name){
 }
 
 void Player::Update(){
+    Animation();
     if (!Game::Properties["playable"].b) return;
     MoveRightLeft();
     if (Game::Properties["no_gravity"].b) MoveDownUp();
     else Jump();
     Collision();
     if (Game::Properties["draw_ray"].b) DrawBox();
-    Animation();
 }
 
 void Player::Animation(){
@@ -97,6 +97,24 @@ void Player::MoveRightLeft(){
         Background::Move(Vector2(-vx, 0), 0, 0.25);
         Background::Move(Vector2(-vx, 0), 1, 0.5);
         Background::Move(Vector2(-vx, 0), 2, 0.75);
+    }
+
+     if (velocity.l + velocity.r != 0){
+        if (!collide_down.second){
+            if (Mix_Playing(run_channel)){
+                stopSound(run_channel);
+            }
+        }
+        else{
+            if (!Mix_Playing(run_channel)){
+                if (Game::Properties["sound"].b) playSound("run", run_channel, -1);
+            }
+        }
+    }
+    else{
+        if (Mix_Playing(run_channel)){
+            stopSound(run_channel);
+        }
     }
 }
 
@@ -241,20 +259,19 @@ void Player::MapCollision(
                 nextCenter,
                 Vector2(Screen::tile_size),
                 0) &&
-                !Game::Properties["player_won"].b
+                !Game::Properties["player_won"].b &&
+                Game::Properties["player_score"].i == Game::Properties["coin"].i
             ){
                 ShowMsg(0, logging, "player won!");
-                DelayFunction::CreateDelayFunction(100, std::bind(GameObject::deScale, this));
-                DelayFunction::CreateDelayFunction(500, [](){
+                GameObject::reScale(this, 0, 100, Game::Properties["rescale_speed"].f, [](){
                     Game::Properties["playable"].b = 0;
                     stopAllSound();
-                    return 1;
                 });
                 float wait = 500;
                 for (int i=1;i<Screen::map_size-1;i++){
                     for (int j=1;j<Screen::map_size-1;j++){
                         if (!TileMap[i][j].first) continue;
-                        DelayFunction::CreateDelayFunction(wait, std::bind(GameObject::deScale, TileMap[i][j].second));
+                        GameObject::reScale(TileMap[i][j].second, 0, wait, Game::Properties["rescale_speed"].f);
                         wait += Game::Properties["map_animation_delay"].f;
                     }
                 }

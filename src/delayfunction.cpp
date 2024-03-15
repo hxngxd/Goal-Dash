@@ -2,7 +2,8 @@
 
 void DelayFunction::CreateDelayFunction(
     int delay_time,
-    std::function<bool()> function
+    std::function<bool()> function,
+    std::function<void()> post_function
 ){
     int currentTime = SDL_GetTicks();
     float id = currentTime + delay_time;
@@ -11,6 +12,7 @@ void DelayFunction::CreateDelayFunction(
     DelayFunctions[id]->start_time = currentTime;
     DelayFunctions[id]->delay_time = delay_time;
     DelayFunctions[id]->function = function;
+    DelayFunctions[id]->post_function = post_function;
 }
 
 void DelayFunction::Update(){
@@ -19,6 +21,7 @@ void DelayFunction::Update(){
     for (auto & func : DelayFunctions){
         if (SDL_GetTicks() - func.second->start_time >= func.second->delay_time){
             if (func.second->function()){
+                func.second->post_function();
                 tasks.push_back(func.first);
             }
         }

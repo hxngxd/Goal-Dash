@@ -173,12 +173,10 @@ struct Keys{
 
 //config type
 struct PropertiesType{
-    std::string datatype;
     int i;
     std::string s;
     float f;
     bool b;
-    auto get();
 };
 
 //extern variables

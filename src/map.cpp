@@ -32,7 +32,7 @@ std::pair<float, Vector2> MapTile::CreateTiles(std::string map){
     }
     in.close();
 
-    float wait = 0;
+    float wait = 250;
     for (int i=0;i<mp_size;i++){
         CreateATile(0, i, wait);
     }
@@ -59,7 +59,6 @@ std::pair<float, Vector2> MapTile::CreateTiles(std::string map){
     }
     
     CreateATile(spawn_i, spawn_j, wait);
-
     return std::make_pair(wait + Game::Properties["map_animation_delay"].f, Vector2(spawn_i, spawn_j));
 }
 
@@ -76,7 +75,7 @@ void MapTile::CreateATile(
         wait
     );
     wait += Game::Properties["map_animation_delay"].f;
-    DelayFunction::CreateDelayFunction(wait, std::bind(GameObject::inScale, TileMap[i][j].second));
+    GameObject::reScale(TileMap[i][j].second, 1, wait, Game::Properties["rescale_speed"].f);
 }
 
 void MapTile::Draw(){

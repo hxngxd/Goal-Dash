@@ -6,15 +6,9 @@ void KeyboardHandler::PlayerInputHandler(Player & player, Keys & keys){
         auto key = Game::event.key.keysym.sym;
         if (key == keys.right){
             player.key_right = true;
-            if (!Mix_Playing(run_channel) && player.collide_down.second){
-                playSound("run", run_channel, -1);
-            }
         }
         else if (key == keys.left){
             player.key_left = true;
-            if (!Mix_Playing(run_channel) && player.collide_down.second){
-                playSound("run", run_channel, -1);
-            }
         }
         else if (key == keys.down){
             player.key_down = true;
@@ -37,15 +31,9 @@ void KeyboardHandler::PlayerInputHandler(Player & player, Keys & keys){
         auto key = Game::event.key.keysym.sym;
         if (key == keys.right){
             player.key_right = false;
-            if (Mix_Playing(run_channel)){
-                stopSound(run_channel);
-            }
         }
         else if (key == keys.left){
             player.key_left = false;
-            if (Mix_Playing(run_channel)){
-                stopSound(run_channel);
-            }
         }
         else if (key == keys.down){
             player.key_down = false;

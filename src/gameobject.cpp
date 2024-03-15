@@ -1,35 +1,26 @@
 #include "game.h"
 
-bool GameObject::inScale(GameObject * gameobj){
-    if (gameobj->scale < 0.5){
-        gameobj->scale += 0.1;
-        return 0;
+void GameObject::reScale(GameObject * gameobj, float to, float delay, float v, std::function<void()> post_function){
+    if (abs(gameobj->scale - to) <= 0.001){
+        gameobj->scale = to;
+        return;
     }
-    if (gameobj->scale < 0.75){
-        gameobj->scale += 0.05;
-        return 0;
-    }
-    if (gameobj->scale < 1){
-        gameobj->scale += 0.025;
-        return 0;
-    }
-    if (gameobj->scale > 1) gameobj->scale = 1;
-    return 1;
-}
-
-bool GameObject::deScale(GameObject * gameobj){
-    if (gameobj->scale > 0.5){
-        gameobj->scale -= 0.1;
-        return 0;
-    }
-    if (gameobj->scale > 0.25){
-        gameobj->scale -= 0.05;
-        return 0;
-    }
-    if (gameobj->scale > 0){
-        gameobj->scale -= 0.025;
-        return 0;
-    }
-    if (abs(gameobj->scale) <= 1e-5) gameobj->scale = 0;
-    return 1;
+    float * tmp_v = new float(v);
+    bool increasing = to > gameobj->scale;
+    DelayFunction::CreateDelayFunction(delay, std::bind([](GameObject * gameobj, float to, float * tmp_v, bool increasing){
+        if (increasing && gameobj->scale < to){
+            gameobj->scale += *tmp_v;
+            *tmp_v /= 1.05;
+            return 0;
+        }
+        if (!increasing && gameobj->scale > to){
+            gameobj->scale -= *tmp_v;
+            *tmp_v /= 1.05;
+            return 0;
+        }
+        gameobj->scale = to;
+        delete tmp_v;
+        tmp_v = nullptr;
+        return 1;
+    }, gameobj, to, tmp_v, increasing), post_function);
 }

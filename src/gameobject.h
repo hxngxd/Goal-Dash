@@ -19,8 +19,7 @@ public:
     int currentFrame, maxFrames;
     float animation_delay;
     float animation_speed;
-    static bool inScale(GameObject * gameobj);
-    static bool deScale(GameObject * gameobj);
+    static void reScale(GameObject * gameobj, float to, float delay, float v, std::function<void()> post_function = [](){});
 };
 
 class Background : public GameObject{

@@ -61,13 +61,9 @@ void Game::Start(){
     ShowMsg(1, normal, "creating player 1: " + Game::Properties["player_name"].s + "...");
     player1.starting_position = Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
     player1.Init(Game::Properties["player_name"].s);
-    DelayFunction::CreateDelayFunction(m.first, std::bind([](Player * player){
-        if (GameObject::inScale(player)){
-            Game::Properties["playable"].b = true;
-            return 1;
-        }
-        return 0;
-    }, &player1));
+    GameObject::reScale(&player1, 1, m.first, Game::Properties["rescale_speed"].f, [](){
+        Game::Properties["playable"].b = true;
+    });
     ShowMsg(2, success, "done.");
     
     running = true;
@@ -174,7 +170,7 @@ void Game::HandleEvent(){
         if (event.type == SDL_QUIT){
             running = false;
         }
-        KeyboardHandler::PlayerInputHandler(player1, leftKeys);
+        KeyboardHandler::PlayerInputHandler(player1, Game::Properties["keyboard_layout"].b ? rightKeys : leftKeys);
     }
 }
 
