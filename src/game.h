@@ -10,7 +10,8 @@
 class Screen;
 class Renderer;
 
-class Game {
+class Game
+{
 private:
     bool running = false;
 
@@ -18,8 +19,8 @@ public:
     static std::map<std::string, PropertiesType> Properties;
 
     static SDL_Event event;
-    static SDL_Window * window;
-    static SDL_Renderer * renderer;
+    static SDL_Window *window;
+    static SDL_Renderer *renderer;
 
     void Start();
     void Quit();
@@ -31,48 +32,41 @@ public:
     void HandleEvent();
     void Update();
 
-    bool isRunning();
+    bool isRunning() { return running; };
 };
 
-class Screen : public Game{
+class Screen : public Game
+{
 public:
     static Vector2 resolution;
     static int map_size;
     static int tile_size;
 
-    static void Clear(
-        SDL_Color color
-    );
-    static void SetDrawColor(
-        SDL_Color color
-    );
-    static void PointGrid(
-        SDL_Color color
-    );
+    static void Clear(SDL_Color color);
+    static void SetDrawColor(SDL_Color color);
+    static void PointGrid(SDL_Color color);
     static void Display();
-    static void DrawSprite(
-        Sprite & sprite,
-        const Vector2 & position,
-        const Vector2 & size,
-        float scale,
-        int currentFrame,
-        bool flip
-    );
+    static void DrawSprite(Sprite &sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame, bool flip);
 };
 
-class KeyboardHandler : public Game{
+class KeyboardHandler : public Game
+{
 public:
-    static void PlayerInputHandler(
-        Player & player, 
-        Keys & keys
-    );
+    static void PlayerInputHandler(Player &player, Keys &keys);
 };
 
-class Hub : public Game{
-
+class Hub : public Game
+{
+public:
 };
 
-class DelayFunction{
+class Scene : public Game
+{
+public:
+};
+
+class DelayFunction
+{
 public:
     int start_time;
     int delay_time;
@@ -80,40 +74,37 @@ public:
     std::function<void()> post_function;
     static void Update();
     static void CreateDelayFunction(
-        int delay_time,
-        std::function<bool()> function,
-        std::function<void()> post_function = [](){}
-    );
+        int delay_time, std::function<bool()> function, std::function<void()> post_function = []() {});
 };
 
-extern std::map<float, DelayFunction*> DelayFunctions;
+extern std::map<float, DelayFunction *> DelayFunctions;
 
 template <class T>
-void ShowMsg(
-    int indent,
-    msg_types type,
-    T msg
-){
-    if (!Game::Properties["show_msg"].b) return;
-    std::cout << std::string(indent * 2, ' ');
-    switch (type){
-        case normal:
-            std::cout << "> ";
-            break;
-        case success:
-            std::cout << "$ ";
-            break;
-        case fail:
-            std::cout << "@ ";
-            break;
-        case error:
-            std::cout << "! ";
-            break;
-        case logging:
-            std::cout << "# ";
-            break;
-        default:
-            break;
+void ShowMsg(int indent, msg_types type, T msg)
+{
+    if (indent)
+        std::cout << std::string(indent * 2, ' ');
+
+    switch (type)
+    {
+    case normal:
+        std::cout << "> ";
+        break;
+    case success:
+        std::cout << "$ ";
+        break;
+    case fail:
+        std::cout << "@ ";
+        break;
+    case error:
+        std::cout << "! ";
+        break;
+    case logging:
+        std::cout << "# ";
+        break;
+    default:
+        break;
     }
+
     std::cout << msg << std::endl;
 }

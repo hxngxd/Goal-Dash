@@ -5,10 +5,11 @@ class Player;
 class MapTile;
 class Background;
 
-extern std::vector<std::vector<std::pair<int, MapTile*>>> TileMap;
+extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 extern std::vector<Background> Backgrounds;
 
-class GameObject{
+class GameObject
+{
 public:
     std::string name;
     Vector2 starting_position, position;
@@ -19,63 +20,46 @@ public:
     int currentFrame, maxFrames;
     float animation_delay;
     float animation_speed;
-    static void reScale(GameObject * gameobj, float to, float delay, float v, std::function<void()> post_function = [](){});
+
+    static void reScale(
+        GameObject *gameobj, float to, float delay, float v, std::function<void()> post_function = []() {});
 };
 
-class Background : public GameObject{
+class Background : public GameObject
+{
 public:
     int opacity;
     bool toggle;
 
-    Background(
-        std::string name,
-        float scale
-    );
-    static bool loadBackground(
-        std::string name,
-        std::string path,
-        int maxFrames,
-        Vector2 realSize,
-        float scale
-    );
+    Background(std::string name, float scale);
+    static bool loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale);
 
     void setOpacity();
-    static void Move(
-        Vector2 velocity,
-        int index,
-        float ratio
-    );
+    static void Move(Vector2 velocity, int index, float ratio);
     static void Draw();
 };
 
-class MapTile : public GameObject{
+class MapTile : public GameObject
+{
 public:
-    MapTile(
-        Vector2 position,
-        Vector2 size,
-        float wait
-    );
+    MapTile(Vector2 position, Vector2 size, float wait);
+
+    static void CreateBorder();
     static std::pair<float, Vector2> CreateTiles(std::string map);
-    static void CreateATile(
-        int i,
-        int j,
-        float & wait
-    );
+    static void CreateATile(int i, int j, float &wait);
 
     static void Draw();
-    static void Update();
 };
 
-class Player : public GameObject{
+class Player : public GameObject
+{
 public:
     Player() = default;
 
     animation_states current_state, previous_state;
     animation_directions direction;
 
-    void Init(
-        std::string name
-    );
+    void Init(std::string name);
 
     void Update();
     void Animation();
@@ -88,11 +72,7 @@ public:
 
     bool key_right, key_left, key_down, key_up;
 
-    void MapCollision(
-        Vector2 nextTile,
-        std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> & visit,
-        std::queue<Vector2> & Q
-    );
+    void MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit, std::queue<Vector2> &Q);
 
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
