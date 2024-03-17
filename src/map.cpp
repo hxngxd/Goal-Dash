@@ -21,7 +21,7 @@ void MapTile::CreateBorder()
     TileMap.clear();
     TileMap.resize(ms, std::vector<std::pair<int, MapTile *>>(ms, std::make_pair(0, nullptr)));
 
-    float wait = 250;
+    float wait = 0;
 
     for (int i = 0; i < ms; i++)
     {
@@ -48,41 +48,23 @@ void MapTile::CreateBorder()
     }
 }
 
-std::pair<float, Vector2> MapTile::CreateTiles(std::string map)
+void MapTile::CreateTiles(std::string map)
 {
     int mp_size = Screen::map_size;
     Game::Properties["coin"].i = 0;
-    TileMap.clear();
-    TileMap.resize(mp_size, std::vector<std::pair<int, MapTile *>>(mp_size, std::make_pair(0, nullptr)));
+
     std::ifstream in;
     in.open("map/" + map + ".map");
-    for (int i = 0; i < mp_size; i++)
+    for (int i = 1; i < mp_size - 1; i++)
     {
-        for (int j = 0; j < mp_size; j++)
+        for (int j = 1; j < mp_size - 1; j++)
         {
             in >> TileMap[i][j].first;
         }
     }
     in.close();
 
-    float wait = 250;
-    for (int i = 0; i < mp_size; i++)
-    {
-        CreateATile(0, i, wait);
-    }
-    for (int i = 1; i < mp_size; i++)
-    {
-        CreateATile(i, mp_size - 1, wait);
-    }
-    for (int i = mp_size - 2; i >= 0; i--)
-    {
-        CreateATile(mp_size - 1, i, wait);
-    }
-    for (int i = mp_size - 2; i > 0; i--)
-    {
-        CreateATile(i, 0, wait);
-    }
-
+    float wait = 0;
     int spawn_i, spawn_j;
     for (int i = 1; i < mp_size - 1; i++)
     {
@@ -98,8 +80,7 @@ std::pair<float, Vector2> MapTile::CreateTiles(std::string map)
         }
     }
 
-    CreateATile(spawn_i, spawn_j, wait);
-    return std::make_pair(wait + Game::Properties["map_animation_delay"].f, Vector2(spawn_i, spawn_j));
+    // CreateATile(spawn_i, spawn_j, wait);
 }
 
 void MapTile::CreateATile(int i, int j, float &wait)
@@ -119,13 +100,38 @@ void MapTile::CreateATile(int i, int j, float &wait)
     GameObject::reScale(TileMap[i][j].second, 1, wait, Game::Properties["rescale_speed"].f);
 }
 
+void MapTile::DeleteTiles()
+{
+    float wait = 0;
+    auto post_func = [](int i, int j)
+    {
+        TileMap[i][j].first = 0;
+        if (TileMap[i][j].second)
+        {
+            delete TileMap[i][j].second;
+            TileMap[i][j].second = nullptr;
+        }
+    };
+
+    for (int i = 1; i < Screen::map_size - 1; i++)
+    {
+        for (int j = 1; j < Screen::map_size - 1; j++)
+        {
+            if (!TileMap[i][j].second)
+                continue;
+            GameObject::reScale(TileMap[i][j].second, 0, wait, Game::Properties["rescale_speed"].f, std::bind(post_func, i, j));
+            wait += Game::Properties["map_animation_delay"].f;
+        }
+    }
+}
+
 void MapTile::Draw()
 {
     for (int i = 0; i < Screen::map_size; i++)
     {
         for (int j = 0; j < Screen::map_size; j++)
         {
-            if (!TileMap[i][j].first)
+            if (!TileMap[i][j].first || !TileMap[i][j].second)
                 continue;
 
             float currentTicks = SDL_GetTicks();

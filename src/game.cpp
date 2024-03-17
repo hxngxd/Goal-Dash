@@ -8,6 +8,7 @@ int Screen::tile_size = 48;
 SDL_Event Game::event;
 SDL_Window *Game::window = nullptr;
 SDL_Renderer *Game::renderer = nullptr;
+Scene *Game::scene = nullptr;
 
 std::map<float, DelayFunction *> DelayFunctions;
 std::map<std::string, PropertiesType> Game::Properties;
@@ -27,6 +28,7 @@ void Game::Update()
     //----------------------------------------
 
     DelayFunction::Update();
+    MapTile::Draw();
 
     //----------------------------------------
 
@@ -94,7 +96,17 @@ void Game::Start()
 
     //----------------------------------------
 
-    // ShowMsg(1, normal, "create welcome scene.");
+    ShowMsg(1, normal, "creating welcome scene...");
+    scene = new Scene();
+    if (!scene)
+    {
+        ShowMsg(1, fail, "failed to create scene.");
+        return;
+    }
+    ShowMsg(2, success, "done.");
+
+    //----------------------------------------
+
     // ShowMsg(1, normal, "creating map...");
     // auto m = MapTile::CreateTiles(Game::Properties["map"].s);
     // ShowMsg(2, success, "done.");
@@ -236,6 +248,10 @@ bool Game::LoadMedia()
         return 0;
     if (!loadMusic("bg_music", "sound/bg_music.ogg"))
         return 0;
+    if (!loadMusic("click", "sound/click.ogg"))
+        return 0;
+    if (!loadMusic("hover", "sound/hover.ogg"))
+        return 0;
 
     //----------------------------------------
 
@@ -310,6 +326,16 @@ void Game::Quit()
             ShowMsg(1, success, "deleted " + music.first + "!");
     }
 
+    ShowMsg(1, success, "done.");
+
+    //----------------------------------------
+
+    ShowMsg(0, normal, "deleting scene...");
+    if (scene)
+    {
+        delete scene;
+        scene = nullptr;
+    }
     ShowMsg(1, success, "done.");
 
     //----------------------------------------

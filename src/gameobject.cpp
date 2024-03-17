@@ -5,6 +5,7 @@ void GameObject::reScale(GameObject *gameobj, float to, float delay, float v, st
     if (abs(gameobj->scale - to) <= 0.001)
     {
         gameobj->scale = to;
+        post_function();
         return;
     }
 

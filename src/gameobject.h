@@ -4,6 +4,7 @@
 class Player;
 class MapTile;
 class Background;
+class UI;
 
 extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 extern std::vector<Background> Backgrounds;
@@ -45,9 +46,9 @@ public:
     MapTile(Vector2 position, Vector2 size, float wait);
 
     static void CreateBorder();
-    static std::pair<float, Vector2> CreateTiles(std::string map);
+    static void CreateTiles(std::string map);
     static void CreateATile(int i, int j, float &wait);
-
+    static void DeleteTiles();
     static void Draw();
 };
 
@@ -77,4 +78,12 @@ public:
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
     bool isDamaged[3];
+};
+
+class UI : public GameObject
+{
+public:
+    static bool CreateButton();
+    static bool CreateText();
+    static void Update();
 };

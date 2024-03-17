@@ -9,6 +9,7 @@
 
 class Screen;
 class Renderer;
+class Scene;
 
 class Game
 {
@@ -21,6 +22,7 @@ public:
     static SDL_Event event;
     static SDL_Window *window;
     static SDL_Renderer *renderer;
+    static Scene *scene;
 
     void Start();
     void Quit();
@@ -55,14 +57,13 @@ public:
     static void PlayerInputHandler(Player &player, Keys &keys);
 };
 
-class Hub : public Game
-{
-public:
-};
-
 class Scene : public Game
 {
 public:
+    Scene();
+    Scene(std::string map);
+    ~Scene();
+    void Update();
 };
 
 class DelayFunction
