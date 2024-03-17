@@ -62,7 +62,7 @@ class Scene : public Game
 public:
     Scene();
     Scene(std::string map);
-    ~Scene();
+    void DeleteScene();
     void Update();
 };
 

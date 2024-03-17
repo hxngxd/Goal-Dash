@@ -5,9 +5,11 @@ class Player;
 class MapTile;
 class Background;
 class UI;
+class Button;
 
 extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 extern std::vector<Background> Backgrounds;
+extern std::map<std::string, Button *> Buttons;
 
 class GameObject
 {
@@ -80,10 +82,28 @@ public:
     bool isDamaged[3];
 };
 
-class UI : public GameObject
+class UI
 {
 public:
-    static bool CreateButton();
-    static bool CreateText();
+    std::string name;
+    Vector2 position;
+    float scale;
+
     static void Update();
+    static void DeleteUIs();
+};
+
+class Button : public UI
+{
+public:
+    SDL_Color bg_color;
+    std::string label;
+    int font_size;
+    SDL_Color font_color;
+    std::function<void()> onClick;
+
+    static bool CreateButton(
+        std::string name, const Vector2 &position, SDL_Color bg_color, std::string label, int font_size, SDL_Color font_color, std::function<void()> onClick = []() {});
+
+    void Update();
 };

@@ -29,7 +29,7 @@ void Game::Update()
 
     DelayFunction::Update();
     MapTile::Draw();
-
+    UI::Update();
     //----------------------------------------
 
     Screen::Display();
@@ -96,14 +96,7 @@ void Game::Start()
 
     //----------------------------------------
 
-    ShowMsg(1, normal, "creating welcome scene...");
     scene = new Scene();
-    if (!scene)
-    {
-        ShowMsg(1, fail, "failed to create scene.");
-        return;
-    }
-    ShowMsg(2, success, "done.");
 
     //----------------------------------------
 
@@ -266,6 +259,9 @@ void Game::HandleEvent()
         {
             running = false;
         }
+        if (event.type == SDL_KEYDOWN)
+        {
+        }
         // KeyboardHandler::PlayerInputHandler(player1, Game::Properties["keyboard_layout"].b ? rightKeys : leftKeys);
     }
 }
@@ -295,10 +291,7 @@ void Game::Quit()
         std::string path = sprite.second->path;
         delete sprite.second;
         sprite.second = nullptr;
-        if (sprite.second)
-            ShowMsg(1, fail, "failed to delete " + path + ".");
-        else
-            ShowMsg(1, success, "deleted " + path + "!");
+        ShowMsg(1, success, "deleted " + path + "!");
     }
     ShowMsg(1, success, "done.");
 
@@ -309,10 +302,7 @@ void Game::Quit()
     {
         Mix_FreeChunk(sound.second);
         sound.second = nullptr;
-        if (sound.second)
-            ShowMsg(1, fail, "failed to delete " + sound.first + ".");
-        else
-            ShowMsg(1, success, "deleted " + sound.first + "!");
+        ShowMsg(1, success, "deleted " + sound.first + "!");
     }
     ShowMsg(1, success, "done.");
 
@@ -320,22 +310,9 @@ void Game::Quit()
     {
         Mix_FreeMusic(music.second);
         music.second = nullptr;
-        if (music.second)
-            ShowMsg(1, fail, "failed to delete " + music.first + ".");
-        else
-            ShowMsg(1, success, "deleted " + music.first + "!");
+        ShowMsg(1, success, "deleted " + music.first + "!");
     }
 
-    ShowMsg(1, success, "done.");
-
-    //----------------------------------------
-
-    ShowMsg(0, normal, "deleting scene...");
-    if (scene)
-    {
-        delete scene;
-        scene = nullptr;
-    }
     ShowMsg(1, success, "done.");
 
     //----------------------------------------
@@ -343,6 +320,15 @@ void Game::Quit()
     ShowMsg(0, normal, "deleting font...");
     TTF_CloseFont(myFont);
     ShowMsg(1, success, "done.");
+
+    //----------------------------------------
+
+    if (scene)
+    {
+        scene->DeleteScene();
+        scene = nullptr;
+        ShowMsg(1, success, "done.");
+    }
 
     //----------------------------------------
 
