@@ -1,5 +1,6 @@
 #pragma once
 #include <bits/stdc++.h>
+
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
 #include "../include/SDL2/SDL_mixer.h"
@@ -10,13 +11,20 @@
 struct Vector2
 {
     float x, y;
-    Vector2() : x(0.0), y(0.0) {}
-    Vector2(float value) : x(value), y(value) {}
-    Vector2(float x, float y) : x(x), y(y) {}
+    Vector2() : x(0.0), y(0.0)
+    {
+    }
+    Vector2(float value) : x(value), y(value)
+    {
+    }
+    Vector2(float x, float y) : x(x), y(y)
+    {
+    }
     float distance(const Vector2 &other);
 };
 
 extern Vector2 v2right, v2left, v2down, v2up;
+extern Vector2 mousePosition;
 
 std::ostream &operator<<(std::ostream &out, const Vector2 &v);
 
@@ -55,33 +63,71 @@ struct Vector2Equal
 struct Direction
 {
     float l, r, u, d;
-    Direction() : l(0), r(0), u(0), d(0) {}
-    Direction(float l, float r, float u, float d) : l(l), r(r), u(u), d(d) {}
+    Direction() : l(0), r(0), u(0), d(0)
+    {
+    }
+    Direction(float l, float r, float u, float d) : l(l), r(r), u(u), d(d)
+    {
+    }
 };
 
 //----------------------------------------
 
 struct Color
 {
-    static SDL_Color white(Uint8 a) { return {255, 255, 255, a}; }
-    static SDL_Color black(Uint8 a) { return {0, 0, 0, a}; }
-    static SDL_Color blue(Uint8 a) { return {0, 0, 255, a}; }
-    static SDL_Color red(Uint8 a) { return {255, 0, 0, a}; }
-    static SDL_Color green(Uint8 a) { return {0, 255, 0, a}; }
-    static SDL_Color violet(Uint8 a) { return {238, 130, 238, a}; }
-    static SDL_Color pink(Uint8 a) { return {255, 192, 203, a}; }
-    static SDL_Color yellow(Uint8 a) { return {255, 255, 0, a}; }
-    static SDL_Color orange(Uint8 a) { return {255, 165, 0, a}; }
-    static SDL_Color cyan(Uint8 a) { return {0, 255, 255, a}; }
+    static SDL_Color white(Uint8 a)
+    {
+        return {255, 255, 255, a};
+    }
+    static SDL_Color black(Uint8 a)
+    {
+        return {0, 0, 0, a};
+    }
+    static SDL_Color blue(Uint8 a)
+    {
+        return {0, 0, 255, a};
+    }
+    static SDL_Color red(Uint8 a)
+    {
+        return {255, 0, 0, a};
+    }
+    static SDL_Color green(Uint8 a)
+    {
+        return {0, 255, 0, a};
+    }
+    static SDL_Color violet(Uint8 a)
+    {
+        return {238, 130, 238, a};
+    }
+    static SDL_Color pink(Uint8 a)
+    {
+        return {255, 192, 203, a};
+    }
+    static SDL_Color yellow(Uint8 a)
+    {
+        return {255, 255, 0, a};
+    }
+    static SDL_Color orange(Uint8 a)
+    {
+        return {255, 165, 0, a};
+    }
+    static SDL_Color cyan(Uint8 a)
+    {
+        return {0, 255, 255, a};
+    }
 };
 
 //----------------------------------------
 
 struct Rect
 {
-    static SDL_Rect Square(int res) { return {0, 0, res, res}; }
+    static SDL_Rect Square(int res)
+    {
+        return {0, 0, res, res};
+    }
 
-    static bool isCollide(const Vector2 &first_position, const Vector2 &first_size, const Vector2 &second_position, const Vector2 &second_size, float eps);
+    static bool isCollide(const Vector2 &first_position, const Vector2 &first_size, const Vector2 &second_position,
+                          const Vector2 &second_size, float eps);
 
     static Vector2 getCenter(const Vector2 &position, const Vector2 &size);
 
@@ -92,7 +138,7 @@ struct Rect
 
 class Sprite
 {
-public:
+  public:
     SDL_Texture *texture;
     std::string path;
     int maxFrames;
@@ -167,6 +213,7 @@ enum msg_types
 //----------------------------------------
 
 float clamp(float value, float mn, float mx);
+bool IsInRange(float value, float mn, float mx);
 
 //----------------------------------------
 
@@ -174,7 +221,10 @@ struct Keys
 {
     SDL_KeyCode right, left, down, up, space;
     Keys() = default;
-    Keys(SDL_KeyCode right, SDL_KeyCode left, SDL_KeyCode down, SDL_KeyCode up, SDL_KeyCode space) : right(right), left(left), down(down), up(up), space(space) {}
+    Keys(SDL_KeyCode right, SDL_KeyCode left, SDL_KeyCode down, SDL_KeyCode up, SDL_KeyCode space)
+        : right(right), left(left), down(down), up(up), space(space)
+    {
+    }
 };
 
 extern Keys leftKeys, rightKeys;

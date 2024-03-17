@@ -1,11 +1,13 @@
 #include "game.h"
 
+Game *game = nullptr;
+
 int main(int argc, char *argv[])
 {
     //----------------------------------------
 
     ShowMsg(0, normal, "starting new game...");
-    Game *game = new Game();
+    game = new Game();
     game->Start();
 
     //----------------------------------------
@@ -20,7 +22,6 @@ int main(int argc, char *argv[])
 
         frameStart = (float)SDL_GetTicks();
 
-        game->HandleEvent();
         game->Update();
 
         frameTime = (float)SDL_GetTicks() - frameStart;

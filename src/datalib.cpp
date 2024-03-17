@@ -1,4 +1,5 @@
 #include "datalib.h"
+
 #include "game.h"
 
 //----------------------------------------
@@ -7,6 +8,7 @@ Vector2 v2right = Vector2(1, 0);
 Vector2 v2left = Vector2(-1, 0);
 Vector2 v2down = Vector2(0, 1);
 Vector2 v2up = Vector2(0, -1);
+Vector2 mousePosition = Vector2();
 
 float Vector2::distance(const Vector2 &other)
 {
@@ -107,29 +109,20 @@ bool Vector2Equal::operator()(const Vector2 &lhs, const Vector2 &rhs) const
 
 //----------------------------------------
 
-bool Rect::isCollide(
-    const Vector2 &first_position,
-    const Vector2 &first_size,
-    const Vector2 &second_position,
-    const Vector2 &second_size,
-    float eps)
+bool Rect::isCollide(const Vector2 &first_position, const Vector2 &first_size, const Vector2 &second_position,
+                     const Vector2 &second_size, float eps)
 {
     float c_x = abs(first_position.x - second_position.x) - first_size.x / 2 - second_size.x / 2;
     float c_y = abs(first_position.y - second_position.y) - first_size.y / 2 - second_size.y / 2;
     return c_x <= eps && c_y <= eps;
 }
 
-Vector2 Rect::getCenter(
-    const Vector2 &position,
-    const Vector2 &size)
+Vector2 Rect::getCenter(const Vector2 &position, const Vector2 &size)
 {
     return position + size / 2;
 }
 
-SDL_Rect Rect::reScale(
-    const Vector2 &position,
-    const Vector2 &size,
-    float scale)
+SDL_Rect Rect::reScale(const Vector2 &position, const Vector2 &size, float scale)
 {
     SDL_Rect newRect;
     newRect.x = position.x + (1 - scale) * size.x * 0.5;
@@ -235,6 +228,11 @@ float clamp(float value, float mn, float mx)
     if (value > mx)
         return mx;
     return value;
+}
+
+bool IsInRange(float value, float mn, float mx)
+{
+    return mn <= value && value <= mx;
 }
 
 //----------------------------------------

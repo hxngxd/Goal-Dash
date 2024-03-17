@@ -1,6 +1,6 @@
 #include "game.h"
 
-void KeyboardHandler::PlayerInputHandler(Player &player, Keys &keys)
+void EventHandler::PlayerInputHandler(Player &player, Keys &keys)
 {
     if (!Game::Properties["playable"].b)
         return;
@@ -59,6 +59,28 @@ void KeyboardHandler::PlayerInputHandler(Player &player, Keys &keys)
         }
         else if (key == keys.space)
         {
+        }
+    }
+}
+
+void EventHandler::MouseInputHandler()
+{
+    if (event.type == SDL_MOUSEBUTTONDOWN)
+    {
+        if (event.button.button == SDL_BUTTON_LEFT)
+        {
+            downButton = hoverButton;
+        }
+    }
+    else if (event.type == SDL_MOUSEBUTTONUP)
+    {
+        if (event.button.button = SDL_BUTTON_LEFT)
+        {
+            upButton = hoverButton;
+            if (downButton == upButton && Buttons.find(downButton) != Buttons.end())
+            {
+                Buttons[downButton]->onClick();
+            }
         }
     }
 }

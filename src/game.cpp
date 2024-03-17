@@ -1,4 +1,5 @@
 #include "game.h"
+
 #include "gameobject.h"
 
 Vector2 Screen::resolution(768, 768);
@@ -30,8 +31,20 @@ void Game::Update()
     DelayFunction::Update();
     MapTile::Draw();
     UI::Update();
+
     //----------------------------------------
 
+    while (SDL_PollEvent(&event) != 0)
+    {
+        if (event.type == SDL_QUIT)
+            running = false;
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        mousePosition = Vector2(x, y);
+        EventHandler::MouseInputHandler();
+    }
+
+    //----------------------------------------
     Screen::Display();
 }
 
@@ -104,10 +117,12 @@ void Game::Start()
     // auto m = MapTile::CreateTiles(Game::Properties["map"].s);
     // ShowMsg(2, success, "done.");
 
-    // ShowMsg(1, normal, "creating player 1: " + Game::Properties["player_name"].s + "...");
-    // player1.starting_position = Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
+    // ShowMsg(1, normal, "creating player 1: " +
+    // Game::Properties["player_name"].s + "..."); player1.starting_position =
+    // Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
     // player1.Init(Game::Properties["player_name"].s);
-    // GameObject::reScale(&player1, 1, m.first, Game::Properties["rescale_speed"].f, [](){
+    // GameObject::reScale(&player1, 1, m.first,
+    // Game::Properties["rescale_speed"].f, [](){
     //     Game::Properties["playable"].b = true;
     // });
     // ShowMsg(2, success, "done.");
@@ -176,7 +191,8 @@ bool Game::InitSDL2()
     //----------------------------------------
 
     ShowMsg(2, normal, "creating window...");
-    window = SDL_CreateWindow("Goal Dash", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Screen::resolution.x, Screen::resolution.y, 0);
+    window = SDL_CreateWindow("Goal Dash", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Screen::resolution.x,
+                              Screen::resolution.y, 0);
     if (!window)
     {
         ShowMsg(3, fail, "failed to create window.");
@@ -249,21 +265,6 @@ bool Game::LoadMedia()
     //----------------------------------------
 
     return 1;
-}
-
-void Game::HandleEvent()
-{
-    while (SDL_PollEvent(&event) != 0)
-    {
-        if (event.type == SDL_QUIT)
-        {
-            running = false;
-        }
-        if (event.type == SDL_KEYDOWN)
-        {
-        }
-        // KeyboardHandler::PlayerInputHandler(player1, Game::Properties["keyboard_layout"].b ? rightKeys : leftKeys);
-    }
 }
 
 void Game::Quit()
@@ -374,7 +375,8 @@ void Screen::PointGrid(SDL_Color color)
     }
 }
 
-void Screen::DrawSprite(Sprite &sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame, bool flip)
+void Screen::DrawSprite(Sprite &sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame,
+                        bool flip)
 {
     SDL_Rect src = {(currentFrame % sprite.maxFrames) * sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
     SDL_Rect dst = Rect::reScale(position, size, scale);

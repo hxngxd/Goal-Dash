@@ -1,6 +1,6 @@
 #include "datalib.h"
-#include "gameobject.h"
 #include "game.h"
+#include "gameobject.h"
 
 std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 std::vector<Background> Backgrounds;
@@ -91,10 +91,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
     if (TileMap[i][j].first == COIN)
         Game::Properties["coin"].i++;
 
-    TileMap[i][j].second = new MapTile(
-        Vector2(j * Screen::tile_size, i * Screen::tile_size),
-        Screen::tile_size,
-        wait);
+    TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size, wait);
 
     wait += Game::Properties["map_animation_delay"].f;
     GameObject::reScale(TileMap[i][j].second, 1, wait, Game::Properties["rescale_speed"].f);
@@ -103,8 +100,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
 void MapTile::DeleteTiles()
 {
     float wait = 0;
-    auto post_func = [](int i, int j)
-    {
+    auto post_func = [](int i, int j) {
         TileMap[i][j].first = 0;
         if (TileMap[i][j].second)
         {
@@ -119,7 +115,8 @@ void MapTile::DeleteTiles()
         {
             if (!TileMap[i][j].second)
                 continue;
-            GameObject::reScale(TileMap[i][j].second, 0, wait, Game::Properties["rescale_speed"].f, std::bind(post_func, i, j));
+            GameObject::reScale(TileMap[i][j].second, 0, wait, Game::Properties["rescale_speed"].f,
+                                std::bind(post_func, i, j));
             wait += Game::Properties["map_animation_delay"].f;
         }
     }
@@ -138,7 +135,8 @@ void MapTile::Draw()
             if (!TileMap[i][j].second->scale)
                 continue;
 
-            SDL_Rect rect = Rect::reScale(TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale * 0.9);
+            SDL_Rect rect = Rect::reScale(TileMap[i][j].second->position, TileMap[i][j].second->size,
+                                          TileMap[i][j].second->scale * 0.9);
 
             switch (TileMap[i][j].first)
             {
@@ -160,7 +158,8 @@ void MapTile::Draw()
                     TileMap[i][j].second->animation_delay = currentTicks;
                 }
                 Screen::SetDrawColor(Color::yellow(255));
-                Screen::DrawSprite(*Sprites["coin"], TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale * 0.5, TileMap[i][j].second->currentFrame, 0);
+                Screen::DrawSprite(*Sprites["coin"], TileMap[i][j].second->position, TileMap[i][j].second->size,
+                                   TileMap[i][j].second->scale * 0.5, TileMap[i][j].second->currentFrame, 0);
                 break;
             case DAMAGE:
                 Screen::SetDrawColor(Color::red(255));

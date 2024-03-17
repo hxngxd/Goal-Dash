@@ -1,9 +1,10 @@
 #pragma once
 #include <bits/stdc++.h>
+
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
-#include "../include/SDL2/SDL_ttf.h"
 #include "../include/SDL2/SDL_mixer.h"
+#include "../include/SDL2/SDL_ttf.h"
 #include "datalib.h"
 #include "gameobject.h"
 
@@ -13,10 +14,10 @@ class Scene;
 
 class Game
 {
-private:
+  private:
     bool running = false;
 
-public:
+  public:
     static std::map<std::string, PropertiesType> Properties;
 
     static SDL_Event event;
@@ -25,21 +26,29 @@ public:
     static Scene *scene;
 
     void Start();
+    void Stop()
+    {
+        running = false;
+    }
     void Quit();
 
     bool LoadConfig();
     bool InitSDL2();
     bool LoadMedia();
 
-    void HandleEvent();
     void Update();
 
-    bool isRunning() { return running; };
+    bool isRunning()
+    {
+        return running;
+    }
 };
+
+extern Game *game;
 
 class Screen : public Game
 {
-public:
+  public:
     static Vector2 resolution;
     static int map_size;
     static int tile_size;
@@ -48,18 +57,20 @@ public:
     static void SetDrawColor(SDL_Color color);
     static void PointGrid(SDL_Color color);
     static void Display();
-    static void DrawSprite(Sprite &sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame, bool flip);
+    static void DrawSprite(Sprite &sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame,
+                           bool flip);
 };
 
-class KeyboardHandler : public Game
+class EventHandler : public Game
 {
-public:
+  public:
     static void PlayerInputHandler(Player &player, Keys &keys);
+    static void MouseInputHandler();
 };
 
 class Scene : public Game
 {
-public:
+  public:
     Scene();
     Scene(std::string map);
     void DeleteScene();
@@ -68,7 +79,7 @@ public:
 
 class DelayFunction
 {
-public:
+  public:
     int start_time;
     int delay_time;
     std::function<bool()> function;
@@ -80,8 +91,7 @@ public:
 
 extern std::map<float, DelayFunction *> DelayFunctions;
 
-template <class T>
-void ShowMsg(int indent, msg_types type, T msg)
+template <class T> void ShowMsg(int indent, msg_types type, T msg)
 {
     if (indent)
         std::cout << std::string(indent * 2, ' ');

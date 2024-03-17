@@ -12,8 +12,7 @@ void GameObject::reScale(GameObject *gameobj, float to, float delay, float v, st
     float *tmp_v = new float(v);
     bool increasing = to > gameobj->scale;
 
-    auto rescaling = [](GameObject *gameobj, float to, float *tmp_v, bool increasing)
-    {
+    auto rescaling = [](GameObject *gameobj, float to, float *tmp_v, bool increasing) {
         if (increasing && gameobj->scale < to)
         {
             gameobj->scale += *tmp_v;

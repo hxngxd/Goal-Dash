@@ -226,7 +226,8 @@ void Player::Collision()
     isDamaged[1] = isDamaged[0];
 }
 
-void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit, std::queue<Vector2> &Q)
+void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit,
+                          std::queue<Vector2> &Q)
 {
     float maxDist = Screen::tile_size * sqrt(61) / 6 - 3;
     float eps = 0;
@@ -252,13 +253,15 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             {
                 position.x = std::max(position.x, (float)(nextTile.x + 5.0 / 6.0) * size.x + 1);
             }
-            else if ((nextCenter.y > playerCenter.y) && ((range + eps * 5 < angle && angle < M_PI - range - eps * 5) || (abs(cos) <= eps)))
+            else if ((nextCenter.y > playerCenter.y) &&
+                     ((range + eps * 5 < angle && angle < M_PI - range - eps * 5) || (abs(cos) <= eps)))
             {
                 position.y = std::min(position.y, (float)(nextTile.y - 1) * size.y);
                 if (abs(playerCenter.y - nextCenter.y) - size.y <= 3)
                     collide_down.first = true;
             }
-            else if ((nextCenter.y < playerCenter.y) && ((range + eps * 5 < angle && angle < M_PI - range - eps * 5) || (abs(cos) <= eps)))
+            else if ((nextCenter.y < playerCenter.y) &&
+                     ((range + eps * 5 < angle && angle < M_PI - range - eps * 5) || (abs(cos) <= eps)))
             {
                 position.y = std::max(position.y, (float)(nextTile.y + 1) * size.y);
                 if (abs(playerCenter.y - nextCenter.y) - size.y <= 0)
@@ -275,7 +278,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
 
             if (!Game::Properties["immortal"].b && type & DAMAGE)
             {
-                if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size), 3))
+                if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
+                                    Vector2(Screen::tile_size), 3))
                     isDamaged[0] = true;
             }
         }
@@ -284,7 +288,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Game::Properties["draw_ray"].b)
                 Screen::SetDrawColor(Color::yellow(255));
 
-            if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size), 0))
+            if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
+                                0))
             {
                 Game::Properties["player_score"].i++;
                 TileMap[nextTile.y][nextTile.x].first = 0;
@@ -300,12 +305,13 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Game::Properties["draw_ray"].b)
                 Screen::SetDrawColor(Color::green(255));
 
-            if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size), 0) && !Game::Properties["player_won"].b && Game::Properties["player_score"].i == Game::Properties["coin"].i)
+            if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
+                                0) &&
+                !Game::Properties["player_won"].b && Game::Properties["player_score"].i == Game::Properties["coin"].i)
             {
                 ShowMsg(0, logging, "player won!");
 
-                auto post_func = []()
-                {
+                auto post_func = []() {
                     Game::Properties["playable"].b = 0;
                     stopAllSound();
                 };
@@ -372,8 +378,7 @@ void Player::Jump()
             if (!Game::Properties["immortal"].b)
             {
                 isDamaged[2] = true;
-                auto notDamage = [](Player *player)
-                {
+                auto notDamage = [](Player *player) {
                     player->isDamaged[2] = false;
                     return 1;
                 };

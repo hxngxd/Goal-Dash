@@ -10,10 +10,11 @@ class Button;
 extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 extern std::vector<Background> Backgrounds;
 extern std::map<std::string, Button *> Buttons;
+extern std::string hoverButton, downButton, upButton;
 
 class GameObject
 {
-public:
+  public:
     std::string name;
     Vector2 starting_position, position;
     Vector2 size;
@@ -30,7 +31,7 @@ public:
 
 class Background : public GameObject
 {
-public:
+  public:
     int opacity;
     bool toggle;
 
@@ -44,7 +45,7 @@ public:
 
 class MapTile : public GameObject
 {
-public:
+  public:
     MapTile(Vector2 position, Vector2 size, float wait);
 
     static void CreateBorder();
@@ -56,7 +57,7 @@ public:
 
 class Player : public GameObject
 {
-public:
+  public:
     Player() = default;
 
     animation_states current_state, previous_state;
@@ -75,7 +76,8 @@ public:
 
     bool key_right, key_left, key_down, key_up;
 
-    void MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit, std::queue<Vector2> &Q);
+    void MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit,
+                      std::queue<Vector2> &Q);
 
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
@@ -84,7 +86,7 @@ public:
 
 class UI
 {
-public:
+  public:
     std::string name;
     Vector2 position;
     float scale;
@@ -95,7 +97,7 @@ public:
 
 class Button : public UI
 {
-public:
+  public:
     SDL_Color bg_color;
     std::string label;
     int font_size;
@@ -103,7 +105,8 @@ public:
     std::function<void()> onClick;
 
     static bool CreateButton(
-        std::string name, const Vector2 &position, SDL_Color bg_color, std::string label, int font_size, SDL_Color font_color, std::function<void()> onClick = []() {});
+        std::string name, const Vector2 &position, SDL_Color bg_color, std::string label, int font_size,
+        SDL_Color font_color, std::function<void()> onClick = []() {});
 
     void Update();
 };

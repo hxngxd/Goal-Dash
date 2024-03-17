@@ -1,6 +1,7 @@
 #include "game.h"
 
-void DelayFunction::CreateDelayFunction(int delay_time, std::function<bool()> function, std::function<void()> post_function)
+void DelayFunction::CreateDelayFunction(int delay_time, std::function<bool()> function,
+                                        std::function<void()> post_function)
 {
     int currentTime = SDL_GetTicks();
     float id = currentTime + delay_time;

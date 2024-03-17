@@ -2,6 +2,7 @@
 #include "gameobject.h"
 
 std::map<std::string, Button *> Buttons;
+std::string hoverButton = "", downButton = "", upButton = "";
 
 Scene::Scene()
 {
@@ -9,6 +10,8 @@ Scene::Scene()
     MapTile::CreateBorder();
 
     Button::CreateButton("start", Screen::resolution / 2, Color::cyan(127), "START", 50, Color::white(255));
+    Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 100), Color::cyan(127), "exit", 50,
+                         Color::white(255), []() { game->Stop(); });
 
     ShowMsg(1, success, "done.");
 }
@@ -63,7 +66,8 @@ void UI::DeleteUIs()
     Buttons.clear();
 }
 
-bool Button::CreateButton(std::string name, const Vector2 &position, SDL_Color bg_color, std::string label, int font_size, SDL_Color font_color, std::function<void()> onClick)
+bool Button::CreateButton(std::string name, const Vector2 &position, SDL_Color bg_color, std::string label,
+                          int font_size, SDL_Color font_color, std::function<void()> onClick)
 {
     ShowMsg(2, normal, "creating " + name + " button...");
     Buttons[name] = new Button();
@@ -103,7 +107,22 @@ void Button::Update()
     bgRect.x -= font_size / 5;
     bgRect.w += font_size / 5 * 2;
 
-    Screen::SetDrawColor(bg_color);
+    bool isHovered = IsInRange(mousePosition.x, bgRect.x, bgRect.x + bgRect.w) &&
+                     IsInRange(mousePosition.y, bgRect.y, bgRect.y + bgRect.h);
+
+    if (isHovered)
+    {
+        if (hoverButton != name)
+            hoverButton = name;
+        Screen::SetDrawColor(Color::black(100));
+    }
+    else
+    {
+        if (hoverButton == name)
+            hoverButton = "";
+        Screen::SetDrawColor(bg_color);
+    }
+
     SDL_RenderFillRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
