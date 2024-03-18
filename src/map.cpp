@@ -73,7 +73,7 @@ std::pair<Vector2, float> MapTile::CreateTiles(int map)
     }
     in.close();
 
-    float wait = 0;
+    float wait = 0.1;
     int spawn_i, spawn_j;
     for (int i = 1; i < mp_size - 1; i++)
     {
@@ -109,7 +109,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
 
 float MapTile::DeleteTiles()
 {
-    float wait = 0;
+    float wait = 0.1;
     auto post_func = [](int i, int j) {
         TileMap[i][j].first = 0;
         if (TileMap[i][j].second)

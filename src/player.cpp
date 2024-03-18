@@ -16,6 +16,11 @@ Player::Player(Vector2 position)
     memset(isDamaged, 0, sizeof(isDamaged));
 }
 
+Player::~Player()
+{
+    stopSound(run_channel);
+}
+
 void Player::Update()
 {
     Animation();
@@ -307,7 +312,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             {
                 ShowMsg(0, logging, "player won!");
                 Game::Properties["player_won"].b = 1;
-                DelayFunction::CreateDelayFunction(250, []() {
+                DelayFunction::Create(250, []() {
                     Game::scene->DeleteScene();
                     return 1;
                 });
@@ -363,7 +368,7 @@ void Player::Jump()
                     player->isDamaged[2] = false;
                     return 1;
                 };
-                DelayFunction::CreateDelayFunction(500, std::bind(notDamage, this));
+                DelayFunction::Create(500, std::bind(notDamage, this));
             }
 
             if (Game::Properties["sound"].b)

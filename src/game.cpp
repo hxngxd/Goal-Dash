@@ -248,11 +248,15 @@ bool Game::LoadMedia()
         return 0;
     if (!loadSound("fall", "sound/fall.ogg"))
         return 0;
+    if (!loadSound("click", "sound/click.ogg"))
+        return 0;
+    if (!loadSound("hover", "sound/hover.ogg"))
+        return 0;
+    if (!loadSound("win", "sound/win.ogg"))
+        return 0;
+    if (!loadSound("spawn", "sound/spawn.ogg"))
+        return 0;
     if (!loadMusic("bg_music", "sound/bg_music.ogg"))
-        return 0;
-    if (!loadMusic("click", "sound/click.ogg"))
-        return 0;
-    if (!loadMusic("hover", "sound/hover.ogg"))
         return 0;
 
     //----------------------------------------

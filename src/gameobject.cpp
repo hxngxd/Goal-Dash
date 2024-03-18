@@ -33,5 +33,5 @@ void GameObject::reScale(GameObject *gameobj, float to, float delay, float v, st
         return 1;
     };
 
-    DelayFunction::CreateDelayFunction(delay, std::bind(rescaling, gameobj, to, tmp_v, increasing), post_function);
+    DelayFunction::Create(delay, std::bind(rescaling, gameobj, to, tmp_v, increasing), post_function);
 }

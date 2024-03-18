@@ -86,7 +86,7 @@ class DelayFunction
     std::function<bool()> function;
     std::function<void()> post_function;
     static void Update();
-    static void CreateDelayFunction(
+    static void Create(
         int delay_time, std::function<bool()> function, std::function<void()> post_function = []() {});
 };
 

@@ -175,7 +175,9 @@ enum mixer_channels
     coin_channel = 0,
     jump_channel,
     run_channel,
-    fall_channel
+    fall_channel,
+    button_channel,
+    spawn_win_channel
 };
 
 enum map_types

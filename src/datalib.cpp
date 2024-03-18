@@ -177,8 +177,7 @@ bool loadSound(std::string name, std::string path)
 
 void playSound(std::string name, int channel, int loop)
 {
-    stopSound(channel);
-    Mix_FadeInChannel(channel, Sounds[name], loop, 25);
+    Mix_FadeInChannel(channel, Sounds[name], loop, 15);
 }
 
 void stopSound(int channel)

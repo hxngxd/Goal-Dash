@@ -64,6 +64,7 @@ class Player : public GameObject
     animation_directions direction;
 
     Player(Vector2 position);
+    ~Player();
 
     void Update();
     void Animation();

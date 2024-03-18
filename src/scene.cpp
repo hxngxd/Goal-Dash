@@ -15,12 +15,19 @@ Scene::Scene()
             scene = new Scene(Game::Properties["map"].i);
             return 1;
         };
-        DelayFunction::CreateDelayFunction(500, new_scene);
+        DelayFunction::Create(500, new_scene);
         return 1;
     };
     Button::CreateButton("start", Screen::resolution / 2, Color::cyan(127), "START", 50, Color::white(255), start);
+
+    auto exit = []() {
+        DelayFunction::Create(250, []() {
+            game->Stop();
+            return 1;
+        });
+    };
     Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 100), Color::cyan(127), "exit", 50,
-                         Color::white(255), []() { game->Stop(); });
+                         Color::white(255), exit);
 
     ShowMsg(1, success, "done.");
 }
@@ -31,12 +38,14 @@ Scene::Scene(int map)
     std::pair<Vector2, float> x = MapTile::CreateTiles(map);
     ShowMsg(0, normal, "creating player...");
     auto create_player = [](Vector2 position) {
+        playSound("spawn", spawn_win_channel, 0);
         player = new Player(position * Screen::tile_size);
         GameObject::reScale(player, 1, 0, Game::Properties["rescale_speed"].f);
         Game::Properties["player_won"].b = 0;
+        Game::Properties["player_score"].i = 0;
         return 1;
     };
-    DelayFunction::CreateDelayFunction(x.second + 250, std::bind(create_player, x.first));
+    DelayFunction::Create(x.second + 250, std::bind(create_player, x.first));
     ShowMsg(1, success, "done.");
 }
 
@@ -51,14 +60,14 @@ void Scene::DeleteScene()
     if (player)
     {
         ShowMsg(1, normal, "deleting player...");
-        stopAllSound();
+        playSound("win", spawn_win_channel, 0);
         GameObject::reScale(player, 0, 0, Game::Properties["rescale_speed"].f, []() {
             ShowMsg(1, normal, "deleting all tiles...");
             float wait = MapTile::DeleteTiles();
             delete player;
             player = nullptr;
-            DelayFunction::CreateDelayFunction(
-                wait + 1000,
+            DelayFunction::Create(
+                wait + 1250,
                 []() {
                     delete Game::scene;
                     return 1;
@@ -123,7 +132,12 @@ bool Button::CreateButton(std::string name, const Vector2 &position, SDL_Color b
     Buttons[name]->label = label;
     Buttons[name]->font_size = font_size;
     Buttons[name]->font_color = font_color;
-    Buttons[name]->onClick = onClick;
+    Buttons[name]->onClick = std::bind(
+        [](std::function<void()> onClick) {
+            onClick();
+            playSound("click", button_channel, 0);
+        },
+        onClick);
 
     ShowMsg(3, success, "done.");
     return 1;
@@ -151,7 +165,10 @@ void Button::Update()
     if (isHovered)
     {
         if (hoverButton != name)
+        {
             hoverButton = name;
+            playSound("hover", button_channel, 0);
+        }
         Screen::SetDrawColor(Color::black(100));
     }
     else
