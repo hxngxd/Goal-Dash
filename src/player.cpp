@@ -321,7 +321,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             {
                 ShowMsg(0, logging, "player won!");
                 Game::Properties["player_won"].b = 1;
-                DelayFunction::Create(250, []() {
+                DelayFunction::Create(500, []() {
                     Game::scene->DeleteScene();
                     return 1;
                 });

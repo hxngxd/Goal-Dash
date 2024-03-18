@@ -21,7 +21,7 @@ Scene::Scene()
     Button::CreateButton("start", Screen::resolution / 2, Color::cyan(127), "START", 50, Color::white(255), start);
 
     auto exit = []() {
-        DelayFunction::Create(250, []() {
+        DelayFunction::Create(500, []() {
             game->Stop();
             return 1;
         });
@@ -45,7 +45,7 @@ Scene::Scene(int map)
         player = new Player(player_position);
 
         auto hide_spawn = []() {
-            GameObject::reScale(TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second, 0, 250,
+            GameObject::reScale(TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second, 0, 500,
                                 Game::Properties["rescale_speed"].f, []() {
                                     std::pair<int, MapTile *> &spawn_tile =
                                         TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
@@ -83,7 +83,7 @@ void Scene::DeleteScene()
             delete player;
             player = nullptr;
             DelayFunction::Create(
-                wait + 1250,
+                wait + 1500,
                 []() {
                     delete Game::scene;
                     return 1;
