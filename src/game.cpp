@@ -296,6 +296,8 @@ void Game::Quit()
     ShowMsg(0, normal, "deleting all sprites...");
     for (auto &sprite : Sprites)
     {
+        if (!sprite.second)
+            continue;
         std::string path = sprite.second->path;
         delete sprite.second;
         sprite.second = nullptr;
@@ -308,6 +310,8 @@ void Game::Quit()
     ShowMsg(0, normal, "deleting all sounds and musics...");
     for (auto &sound : Sounds)
     {
+        if (!sound.second)
+            continue;
         Mix_FreeChunk(sound.second);
         sound.second = nullptr;
         ShowMsg(1, success, "deleted " + sound.first + "!");
@@ -316,6 +320,8 @@ void Game::Quit()
 
     for (auto &music : Musics)
     {
+        if (!music.second)
+            continue;
         Mix_FreeMusic(music.second);
         music.second = nullptr;
         ShowMsg(1, success, "deleted " + music.first + "!");
@@ -326,7 +332,9 @@ void Game::Quit()
     //----------------------------------------
 
     ShowMsg(0, normal, "deleting font...");
-    TTF_CloseFont(myFont);
+
+    if (myFont)
+        TTF_CloseFont(myFont);
     ShowMsg(1, success, "done.");
 
     //----------------------------------------

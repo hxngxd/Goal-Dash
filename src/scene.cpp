@@ -85,7 +85,11 @@ void Scene::DeleteScene()
             DelayFunction::Create(
                 wait + 1500,
                 []() {
-                    delete Game::scene;
+                    if (Game::scene)
+                    {
+                        delete Game::scene;
+                        Game::scene = nullptr;
+                    }
                     return 1;
                 },
                 []() { Game::scene = new Scene(++Game::Properties["map"].i); });
@@ -119,12 +123,11 @@ void UI::DeleteUIs()
 {
     for (auto &btn : Buttons)
     {
-        if (btn.second)
-        {
-            delete btn.second;
-            btn.second = nullptr;
-            ShowMsg(2, success, "deleted " + btn.first + " button!");
-        }
+        if (!btn.second)
+            continue;
+        delete btn.second;
+        btn.second = nullptr;
+        ShowMsg(2, success, "deleted " + btn.first + " button!");
     }
     Buttons.clear();
 }

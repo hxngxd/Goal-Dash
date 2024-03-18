@@ -39,6 +39,8 @@ void DelayFunction::Update()
 
     for (auto t : tasks)
     {
+        if (!DelayFunctions[t])
+            continue;
         delete DelayFunctions[t];
         DelayFunctions[t] = nullptr;
         DelayFunctions.erase(t);
