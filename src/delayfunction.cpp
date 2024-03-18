@@ -22,6 +22,8 @@ void DelayFunction::Update()
     std::vector<int> tasks;
     for (auto &func : DelayFunctions)
     {
+        if (!func.second)
+            continue;
         if (SDL_GetTicks() - func.second->start_time >= func.second->delay_time)
         {
             if (func.second->function())

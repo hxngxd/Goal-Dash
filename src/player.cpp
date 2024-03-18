@@ -322,7 +322,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 ShowMsg(0, logging, "player won!");
                 Game::Properties["player_won"].b = 1;
                 DelayFunction::Create(500, []() {
-                    Game::scene->DeleteScene();
+                    if (Game::scene)
+                        Game::scene->DeleteScene();
                     return 1;
                 });
             }
@@ -374,7 +375,8 @@ void Player::Jump()
             {
                 isDamaged[2] = true;
                 auto notDamage = [](Player *player) {
-                    player->isDamaged[2] = false;
+                    if (player)
+                        player->isDamaged[2] = false;
                     return 1;
                 };
                 DelayFunction::Create(500, std::bind(notDamage, this));

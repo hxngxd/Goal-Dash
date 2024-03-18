@@ -2,6 +2,9 @@
 
 void GameObject::reScale(GameObject *gameobj, float to, float delay, float v, std::function<void()> post_function)
 {
+    if (!gameobj)
+        return;
+
     if (abs(gameobj->scale - to) <= 0.001)
     {
         gameobj->scale = to;
@@ -13,6 +16,9 @@ void GameObject::reScale(GameObject *gameobj, float to, float delay, float v, st
     bool increasing = to > gameobj->scale;
 
     auto rescaling = [](GameObject *gameobj, float to, float *tmp_v, bool increasing) {
+        if (!gameobj)
+            return 1;
+
         if (increasing && gameobj->scale < to)
         {
             gameobj->scale += *tmp_v;
