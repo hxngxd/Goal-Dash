@@ -46,10 +46,13 @@ class Background : public GameObject
 class MapTile : public GameObject
 {
   public:
+    static Vector2 SpawnTile;
+    static Vector2 WinTile;
+
     MapTile(Vector2 position, Vector2 size, float wait);
 
     static void CreateBorder();
-    static std::pair<Vector2, float> CreateTiles(int map);
+    static float CreateTiles(int map);
     static void CreateATile(int i, int j, float &wait);
     static float DeleteTiles();
     static void Draw();

@@ -35,17 +35,33 @@ Scene::Scene()
 Scene::Scene(int map)
 {
     ShowMsg(0, normal, "creating new scene...");
-    std::pair<Vector2, float> x = MapTile::CreateTiles(map);
+    float wait = MapTile::CreateTiles(map);
     ShowMsg(0, normal, "creating player...");
-    auto create_player = [](Vector2 position) {
+
+    DelayFunction::Create(wait + 250, []() {
         playSound("spawn", spawn_win_channel, 0);
-        player = new Player(position * Screen::tile_size);
-        GameObject::reScale(player, 1, 0, Game::Properties["rescale_speed"].f);
+
+        Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size, MapTile::SpawnTile.x * Screen::tile_size);
+        player = new Player(player_position);
+
+        auto hide_spawn = []() {
+            GameObject::reScale(TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second, 0, 250,
+                                Game::Properties["rescale_speed"].f, []() {
+                                    std::pair<int, MapTile *> &spawn_tile =
+                                        TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
+                                    spawn_tile.first = 0;
+                                    delete spawn_tile.second;
+                                    spawn_tile.second = nullptr;
+                                });
+        };
+
+        GameObject::reScale(player, 1, 0, Game::Properties["rescale_speed"].f, hide_spawn);
+
         Game::Properties["player_won"].b = 0;
         Game::Properties["player_score"].i = 0;
         return 1;
-    };
-    DelayFunction::Create(x.second + 250, std::bind(create_player, x.first));
+    });
+
     ShowMsg(1, success, "done.");
 }
 

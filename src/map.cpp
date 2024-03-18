@@ -5,6 +5,9 @@
 std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 std::vector<Background> Backgrounds;
 
+Vector2 MapTile::SpawnTile;
+Vector2 MapTile::WinTile;
+
 MapTile::MapTile(Vector2 position, Vector2 size, float wait)
 {
     this->position = position;
@@ -48,7 +51,7 @@ void MapTile::CreateBorder()
     }
 }
 
-std::pair<Vector2, float> MapTile::CreateTiles(int map)
+float MapTile::CreateTiles(int map)
 {
     int mp_size = Screen::map_size;
     Game::Properties["coin"].i = 0;
@@ -74,23 +77,27 @@ std::pair<Vector2, float> MapTile::CreateTiles(int map)
     in.close();
 
     float wait = 0.1;
-    int spawn_i, spawn_j;
     for (int i = 1; i < mp_size - 1; i++)
     {
         for (int j = 1; j < mp_size - 1; j++)
         {
             if (TileMap[i][j].first == SPAWN)
             {
-                spawn_i = i;
-                spawn_j = j;
+                SpawnTile = Vector2(i, j);
+                continue;
+            }
+            else if (TileMap[i][j].first == WIN)
+            {
+                WinTile = Vector2(i, j);
                 continue;
             }
             CreateATile(i, j, wait);
         }
     }
 
-    CreateATile(spawn_i, spawn_j, wait);
-    return std::make_pair(Vector2(spawn_j, spawn_i), wait + Game::Properties["map_animation_delay"].f * 2);
+    CreateATile(SpawnTile.x, SpawnTile.y, wait);
+    TileMap[WinTile.x][WinTile.y].first = 0;
+    return wait + Game::Properties["map_animation_delay"].f * 2;
 }
 
 void MapTile::CreateATile(int i, int j, float &wait)

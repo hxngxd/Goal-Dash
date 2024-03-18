@@ -292,13 +292,22 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                 0))
             {
-                Game::Properties["player_score"].i++;
-                TileMap[nextTile.y][nextTile.x].first = 0;
-                delete TileMap[nextTile.y][nextTile.x].second;
-                TileMap[nextTile.y][nextTile.x].second = nullptr;
+                int score = ++Game::Properties["player_score"].i;
+                std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];
+                coin_tile.first = 0;
+                delete coin_tile.second;
+                coin_tile.second = nullptr;
 
                 if (Game::Properties["sound"].b)
                     playSound("coin", coin_channel, 0);
+
+                if (score == Game::Properties["coin"].i)
+                {
+                    std::pair<int, MapTile *> &win_tile = TileMap[MapTile::WinTile.x][MapTile::WinTile.y];
+                    win_tile.first = WIN;
+                    float wait = 100;
+                    MapTile::CreateATile(MapTile::WinTile.x, MapTile::WinTile.y, wait);
+                }
             }
         }
         else if (type & WIN)
@@ -308,7 +317,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
 
             if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                 0) &&
-                !Game::Properties["player_won"].b && Game::Properties["player_score"].i == Game::Properties["coin"].i)
+                !Game::Properties["player_won"].b)
             {
                 ShowMsg(0, logging, "player won!");
                 Game::Properties["player_won"].b = 1;
