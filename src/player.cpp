@@ -1,9 +1,9 @@
 #include "game.h"
 
-void Player::Init(std::string name)
+Player::Player(Vector2 position)
 {
-    this->name = name;
-    this->position = this->starting_position;
+    this->name = "";
+    this->position = position;
     this->size = Vector2(Screen::tile_size);
     this->scale = 0;
     this->animation_speed = 15;
@@ -14,15 +14,11 @@ void Player::Init(std::string name)
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
     memset(isDamaged, 0, sizeof(isDamaged));
-    Game::Properties["playable"].b = false;
 }
 
 void Player::Update()
 {
     Animation();
-
-    if (!Game::Properties["playable"].b)
-        return;
 
     MoveRightLeft();
 
@@ -310,26 +306,11 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 !Game::Properties["player_won"].b && Game::Properties["player_score"].i == Game::Properties["coin"].i)
             {
                 ShowMsg(0, logging, "player won!");
-
-                auto post_func = []() {
-                    Game::Properties["playable"].b = 0;
-                    stopAllSound();
-                };
-                GameObject::reScale(this, 0, 100, Game::Properties["rescale_speed"].f, post_func);
-
-                float wait = 500;
-                for (int i = 1; i < Screen::map_size - 1; i++)
-                {
-                    for (int j = 1; j < Screen::map_size - 1; j++)
-                    {
-                        if (!TileMap[i][j].first)
-                            continue;
-                        GameObject::reScale(TileMap[i][j].second, 0, wait, Game::Properties["rescale_speed"].f);
-                        wait += Game::Properties["map_animation_delay"].f;
-                    }
-                }
-
                 Game::Properties["player_won"].b = 1;
+                DelayFunction::CreateDelayFunction(250, []() {
+                    Game::scene->DeleteScene();
+                    return 1;
+                });
             }
         }
         else if (type & SPAWN)

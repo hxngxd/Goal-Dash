@@ -10,6 +10,7 @@ SDL_Event Game::event;
 SDL_Window *Game::window = nullptr;
 SDL_Renderer *Game::renderer = nullptr;
 Scene *Game::scene = nullptr;
+Player *Game::player = nullptr;
 
 std::map<float, DelayFunction *> DelayFunctions;
 std::map<std::string, PropertiesType> Game::Properties;
@@ -31,6 +32,10 @@ void Game::Update()
     DelayFunction::Update();
     MapTile::Draw();
     UI::Update();
+    if (player)
+    {
+        player->Update();
+    }
 
     //----------------------------------------
 
@@ -42,6 +47,8 @@ void Game::Update()
         SDL_GetMouseState(&x, &y);
         mousePosition = Vector2(x, y);
         EventHandler::MouseInputHandler();
+        if (player)
+            EventHandler::PlayerInputHandler(player, Game::Properties["keyboard_layout"].b ? rightKeys : leftKeys);
     }
 
     //----------------------------------------
@@ -112,20 +119,6 @@ void Game::Start()
     scene = new Scene();
 
     //----------------------------------------
-
-    // ShowMsg(1, normal, "creating map...");
-    // auto m = MapTile::CreateTiles(Game::Properties["map"].s);
-    // ShowMsg(2, success, "done.");
-
-    // ShowMsg(1, normal, "creating player 1: " +
-    // Game::Properties["player_name"].s + "..."); player1.starting_position =
-    // Vector2(m.second.y * Screen::tile_size, m.second.x * Screen::tile_size);
-    // player1.Init(Game::Properties["player_name"].s);
-    // GameObject::reScale(&player1, 1, m.first,
-    // Game::Properties["rescale_speed"].f, [](){
-    //     Game::Properties["playable"].b = true;
-    // });
-    // ShowMsg(2, success, "done.");
 
     running = true;
 }
@@ -269,6 +262,16 @@ bool Game::LoadMedia()
 
 void Game::Quit()
 {
+    //----------------------------------------
+
+    ShowMsg(0, normal, "deleting player...");
+    if (player)
+    {
+        delete player;
+        player = nullptr;
+    }
+    ShowMsg(1, success, "done.");
+
     //----------------------------------------
 
     ShowMsg(0, normal, "deleting all tiles...");

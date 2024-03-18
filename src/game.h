@@ -24,6 +24,7 @@ class Game
     static SDL_Window *window;
     static SDL_Renderer *renderer;
     static Scene *scene;
+    static Player *player;
 
     void Start();
     void Stop()
@@ -64,7 +65,7 @@ class Screen : public Game
 class EventHandler : public Game
 {
   public:
-    static void PlayerInputHandler(Player &player, Keys &keys);
+    static void PlayerInputHandler(Player *player, Keys &keys);
     static void MouseInputHandler();
 };
 
@@ -72,7 +73,7 @@ class Scene : public Game
 {
   public:
     Scene();
-    Scene(std::string map);
+    Scene(int map);
     void DeleteScene();
     void Update();
 };

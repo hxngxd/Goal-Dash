@@ -48,13 +48,22 @@ void MapTile::CreateBorder()
     }
 }
 
-void MapTile::CreateTiles(std::string map)
+std::pair<Vector2, float> MapTile::CreateTiles(int map)
 {
     int mp_size = Screen::map_size;
     Game::Properties["coin"].i = 0;
 
     std::ifstream in;
-    in.open("map/" + map + ".map");
+    in.open("map/" + std::to_string(map) + ".map");
+
+    // temporary code
+    if (!in.good())
+    {
+        game->Stop();
+        return {};
+    }
+    //
+
     for (int i = 1; i < mp_size - 1; i++)
     {
         for (int j = 1; j < mp_size - 1; j++)
@@ -80,7 +89,8 @@ void MapTile::CreateTiles(std::string map)
         }
     }
 
-    // CreateATile(spawn_i, spawn_j, wait);
+    CreateATile(spawn_i, spawn_j, wait);
+    return std::make_pair(Vector2(spawn_j, spawn_i), wait + Game::Properties["map_animation_delay"].f * 2);
 }
 
 void MapTile::CreateATile(int i, int j, float &wait)
@@ -97,7 +107,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
     GameObject::reScale(TileMap[i][j].second, 1, wait, Game::Properties["rescale_speed"].f);
 }
 
-void MapTile::DeleteTiles()
+float MapTile::DeleteTiles()
 {
     float wait = 0;
     auto post_func = [](int i, int j) {
@@ -120,6 +130,8 @@ void MapTile::DeleteTiles()
             wait += Game::Properties["map_animation_delay"].f;
         }
     }
+
+    return wait;
 }
 
 void MapTile::Draw()

@@ -16,7 +16,7 @@ class GameObject
 {
   public:
     std::string name;
-    Vector2 starting_position, position;
+    Vector2 position;
     Vector2 size;
     float scale;
     Direction velocity;
@@ -49,9 +49,9 @@ class MapTile : public GameObject
     MapTile(Vector2 position, Vector2 size, float wait);
 
     static void CreateBorder();
-    static void CreateTiles(std::string map);
+    static std::pair<Vector2, float> CreateTiles(int map);
     static void CreateATile(int i, int j, float &wait);
-    static void DeleteTiles();
+    static float DeleteTiles();
     static void Draw();
 };
 
@@ -63,7 +63,7 @@ class Player : public GameObject
     animation_states current_state, previous_state;
     animation_directions direction;
 
-    void Init(std::string name);
+    Player(Vector2 position);
 
     void Update();
     void Animation();

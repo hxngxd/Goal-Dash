@@ -1,40 +1,37 @@
 #include "game.h"
 
-void EventHandler::PlayerInputHandler(Player &player, Keys &keys)
+void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
 {
-    if (!Game::Properties["playable"].b)
-        return;
-
     if (Game::event.type == SDL_KEYDOWN)
     {
         auto key = Game::event.key.keysym.sym;
         if (key == keys.right)
         {
-            player.key_right = true;
+            player->key_right = true;
         }
         else if (key == keys.left)
         {
-            player.key_left = true;
+            player->key_left = true;
         }
         else if (key == keys.down)
         {
-            player.key_down = true;
+            player->key_down = true;
         }
         else if (key == keys.up)
         {
-            player.key_up = true;
+            player->key_up = true;
         }
         else if (key == keys.space)
         {
-            if (player.collide_down.second && !Game::Properties["no_gravity"].b)
+            if (player->collide_down.second && !Game::Properties["no_gravity"].b)
             {
-                player.velocity.d = -Game::Properties["player_jump_speed"].f;
-                player.position.y += player.velocity.d;
-                player.previous_state = player.current_state;
-                player.current_state = JUMP;
+                player->velocity.d = -Game::Properties["player_jump_speed"].f;
+                player->position.y += player->velocity.d;
+                player->previous_state = player->current_state;
+                player->current_state = JUMP;
                 if (Game::Properties["sound"].b)
                     playSound("jump", jump_channel, 0);
-                player.collide_down.second = false;
+                player->collide_down.second = false;
             }
         }
     }
@@ -43,19 +40,19 @@ void EventHandler::PlayerInputHandler(Player &player, Keys &keys)
         auto key = Game::event.key.keysym.sym;
         if (key == keys.right)
         {
-            player.key_right = false;
+            player->key_right = false;
         }
         else if (key == keys.left)
         {
-            player.key_left = false;
+            player->key_left = false;
         }
         else if (key == keys.down)
         {
-            player.key_down = false;
+            player->key_down = false;
         }
         else if (key == keys.up)
         {
-            player.key_up = false;
+            player->key_up = false;
         }
         else if (key == keys.space)
         {
