@@ -74,7 +74,7 @@ void EventHandler::MouseInputHandler()
     }
     else if (event.type == SDL_MOUSEBUTTONUP)
     {
-        if (event.button.button = SDL_BUTTON_LEFT)
+        if (event.button.button == SDL_BUTTON_LEFT)
         {
             upButton = hoverButton;
             if (downButton == upButton && Buttons.find(downButton) != Buttons.end())

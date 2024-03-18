@@ -9,7 +9,17 @@ Scene::Scene()
     ShowMsg(0, normal, "creating new scene...");
     MapTile::CreateBorder();
 
-    Button::CreateButton("start", Screen::resolution / 2, Color::cyan(127), "START", 50, Color::white(255));
+    auto start = [](Scene *scene) {
+        scene->DeleteScene();
+        auto new_scene = [](Scene *scene) {
+            scene = new Scene("1");
+            return 1;
+        };
+        DelayFunction::CreateDelayFunction(1000, std::bind(new_scene, scene));
+        return 1;
+    };
+    Button::CreateButton("start", Screen::resolution / 2, Color::cyan(127), "START", 50, Color::white(255),
+                         std::bind(start, scene));
     Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 100), Color::cyan(127), "exit", 50,
                          Color::white(255), []() { game->Stop(); });
 
