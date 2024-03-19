@@ -134,6 +134,10 @@ SDL_Rect Rect::reScale(const Vector2 &position, const Vector2 &size, float scale
 
 //----------------------------------------
 
+SDL_Color Color::transparent = {0, 0, 0, 0};
+
+//----------------------------------------
+
 bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize)
 {
     ShowMsg(2, normal, "trying to load " + path + "...");

@@ -305,7 +305,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 {
                     std::pair<int, MapTile *> &win_tile = TileMap[MapTile::WinTile.x][MapTile::WinTile.y];
                     win_tile.first = WIN;
-                    float wait = 100;
+                    float wait = 500;
                     MapTile::CreateATile(MapTile::WinTile.x, MapTile::WinTile.y, wait);
                 }
             }

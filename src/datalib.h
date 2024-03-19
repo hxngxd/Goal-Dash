@@ -115,6 +115,7 @@ struct Color
     {
         return {0, 255, 255, a};
     }
+    static SDL_Color transparent;
 };
 
 //----------------------------------------

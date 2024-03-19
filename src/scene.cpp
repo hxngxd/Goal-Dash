@@ -18,7 +18,7 @@ Scene::Scene()
         DelayFunction::Create(500, new_scene);
         return 1;
     };
-    Button::CreateButton("start", Screen::resolution / 2, Color::cyan(127), "START", 50, Color::white(255), start);
+    Button::CreateButton("start", Screen::resolution / 2, Color::transparent, "START", 50, Color::white(255), start);
 
     auto exit = []() {
         DelayFunction::Create(500, []() {
@@ -26,7 +26,7 @@ Scene::Scene()
             return 1;
         });
     };
-    Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 100), Color::cyan(127), "exit", 50,
+    Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 100), Color::transparent, "EXIT", 50,
                          Color::white(255), exit);
 
     ShowMsg(1, success, "done.");
@@ -188,7 +188,7 @@ void Button::Update()
             hoverButton = name;
             playSound("hover", button_channel, 0);
         }
-        Screen::SetDrawColor(Color::black(100));
+        Screen::SetDrawColor(Color::cyan(127));
     }
     else
     {
