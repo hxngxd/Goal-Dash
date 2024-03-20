@@ -12,7 +12,7 @@ SDL_Renderer *Game::renderer = nullptr;
 Scene *Game::scene = nullptr;
 Player *Game::player = nullptr;
 
-std::map<unsigned int, DelayFunction *> DelayFunctions;
+std::map<Uint32, DelayFunction *> DelayFunctions;
 std::map<std::string, PropertiesType> Game::Properties;
 
 void Game::Update()
@@ -106,7 +106,7 @@ void Game::Start()
     //----------------------------------------
 
     ShowMsg(1, normal, "loading font...");
-    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), Game::Properties["font_size"].i);
+    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), Game::Properties["font_size"].f);
     if (!myFont)
     {
         ShowMsg(1, fail, "failed to open font.");
@@ -228,7 +228,8 @@ bool Game::LoadMedia()
         return 0;
     if (!loadSprite("jump", "img/jump.png", 4, Vector2(48)))
         return 0;
-
+    if (!loadSprite("button_hover", "img/button_hover.png", 1, Vector2(695, 377)))
+        return 0;
     //----------------------------------------
 
     if (!Background::loadBackground("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096), 1.25))
@@ -388,12 +389,4 @@ void Screen::PointGrid(SDL_Color color)
             SDL_RenderDrawPoint(renderer, i, j);
         }
     }
-}
-
-void Screen::DrawSprite(Sprite &sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame,
-                        bool flip)
-{
-    SDL_Rect src = {(currentFrame % sprite.maxFrames) * sprite.realSize.x, 0, sprite.realSize.x, sprite.realSize.y};
-    SDL_Rect dst = Rect::reScale(position, size, scale);
-    SDL_RenderCopyEx(renderer, sprite.texture, &src, &dst, 0, NULL, (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }

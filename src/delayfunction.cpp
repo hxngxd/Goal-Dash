@@ -1,16 +1,17 @@
 #include "game.h"
 
-void DelayFunction::Create(int delay_time, std::function<bool()> function, std::function<void()> post_function)
+Uint32 DelayFunction::Create(int delay_time, std::function<bool()> function, std::function<void()> post_function)
 {
     int currentTime = SDL_GetTicks();
-    unsigned int id = randUint32();
-    while (DelayFunctions.find(id) != DelayFunctions.end())
+    Uint32 id = randUint32();
+    while (DelayFunctions.find(id) != DelayFunctions.end() || !id)
         id = randUint32();
     DelayFunctions[id] = new DelayFunction();
     DelayFunctions[id]->start_time = currentTime;
     DelayFunctions[id]->delay_time = delay_time;
     DelayFunctions[id]->function = function;
     DelayFunctions[id]->post_function = post_function;
+    return id;
 }
 
 void DelayFunction::Update()
@@ -18,7 +19,7 @@ void DelayFunction::Update()
     if (DelayFunctions.empty())
         return;
 
-    std::vector<unsigned int> tasks;
+    std::vector<Uint32> tasks;
     for (auto &func : DelayFunctions)
     {
         if (!func.second)
@@ -40,11 +41,17 @@ void DelayFunction::Update()
         return;
 
     for (auto t : tasks)
-    {
-        if (!DelayFunctions[t])
-            continue;
-        delete DelayFunctions[t];
-        DelayFunctions[t] = nullptr;
-        DelayFunctions.erase(t);
-    }
+        Remove(t);
+}
+
+void DelayFunction::Remove(Uint32 DFid)
+{
+    if (!DFid)
+        return;
+    DelayFunction *&DF = DelayFunctions[DFid];
+    if (!DF)
+        return;
+    delete DF;
+    DF = nullptr;
+    DelayFunctions.erase(DFid);
 }

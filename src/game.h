@@ -58,8 +58,6 @@ class Screen : public Game
     static void SetDrawColor(SDL_Color color);
     static void PointGrid(SDL_Color color);
     static void Display();
-    static void DrawSprite(Sprite &sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame,
-                           bool flip);
 };
 
 class EventHandler : public Game
@@ -85,11 +83,12 @@ class DelayFunction
     std::function<bool()> function;
     std::function<void()> post_function;
     static void Update();
-    static void Create(
+    static Uint32 Create(
         int delay_time, std::function<bool()> function, std::function<void()> post_function = []() {});
+    static void Remove(Uint32 DFid);
 };
 
-extern std::map<unsigned int, DelayFunction *> DelayFunctions;
+extern std::map<Uint32, DelayFunction *> DelayFunctions;
 
 template <class T> void ShowMsg(int indent, msg_types type, T msg)
 {

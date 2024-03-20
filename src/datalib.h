@@ -133,6 +133,8 @@ struct Rect
     static Vector2 getCenter(const Vector2 &position, const Vector2 &size);
 
     static SDL_Rect reScale(const Vector2 &position, const Vector2 &size, float scale);
+
+    static SDL_Rect reScale(SDL_Rect rect, float scale);
 };
 
 //----------------------------------------
@@ -147,6 +149,10 @@ class Sprite
 };
 
 bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize);
+
+void setTextureOpacity(SDL_Texture *texture, int opacity);
+
+void DrawSprite(Sprite *sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame, bool flip);
 
 extern std::map<std::string, Sprite *> Sprites;
 
@@ -219,9 +225,9 @@ float clamp(float value, float mn, float mx);
 
 bool IsInRange(float value, float mn, float mx);
 
-unsigned int randUint32();
+Uint32 randUint32();
 
-void transformFValue(
+Uint32 transformFValue(
     float *value, float dst, float speed, float delay, std::function<void()> post_function = []() {});
 
 //----------------------------------------

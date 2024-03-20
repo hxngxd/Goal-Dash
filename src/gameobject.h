@@ -35,7 +35,6 @@ class Background : public GameObject
     Background(std::string name, float scale);
     static bool loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale);
 
-    void setOpacity();
     static void Move(Vector2 velocity, int index, float ratio);
     static void Draw();
 };
@@ -91,6 +90,8 @@ class UI
     std::string name;
     Vector2 position;
     float scale;
+    float bg_opacity;
+    Uint32 DFid[3] = {0, 0, 0};
 
     static void Update();
     static void DeleteUIs();
@@ -99,15 +100,12 @@ class UI
 class Button : public UI
 {
   public:
-    SDL_Color bg_color;
     std::string label;
-    int font_size;
-    SDL_Color font_color;
+    float font_size;
     std::function<void()> onClick;
 
     static bool CreateButton(
-        std::string name, const Vector2 &position, SDL_Color bg_color, std::string label, int font_size,
-        SDL_Color font_color, std::function<void()> onClick = []() {});
+        std::string name, const Vector2 &position, std::string label, std::function<void()> onClick = []() {});
 
     void Update();
 };

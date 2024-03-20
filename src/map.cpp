@@ -176,8 +176,8 @@ void MapTile::Draw()
                     TileMap[i][j].second->animation_delay = currentTicks;
                 }
                 Screen::SetDrawColor(Color::yellow(255));
-                Screen::DrawSprite(*Sprites["coin"], TileMap[i][j].second->position, TileMap[i][j].second->size,
-                                   TileMap[i][j].second->scale * 0.5, TileMap[i][j].second->currentFrame, 0);
+                DrawSprite(Sprites["coin"], TileMap[i][j].second->position, TileMap[i][j].second->size,
+                           TileMap[i][j].second->scale * 0.5, TileMap[i][j].second->currentFrame, 0);
                 break;
             case DAMAGE:
                 Screen::SetDrawColor(Color::red(255));
@@ -203,11 +203,6 @@ Background::Background(std::string name, float scale)
     this->scale = scale;
 }
 
-void Background::setOpacity()
-{
-    SDL_SetTextureAlphaMod(Sprites[name]->texture, opacity);
-}
-
 bool Background::loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale)
 {
     if (!loadSprite(name, path, maxFrames, realSize))
@@ -226,8 +221,8 @@ void Background::Draw()
     Background &bg2 = Backgrounds[2];
 
     bg0.opacity = 150;
-    bg0.setOpacity();
-    Screen::DrawSprite(*Sprites[bg0.name], bg0.position, bg0.size, bg0.scale, bg0.maxFrames, 0);
+    setTextureOpacity(Sprites[bg0.name]->texture, bg0.opacity);
+    DrawSprite(Sprites[bg0.name], bg0.position, bg0.size, bg0.scale, bg0.maxFrames, 0);
 
     if (bg2.toggle)
     {
@@ -242,12 +237,12 @@ void Background::Draw()
             bg2.toggle = true;
     }
 
-    bg2.setOpacity();
-    Screen::DrawSprite(*Sprites[bg2.name], bg2.position, bg2.size, bg2.scale, bg2.maxFrames, 0);
+    setTextureOpacity(Sprites[bg2.name]->texture, bg2.opacity);
+    DrawSprite(Sprites[bg2.name], bg2.position, bg2.size, bg2.scale, bg2.maxFrames, 0);
 
     bg1.opacity = 256 - bg2.opacity;
-    bg1.setOpacity();
-    Screen::DrawSprite(*Sprites[bg1.name], bg1.position, bg1.size, bg1.scale, bg1.maxFrames, 1);
+    setTextureOpacity(Sprites[bg1.name]->texture, bg1.opacity);
+    DrawSprite(Sprites[bg1.name], bg1.position, bg1.size, bg1.scale, bg1.maxFrames, 1);
 }
 
 void Background::Move(Vector2 velocity, int index, float ratio)

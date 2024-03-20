@@ -64,7 +64,7 @@ void Player::Animation()
     }
     maxFrames = current->maxFrames;
 
-    Screen::DrawSprite(*current, position, size, scale, std::min(currentFrame, maxFrames), (direction == LEFT));
+    DrawSprite(current, position, size, scale, std::min(currentFrame, maxFrames), (direction == LEFT));
 
     if (!Game::Properties["immortal"].b)
     {

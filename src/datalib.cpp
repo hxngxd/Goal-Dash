@@ -132,6 +132,11 @@ SDL_Rect Rect::reScale(const Vector2 &position, const Vector2 &size, float scale
     return newRect;
 }
 
+SDL_Rect Rect::reScale(SDL_Rect rect, float scale)
+{
+    return reScale(Vector2(rect.x, rect.y), Vector2(rect.w, rect.h), scale);
+}
+
 //----------------------------------------
 
 SDL_Color Color::transparent = {0, 0, 0, 0};
@@ -158,6 +163,19 @@ bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realS
     Sprites[name]->realSize = realSize;
     SDL_FreeSurface(sf);
     return 1;
+}
+
+void setTextureOpacity(SDL_Texture *texture, int opacity)
+{
+    SDL_SetTextureAlphaMod(texture, opacity);
+}
+
+void DrawSprite(Sprite *sprite, const Vector2 &position, const Vector2 &size, float scale, int currentFrame, bool flip)
+{
+    SDL_Rect src = {(currentFrame % sprite->maxFrames) * sprite->realSize.x, 0, sprite->realSize.x, sprite->realSize.y};
+    SDL_Rect dst = Rect::reScale(position, size, scale);
+    SDL_RenderCopyEx(Game::renderer, sprite->texture, &src, &dst, 0, NULL,
+                     (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }
 
 std::map<std::string, Sprite *> Sprites;
@@ -240,24 +258,23 @@ bool IsInRange(float value, float mn, float mx)
 
 unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937 gen(seed);
-std::uniform_int_distribution<> distrib(std::numeric_limits<unsigned int>::min(),
-                                        std::numeric_limits<unsigned int>::max());
+std::uniform_int_distribution<> distrib(std::numeric_limits<Uint32>::min(), std::numeric_limits<Uint32>::max());
 
-unsigned int randUint32()
+Uint32 randUint32()
 {
     return distrib(gen);
 }
 
-void transformFValue(float *value, float dst, float speed, float delay, std::function<void()> post_function)
+Uint32 transformFValue(float *value, float dst, float speed, float delay, std::function<void()> post_function)
 {
     if (!value)
-        return;
+        return 0;
 
     if (abs(*value - dst) <= 0.005)
     {
         *value = dst;
         post_function();
-        return;
+        return 0;
     }
 
     float *tmp_speed = new float(speed);
@@ -270,6 +287,13 @@ void transformFValue(float *value, float dst, float speed, float delay, std::fun
         if (increasing && *value < dst)
         {
             *value += *tmp_speed;
+            if (*value >= dst)
+            {
+                *value = dst;
+                delete tmp_speed;
+                tmp_speed = nullptr;
+                return 1;
+            }
             *tmp_speed /= 1.05;
             return 0;
         }
@@ -277,6 +301,13 @@ void transformFValue(float *value, float dst, float speed, float delay, std::fun
         if (!increasing && *value > dst)
         {
             *value -= *tmp_speed;
+            if (*value <= dst)
+            {
+                *value = dst;
+                delete tmp_speed;
+                tmp_speed = nullptr;
+                return 1;
+            }
             *tmp_speed /= 1.05;
             return 0;
         }
@@ -287,7 +318,7 @@ void transformFValue(float *value, float dst, float speed, float delay, std::fun
         return 1;
     };
 
-    DelayFunction::Create(delay, std::bind(transform, value, dst, tmp_speed, increasing), post_function);
+    return DelayFunction::Create(delay, std::bind(transform, value, dst, tmp_speed, increasing), post_function);
 }
 
 //----------------------------------------
