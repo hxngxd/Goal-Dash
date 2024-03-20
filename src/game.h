@@ -75,7 +75,6 @@ class Scene : public Game
     Scene();
     Scene(int map);
     void DeleteScene();
-    void Update();
 };
 
 class DelayFunction

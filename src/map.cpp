@@ -54,7 +54,6 @@ void MapTile::CreateBorder()
 float MapTile::CreateTiles(int map)
 {
     int mp_size = Screen::map_size;
-    Game::Properties["coin"].i = 0;
 
     std::ifstream in;
     in.open("map/" + std::to_string(map) + ".map");
@@ -111,7 +110,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
     TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size, wait);
 
     wait += Game::Properties["map_animation_delay"].f;
-    GameObject::reScale(TileMap[i][j].second, 1, wait, Game::Properties["rescale_speed"].f);
+    transformFValue(&TileMap[i][j].second->scale, 1, Game::Properties["rescale_speed"].f, wait);
 }
 
 float MapTile::DeleteTiles()
@@ -132,8 +131,8 @@ float MapTile::DeleteTiles()
         {
             if (!TileMap[i][j].second)
                 continue;
-            GameObject::reScale(TileMap[i][j].second, 0, wait, Game::Properties["rescale_speed"].f,
-                                std::bind(post_func, i, j));
+            transformFValue(&TileMap[i][j].second->scale, 0, Game::Properties["rescale_speed"].f, wait,
+                            std::bind(post_func, i, j));
             wait += Game::Properties["map_animation_delay"].f;
         }
     }

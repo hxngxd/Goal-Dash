@@ -24,9 +24,6 @@ class GameObject
     int currentFrame, maxFrames;
     float animation_delay;
     float animation_speed;
-
-    static void reScale(
-        GameObject *gameobj, float to, float delay, float v, std::function<void()> post_function = []() {});
 };
 
 class Background : public GameObject

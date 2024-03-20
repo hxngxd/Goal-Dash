@@ -298,6 +298,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 delete coin_tile.second;
                 coin_tile.second = nullptr;
 
+                ShowMsg(1, success, "player score: " + std::to_string(score));
+
                 if (Game::Properties["sound"].b)
                     playSound("coin", coin_channel, 0);
 
@@ -321,7 +323,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             {
                 ShowMsg(0, logging, "player won!");
                 Game::Properties["player_won"].b = 1;
-                DelayFunction::Create(500, []() {
+                DelayFunction::Create(100, []() {
                     if (Game::scene)
                         Game::scene->DeleteScene();
                     return 1;

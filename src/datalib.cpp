@@ -248,6 +248,48 @@ unsigned int randUint32()
     return distrib(gen);
 }
 
+void transformFValue(float *value, float dst, float speed, float delay, std::function<void()> post_function)
+{
+    if (!value)
+        return;
+
+    if (abs(*value - dst) <= 0.005)
+    {
+        *value = dst;
+        post_function();
+        return;
+    }
+
+    float *tmp_speed = new float(speed);
+    bool increasing = dst > *value;
+
+    auto transform = [](float *value, float dst, float *tmp_speed, bool increasing) {
+        if (!value)
+            return 1;
+
+        if (increasing && *value < dst)
+        {
+            *value += *tmp_speed;
+            *tmp_speed /= 1.05;
+            return 0;
+        }
+
+        if (!increasing && *value > dst)
+        {
+            *value -= *tmp_speed;
+            *tmp_speed /= 1.05;
+            return 0;
+        }
+
+        *value = dst;
+        delete tmp_speed;
+        tmp_speed = nullptr;
+        return 1;
+    };
+
+    DelayFunction::Create(delay, std::bind(transform, value, dst, tmp_speed, increasing), post_function);
+}
+
 //----------------------------------------
 
 Keys leftKeys(SDLK_d, SDLK_a, SDLK_s, SDLK_w, SDLK_SPACE);

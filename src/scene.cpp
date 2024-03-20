@@ -36,29 +36,29 @@ Scene::Scene(int map)
 {
     ShowMsg(0, normal, "creating new scene...");
     float wait = MapTile::CreateTiles(map);
-    ShowMsg(0, normal, "creating player...");
 
     DelayFunction::Create(wait + 250, []() {
+        ShowMsg(1, normal, "creating player...");
         playSound("spawn", spawn_win_channel, 0);
 
         Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size, MapTile::SpawnTile.x * Screen::tile_size);
         player = new Player(player_position);
 
         auto hide_spawn = []() {
-            GameObject::reScale(TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second, 0, 500,
-                                Game::Properties["rescale_speed"].f, []() {
-                                    std::pair<int, MapTile *> &spawn_tile =
-                                        TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
-                                    spawn_tile.first = 0;
-                                    delete spawn_tile.second;
-                                    spawn_tile.second = nullptr;
-                                });
+            transformFValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
+                            Game::Properties["rescale_speed"].f, 500, []() {
+                                std::pair<int, MapTile *> &spawn_tile =
+                                    TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
+                                spawn_tile.first = 0;
+                                delete spawn_tile.second;
+                                spawn_tile.second = nullptr;
+                            });
+            ShowMsg(2, success, "done.");
         };
 
-        GameObject::reScale(player, 1, 0, Game::Properties["rescale_speed"].f, hide_spawn);
+        transformFValue(&player->scale, 1, Game::Properties["rescale_speed"].f, 0, hide_spawn);
 
         Game::Properties["player_won"].b = 0;
-        Game::Properties["player_score"].i = 0;
         return 1;
     });
 
@@ -77,7 +77,8 @@ void Scene::DeleteScene()
     {
         ShowMsg(1, normal, "deleting player...");
         playSound("win", spawn_win_channel, 0);
-        GameObject::reScale(player, 0, 0, Game::Properties["rescale_speed"].f, []() {
+        transformFValue(&player->scale, 0, Game::Properties["rescale_speed"].f, 0, []() {
+            ShowMsg(2, success, "done.");
             ShowMsg(1, normal, "deleting all tiles...");
             float wait = MapTile::DeleteTiles();
             delete player;
@@ -103,11 +104,6 @@ void Scene::DeleteScene()
         ShowMsg(2, success, "done.");
         delete this;
     }
-}
-
-void Scene::Update()
-{
-    MapTile::Draw();
 }
 
 void UI::Update()

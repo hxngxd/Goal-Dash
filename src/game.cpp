@@ -4,7 +4,7 @@
 
 Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
-int Screen::tile_size = 48;
+int Screen::tile_size = Screen::resolution.x / Screen::map_size;
 
 SDL_Event Game::event;
 SDL_Window *Game::window = nullptr;
