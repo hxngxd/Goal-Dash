@@ -90,7 +90,7 @@ class DelayFunction
         int delay_time, std::function<bool()> function, std::function<void()> post_function = []() {});
 };
 
-extern std::map<float, DelayFunction *> DelayFunctions;
+extern std::map<unsigned int, DelayFunction *> DelayFunctions;
 
 template <class T> void ShowMsg(int indent, msg_types type, T msg)
 {

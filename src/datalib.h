@@ -217,6 +217,7 @@ enum msg_types
 
 float clamp(float value, float mn, float mx);
 bool IsInRange(float value, float mn, float mx);
+unsigned int randUint32();
 
 //----------------------------------------
 

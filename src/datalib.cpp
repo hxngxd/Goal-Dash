@@ -238,6 +238,16 @@ bool IsInRange(float value, float mn, float mx)
     return mn <= value && value <= mx;
 }
 
+unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+std::mt19937 gen(seed);
+std::uniform_int_distribution<> distrib(std::numeric_limits<unsigned int>::min(),
+                                        std::numeric_limits<unsigned int>::max());
+
+unsigned int randUint32()
+{
+    return distrib(gen);
+}
+
 //----------------------------------------
 
 Keys leftKeys(SDLK_d, SDLK_a, SDLK_s, SDLK_w, SDLK_SPACE);

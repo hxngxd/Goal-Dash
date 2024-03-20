@@ -12,7 +12,7 @@ SDL_Renderer *Game::renderer = nullptr;
 Scene *Game::scene = nullptr;
 Player *Game::player = nullptr;
 
-std::map<float, DelayFunction *> DelayFunctions;
+std::map<unsigned int, DelayFunction *> DelayFunctions;
 std::map<std::string, PropertiesType> Game::Properties;
 
 void Game::Update()
