@@ -145,7 +145,7 @@ SDL_Color Color::transparent = {0, 0, 0, 0};
 
 bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize)
 {
-    ShowMsg(2, normal, "trying to load " + path + "...");
+    print("trying to load sprite", path, "...");
     Sprites[name] = new Sprite();
     SDL_Surface *sf = IMG_Load(path.c_str());
     Sprites[name]->texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
@@ -154,10 +154,10 @@ bool loadSprite(std::string name, std::string path, int maxFrames, Vector2 realS
         delete Sprites[name];
         Sprites[name] = nullptr;
         Sprites.erase(name);
-        ShowMsg(3, fail, "failed.");
+        print("failed to load sprite", path);
         return 0;
     }
-    ShowMsg(3, success, "done.");
+    print(path, "ok");
     Sprites[name]->path = path;
     Sprites[name]->maxFrames = maxFrames;
     Sprites[name]->realSize = realSize;
@@ -184,16 +184,16 @@ std::map<std::string, Sprite *> Sprites;
 
 bool loadSound(std::string name, std::string path)
 {
-    ShowMsg(2, normal, "trying to load " + path + "...");
+    print("trying to load sound", path, "...");
     Sounds[name] = Mix_LoadWAV(path.c_str());
     if (!Sounds[name])
     {
         Mix_FreeChunk(Sounds[name]);
         Sounds.erase(name);
-        ShowMsg(3, fail, "failed.");
+        print("failed to load sound", path);
         return 0;
     }
-    ShowMsg(3, success, "done.");
+    print(path, "ok");
     return 1;
 }
 
@@ -214,16 +214,16 @@ void stopAllSound()
 
 bool loadMusic(std::string name, std::string path)
 {
-    ShowMsg(2, normal, "trying to load " + path + "...");
+    print("trying to load music", path, "...");
     Musics[name] = Mix_LoadMUS(path.c_str());
     if (!Musics[name])
     {
         Mix_FreeMusic(Musics[name]);
         Musics.erase(name);
-        ShowMsg(3, fail, "failed.");
+        print("failed to load music", path);
         return 0;
     }
-    ShowMsg(3, success, "done.");
+    print(path, "ok");
     return 1;
 }
 

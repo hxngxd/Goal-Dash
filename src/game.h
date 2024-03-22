@@ -90,31 +90,19 @@ class DelayFunction
 
 extern std::map<Uint32, DelayFunction *> DelayFunctions;
 
-template <class T> void ShowMsg(int indent, msg_types type, T msg)
+template <typename T> void print_(T msg)
 {
-    if (indent)
-        std::cout << std::string(indent * 2, ' ');
+    std::cout << msg << " ";
+}
 
-    switch (type)
-    {
-    case normal:
-        std::cout << "> ";
-        break;
-    case success:
-        std::cout << "$ ";
-        break;
-    case fail:
-        std::cout << "@ ";
-        break;
-    case error:
-        std::cout << "! ";
-        break;
-    case logging:
-        std::cout << "# ";
-        break;
-    default:
-        break;
-    }
+template <typename T, typename... Args> void print_(T msg, Args... args)
+{
+    std::cout << msg << " ";
+    print_(args...);
+}
 
-    std::cout << msg << std::endl;
+template <typename... Args> void print(Args... args)
+{
+    print_(args...);
+    std::cout << std::endl;
 }

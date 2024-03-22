@@ -21,18 +21,18 @@ void UI::DeleteUIs()
             continue;
         delete btn.second;
         btn.second = nullptr;
-        ShowMsg(2, success, "deleted " + btn.first + " button!");
+        print("button", btn.first, "deleted");
     }
     Buttons.clear();
 }
 
 bool Button::CreateButton(std::string name, const Vector2 &position, std::string label, std::function<void()> onClick)
 {
-    ShowMsg(2, normal, "creating " + name + " button...");
+    print("creating", name, "button");
     Buttons[name] = new Button();
     if (!Buttons[name])
     {
-        ShowMsg(3, fail, "failed to create button.");
+        print("failed to create button", name);
         Buttons.erase(name);
         return 0;
     }
@@ -50,7 +50,7 @@ bool Button::CreateButton(std::string name, const Vector2 &position, std::string
         },
         onClick);
 
-    ShowMsg(3, success, "done.");
+    print(name, "button created");
     return 1;
 }
 

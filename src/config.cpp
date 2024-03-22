@@ -7,12 +7,12 @@ bool Game::LoadConfig()
     std::ifstream file(".config");
     if (!file.good())
     {
-        ShowMsg(2, fail, "'.config' not found.");
+        print("config file not found");
         return 0;
     }
     if (!file.is_open())
     {
-        ShowMsg(2, fail, "can't open .config.");
+        print("can't open config file");
         file.close();
         return 0;
     }
@@ -24,7 +24,7 @@ bool Game::LoadConfig()
     std::getline(file, line);
     if (line != "#config")
     {
-        ShowMsg(2, fail, "config file is not valid.");
+        print("config file is not valid");
         return 0;
     }
 
@@ -38,7 +38,7 @@ bool Game::LoadConfig()
         std::smatch matches;
         if (!std::regex_match(line, matches, pattern))
         {
-            ShowMsg(2, fail, "invalid property.");
+            print("invalid property");
             return 0;
         }
         else
@@ -48,7 +48,7 @@ bool Game::LoadConfig()
             std::string value = matches[3];
             if (type.empty() || key.empty() || value.empty())
             {
-                ShowMsg(2, fail, "invalid property.");
+                print("invalid property");
                 return 0;
             }
             PropertiesType prop;
@@ -82,17 +82,17 @@ bool Game::LoadConfig()
             }
             catch (std::invalid_argument const &e)
             {
-                ShowMsg(2, fail, "invalid value.");
+                print("invalid value");
                 return 0;
             }
             catch (std::out_of_range const &e)
             {
-                ShowMsg(2, fail, "invalid value.");
+                print("invalid value");
                 return 0;
             }
             catch (std::string &e)
             {
-                ShowMsg(2, fail, "invalid " + e + ".");
+                print("invalid", e);
                 return 0;
             }
             Properties[key] = prop;

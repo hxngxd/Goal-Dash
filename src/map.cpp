@@ -207,9 +207,9 @@ bool Background::loadBackground(std::string name, std::string path, int maxFrame
 {
     if (!loadSprite(name, path, maxFrames, realSize))
         return 0;
-    ShowMsg(2, normal, "creating background " + name);
+    print("creating background", name);
     Backgrounds.push_back(Background(name, scale));
-    ShowMsg(3, success, "done.");
+    print("background", name, "created");
     SDL_SetTextureBlendMode(Sprites[name]->texture, SDL_BLENDMODE_BLEND);
     return 1;
 }

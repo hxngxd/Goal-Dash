@@ -3,7 +3,7 @@
 
 Scene::Scene()
 {
-    ShowMsg(0, normal, "creating new scene...");
+    print("creating new scene...");
     MapTile::CreateBorder();
 
     auto start = []() {
@@ -27,16 +27,16 @@ Scene::Scene()
     };
     Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 75), "Exit", exit);
 
-    ShowMsg(1, success, "done.");
+    print("scene created");
 }
 
 Scene::Scene(int map)
 {
-    ShowMsg(0, normal, "creating new scene...");
+    print("creating new scene...");
     float wait = MapTile::CreateTiles(map);
 
     DelayFunction::Create(wait + 250, []() {
-        ShowMsg(1, normal, "creating player...");
+        print("creating player...");
         playSound("spawn", spawn_win_channel, 0);
 
         Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size, MapTile::SpawnTile.x * Screen::tile_size);
@@ -51,7 +51,7 @@ Scene::Scene(int map)
                                 delete spawn_tile.second;
                                 spawn_tile.second = nullptr;
                             });
-            ShowMsg(2, success, "done.");
+            print("player created");
         };
 
         transformFValue(&player->scale, 1, Game::Properties["rescale_speed"].f, 0, hide_spawn);
@@ -60,24 +60,23 @@ Scene::Scene(int map)
         return 1;
     });
 
-    ShowMsg(1, success, "done.");
+    print("scene created");
 }
 
 void Scene::DeleteScene()
 {
-    ShowMsg(0, normal, "deleting current scene...");
-
-    ShowMsg(1, normal, "deleting all UIs...");
+    print("deleting current scene...");
+    print("deleting uis...");
     UI::DeleteUIs();
-    ShowMsg(2, success, "done.");
+    print("uis deleted");
 
     if (player)
     {
-        ShowMsg(1, normal, "deleting player...");
+        print("deleting player...");
         playSound("win", spawn_win_channel, 0);
         transformFValue(&player->scale, 0, Game::Properties["rescale_speed"].f, 0, []() {
-            ShowMsg(2, success, "done.");
-            ShowMsg(1, normal, "deleting all tiles...");
+            print("player deleted");
+            print("deleting tiles...");
             float wait = MapTile::DeleteTiles();
             delete player;
             player = nullptr;
@@ -92,14 +91,16 @@ void Scene::DeleteScene()
                     return 1;
                 },
                 []() { Game::scene = new Scene(++Game::Properties["map"].i); });
-            ShowMsg(2, success, "done.");
+            print("tiles deleted");
         });
     }
     else
     {
-        ShowMsg(1, normal, "deleting all tiles...");
+        print("deleting tiles...");
         MapTile::DeleteTiles();
-        ShowMsg(2, success, "done.");
+        print("tiles deleted");
         delete this;
     }
+
+    print("scene deleted");
 }

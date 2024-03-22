@@ -6,14 +6,14 @@ int main(int argc, char *argv[])
 {
     //----------------------------------------
 
-    ShowMsg(0, normal, "starting new game...");
+    print("starting new game...");
     game = new Game();
     game->Start();
 
     //----------------------------------------
 
     if (game->isRunning())
-        ShowMsg(0, success, "game is running!");
+        print("game in running");
 
     float frameStart, frameTime, frameDelay = 1000.0 / Game::Properties["fps"].f;
 
@@ -31,10 +31,10 @@ int main(int argc, char *argv[])
 
     //----------------------------------------
 
-    ShowMsg(0, normal, "trying to quit game...");
+    print("closing game...");
     game->Quit();
     delete game;
     game = nullptr;
-    ShowMsg(0, success, "game closed.");
+    print("game closed");
     return 0;
 }

@@ -59,60 +59,59 @@ void Game::Start()
 {
     //----------------------------------------
 
-    ShowMsg(1, normal, "loading config file...");
+    print("loading config file...");
     if (!LoadConfig())
     {
-        ShowMsg(1, fail, "load config failed.");
+        print("failed to load config file");
         return;
     }
-    ShowMsg(1, success, "config loaded!");
+    print("config file ok");
 
     //----------------------------------------
 
-    ShowMsg(1, normal, "trying to initializing SDL2...");
+    print("initializing sdl2 libraries...");
     if (!InitSDL2())
     {
-        ShowMsg(1, fail, "init sdl2 failed.");
+        print("failed to initialize sdl2");
         return;
     }
-    ShowMsg(1, success, "sdl2 ok!");
+    print("sdl2 ok");
 
     //----------------------------------------
 
-    ShowMsg(1, normal, "loading all medias...");
+    print("loading medias...");
     if (!LoadMedia())
     {
-        ShowMsg(1, fail, "failed to load medias.");
+        print("failed to load medias");
         return;
     }
-    ShowMsg(1, success, "medias ok!");
+    print("medias ok");
 
     //----------------------------------------
 
     if (Game::Properties["music"].b)
     {
-        ShowMsg(1, normal, "playing background music...");
+        print("playing background music...");
         playMusic("bg_music", -1);
         Mix_VolumeMusic(Game::Properties["music_volume"].i);
-        ShowMsg(2, success, "done.");
     }
 
     //----------------------------------------
 
-    ShowMsg(1, normal, "creating border...");
+    print("creating border...");
     MapTile::CreateBorder();
-    ShowMsg(2, success, "done.");
+    print("border created");
 
     //----------------------------------------
 
-    ShowMsg(1, normal, "loading font...");
+    print("loading font...");
     myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), Game::Properties["font_size"].f);
     if (!myFont)
     {
-        ShowMsg(1, fail, "failed to open font.");
+        print("failed to load font");
         return;
     }
-    ShowMsg(2, success, "done.");
+    print("font loaded");
 
     //----------------------------------------
 
@@ -127,88 +126,88 @@ bool Game::InitSDL2()
 {
     //----------------------------------------
 
-    ShowMsg(2, normal, "initializing SDL...");
+    print("initializing sdl...");
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
-        ShowMsg(3, fail, "sdl failed.");
+        print("sdl failed");
         return 0;
     }
     else
-        ShowMsg(3, success, "done.");
+        print("sdl ok");
 
     //----------------------------------------
 
-    ShowMsg(2, normal, "initializing SDL_Image...");
+    print("initializing sdl_image...");
     if (!(IMG_Init(IMG_INIT_PNG)))
     {
-        ShowMsg(3, fail, "sdl_image failed.");
+        print("sdl_image failed");
         return 0;
     }
     else
-        ShowMsg(3, success, "done.");
+        print("sdl_image ok");
 
     //----------------------------------------
 
-    ShowMsg(2, normal, "initializing SDL_TTF...");
+    print("initializing sdl_ttf...");
     if (TTF_Init() != 0)
     {
-        ShowMsg(3, fail, "sdl_ttf failed.");
+        print("sdl_ttf failed");
         return 0;
     }
     else
-        ShowMsg(3, success, "done.");
+        print("sdl_ttf ok");
 
     //----------------------------------------
 
-    ShowMsg(2, normal, "initializing SDL_Mixer format...");
+    print("initializing sdl_mixer...");
     int format = MIX_INIT_OGG;
     if (Mix_Init(format) & format != format)
     {
-        ShowMsg(3, fail, "sdl_mixer format failed.");
+        print("sdl_mixer failed");
         return 0;
     }
     else
-        ShowMsg(3, success, "done.");
+        print("sdl_mixer ok");
 
     //----------------------------------------
 
-    ShowMsg(2, normal, "initializing SDL_Mixer audio device...");
+    print("initializing audio device...");
     if (Mix_OpenAudio(44100, AUDIO_S32SYS, 2, 4096) < 0)
     {
-        ShowMsg(3, fail, "sdl_mixer audio device failed.");
+        print("audio device failed");
         return 0;
     }
     else
-        ShowMsg(3, success, "done.");
+        print("audio device ok");
 
     //----------------------------------------
 
-    ShowMsg(2, normal, "creating window...");
+    print("createing window...");
     window = SDL_CreateWindow("Goal Dash", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Screen::resolution.x,
                               Screen::resolution.y, 0);
     if (!window)
     {
-        ShowMsg(3, fail, "failed to create window.");
+        print("failed to create window");
         return 0;
     }
     else
-        ShowMsg(3, success, "done.");
+        print("window ok");
 
     //----------------------------------------
 
-    ShowMsg(2, normal, "creating renderer...");
+    print("createing renderer...");
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer)
     {
-        ShowMsg(3, fail, "failed to create renderer.");
+        print("failed to create renderer");
         return 0;
     }
     else
-        ShowMsg(3, success, "done.");
+        print("renderer ok");
 
     //----------------------------------------
 
-    ShowMsg(2, normal, "turned on blend mode.");
+    print("turned on blend mode");
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     //----------------------------------------
@@ -269,17 +268,17 @@ void Game::Quit()
 {
     //----------------------------------------
 
-    ShowMsg(0, normal, "deleting player...");
+    print("deleting player...");
     if (player)
     {
         delete player;
         player = nullptr;
     }
-    ShowMsg(1, success, "done.");
+    print("player deleted");
 
     //----------------------------------------
 
-    ShowMsg(0, normal, "deleting all tiles...");
+    print("deleting tiles....");
     for (int i = 0; i < Screen::map_size; i++)
     {
         for (int j = 0; j < Screen::map_size; j++)
@@ -290,11 +289,11 @@ void Game::Quit()
             TileMap[i][j].second = nullptr;
         }
     }
-    ShowMsg(1, success, "done.");
+    print("tiles deleted");
 
     //----------------------------------------
 
-    ShowMsg(0, normal, "deleting all sprites...");
+    print("deleting sprites...");
     for (auto &sprite : Sprites)
     {
         if (!sprite.second)
@@ -302,22 +301,21 @@ void Game::Quit()
         std::string path = sprite.second->path;
         delete sprite.second;
         sprite.second = nullptr;
-        ShowMsg(1, success, "deleted " + path + "!");
+        print("deleted", path);
     }
-    ShowMsg(1, success, "done.");
+    print("sprites deleted");
 
     //----------------------------------------
 
-    ShowMsg(0, normal, "deleting all sounds and musics...");
+    print("deleting sounds and musics...");
     for (auto &sound : Sounds)
     {
         if (!sound.second)
             continue;
         Mix_FreeChunk(sound.second);
         sound.second = nullptr;
-        ShowMsg(1, success, "deleted " + sound.first + "!");
+        print("deleted", sound.first);
     }
-    ShowMsg(1, success, "done.");
 
     for (auto &music : Musics)
     {
@@ -325,18 +323,17 @@ void Game::Quit()
             continue;
         Mix_FreeMusic(music.second);
         music.second = nullptr;
-        ShowMsg(1, success, "deleted " + music.first + "!");
+        print("deleted", music.first);
     }
 
-    ShowMsg(1, success, "done.");
+    print("sounds and music deleted");
 
     //----------------------------------------
 
-    ShowMsg(0, normal, "deleting font...");
-
+    print("deleting font...");
     if (myFont)
         TTF_CloseFont(myFont);
-    ShowMsg(1, success, "done.");
+    print("font deleted");
 
     //----------------------------------------
 
@@ -344,12 +341,11 @@ void Game::Quit()
     {
         scene->DeleteScene();
         scene = nullptr;
-        ShowMsg(1, success, "done.");
     }
 
     //----------------------------------------
 
-    ShowMsg(0, normal, "closing sdl2...");
+    print("closing sdl2...");
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -357,7 +353,7 @@ void Game::Quit()
     TTF_Quit();
     Mix_CloseAudio();
     Mix_Quit();
-    ShowMsg(1, success, "done.");
+    print("sdl2 closed");
 
     //----------------------------------------
 }
