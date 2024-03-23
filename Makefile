@@ -1,7 +1,7 @@
 all: main run
 
 main: src/main.cpp
-	g++ -std=c++17 -I include -L lib src/*.cpp -o main -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2_net -Wno-narrowing
+	g++ -std=c++17 -I include -L lib src/*.cpp src/datalib/*.cpp src/event/*.cpp src/func/*.cpp src/gameobject/*.cpp -o main -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2_net -Wno-narrowing
 
 run: main
 	./main

@@ -1,16 +1,14 @@
 #pragma once
-#include <bits/stdc++.h>
-
 #include "../include/SDL2/SDL.h"
 #include "../include/SDL2/SDL_image.h"
 #include "../include/SDL2/SDL_mixer.h"
 #include "../include/SDL2/SDL_ttf.h"
-#include "datalib.h"
-#include "gameobject.h"
+#include "datalib/util.h"
+#include "event/scene.h"
+#include "gameobject/gameobject.h"
+#include <map>
 
 class Screen;
-class Renderer;
-class Scene;
 
 class Game
 {
@@ -59,50 +57,3 @@ class Screen : public Game
     static void PointGrid(SDL_Color color);
     static void Display();
 };
-
-class EventHandler : public Game
-{
-  public:
-    static void PlayerInputHandler(Player *player, Keys &keys);
-    static void MouseInputHandler();
-};
-
-class Scene : public Game
-{
-  public:
-    Scene();
-    Scene(int map);
-    void DeleteScene();
-};
-
-class DelayFunction
-{
-  public:
-    int start_time;
-    int delay_time;
-    std::function<bool()> function;
-    std::function<void()> post_function;
-    static void Update();
-    static Uint32 Create(
-        int delay_time, std::function<bool()> function, std::function<void()> post_function = []() {});
-    static void Remove(Uint32 DFid);
-};
-
-extern std::map<Uint32, DelayFunction *> DelayFunctions;
-
-template <typename T> void print_(T msg)
-{
-    std::cout << msg << " ";
-}
-
-template <typename T, typename... Args> void print_(T msg, Args... args)
-{
-    std::cout << msg << " ";
-    print_(args...);
-}
-
-template <typename... Args> void print(Args... args)
-{
-    print_(args...);
-    std::cout << std::endl;
-}

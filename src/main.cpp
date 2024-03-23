@@ -1,3 +1,4 @@
+#include "datalib/msg.h"
 #include "game.h"
 
 Game *game = nullptr;
