@@ -4,6 +4,8 @@
 #include "datalib/sprite.h"
 #include "datalib/util.h"
 #include "event/input.h"
+#include "event/ui.h"
+#include "func/func.h"
 
 Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
@@ -31,13 +33,13 @@ void Game::Update()
 
     //----------------------------------------
 
-    // DelayFunction::Update();
+    LinkedFunction::Update();
     MapTile::Draw();
-    // UI::Update();
-    // if (player)
-    // {
-    //     player->Update();
-    // }
+    UI::Update();
+    if (player)
+    {
+        player->Update();
+    }
 
     //----------------------------------------
 
@@ -89,7 +91,7 @@ void Game::Start()
     }
     print("medias ok");
 
-    // //----------------------------------------
+    //----------------------------------------
 
     if (Game::Properties["music"].b)
     {
@@ -97,12 +99,6 @@ void Game::Start()
         PlayMusic("bg_music", -1);
         Mix_VolumeMusic(Game::Properties["music_volume"].i);
     }
-
-    //----------------------------------------
-
-    print("creating border...");
-    MapTile::CreateBorder();
-    print("border created");
 
     //----------------------------------------
 
@@ -115,11 +111,11 @@ void Game::Start()
     }
     print("font loaded");
 
-    // //----------------------------------------
+    //----------------------------------------
 
-    // scene = new Scene();
+    scene = new Scene();
 
-    // //----------------------------------------
+    //----------------------------------------
 
     running = true;
 }

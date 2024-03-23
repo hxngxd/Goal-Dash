@@ -111,7 +111,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
     TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size, wait);
 
     wait += Game::Properties["map_animation_delay"].f;
-    // transformFValue(&TileMap[i][j].second->scale, 1, Game::Properties["rescale_speed"].f, wait);
+    TransformValue(&TileMap[i][j].second->scale, 1.0f, Game::Properties["rescale_speed"].f, wait);
 }
 
 float MapTile::DeleteTiles()
@@ -254,13 +254,13 @@ void Background::Move(Vector2 velocity, int index, float ratio)
     {
         float bound = (1 - bg.scale) * bg.size.x * 0.5;
         bg.position.x += velocity.x * ratio;
-        bg.position.x = clamp(bg.position.x, bound, -bound);
+        bg.position.x = Clamp(bg.position.x, bound, -bound);
     }
 
     if (velocity.y)
     {
         float bound = (1 - bg.scale) * bg.size.y * 0.5;
         bg.position.y += velocity.y * ratio;
-        bg.position.y = clamp(bg.position.y, bound, -bound);
+        bg.position.y = Clamp(bg.position.y, bound, -bound);
     }
 }

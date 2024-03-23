@@ -12,61 +12,7 @@ extern TTF_Font *myFont;
 
 //----------------------------------------
 
-template <typename T> void TransformValue(T *value, T dest, T speed, Uint32 delay_time)
-{
-    if (!value)
-        return;
-
-    if (abs(*value - dest) <= 0.005)
-    {
-        *value = dest;
-        return;
-    }
-
-    T *temp_speed = new T(speed);
-    bool increasing = dest > *value;
-
-    auto transform = [](T *value, T dest, T *temp_speed, bool increasing) {
-        if (!value)
-            return 1;
-
-        if (increasing && *value < dest)
-        {
-            *value += *temp_speed;
-            if (*value > dest)
-            {
-                *value = dest;
-                delete temp_speed;
-                temp_speed = nullptr;
-                return 1;
-            }
-            *temp_speed /= 1.05;
-            return 0;
-        }
-
-        if (!increasing && *value > dest)
-        {
-            *value -= *temp_speed;
-            if (*value < dest)
-            {
-                *value = dest;
-                delete temp_speed;
-                temp_speed = nullptr;
-                return 1;
-            }
-            *temp_speed /= 1.05;
-            return 0;
-        }
-
-        *value = dest;
-        delete temp_speed;
-        temp_speed = nullptr;
-        return 1;
-    };
-
-    FunctionNode *newFunc = new FunctionNode(transform, delay_time);
-    LinkedFunctions *lf = new LinkedFunctions(newFunc);
-}
+void TransformValue(float *value, float dest, float speed, Uint32 delay_time);
 
 //----------------------------------------
 

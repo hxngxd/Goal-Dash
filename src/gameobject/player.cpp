@@ -203,8 +203,8 @@ void Player::Collision()
 {
     if (!Game::Properties["collision"].b)
     {
-        position.x = clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
-        position.y = clamp(position.y, 0.0f, Screen::resolution.y - size.y);
+        position.x = Clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
+        position.y = Clamp(position.y, 0.0f, Screen::resolution.y - size.y);
         return;
     }
 

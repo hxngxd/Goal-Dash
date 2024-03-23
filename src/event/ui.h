@@ -1,4 +1,5 @@
 #pragma once
+#include "../../include/SDL2/SDL.h"
 #include "../datalib/vector2.h"
 #include <functional>
 #include <map>

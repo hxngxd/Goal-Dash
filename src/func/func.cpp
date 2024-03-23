@@ -2,7 +2,7 @@
 #include "../datalib/util.h"
 #include <vector>
 
-std::map<Uint32, LinkedFunctions *> Functions;
+std::map<Uint32, LinkedFunction *> Functions;
 
 FunctionNode::FunctionNode(std::function<bool()> func, Uint32 delay_time, Uint32 times)
 {
@@ -13,28 +13,29 @@ FunctionNode::FunctionNode(std::function<bool()> func, Uint32 delay_time, Uint32
     this->next = nullptr;
 }
 
-LinkedFunctions::LinkedFunctions(FunctionNode *firstFunc)
+LinkedFunction::LinkedFunction(std::function<bool()> func, Uint32 delay_time, Uint32 times)
 {
     first = last = nullptr;
     id = RandUint32.rand();
     while (Functions.find(id) != Functions.end() || !id)
         id = RandUint32.rand();
     Functions[id] = this;
-    NextFunction(firstFunc);
+    NextFunction(func, delay_time, times);
 }
 
-void LinkedFunctions::NextFunction(FunctionNode *nextFunc)
+void LinkedFunction::NextFunction(std::function<bool()> func, Uint32 delay_time, Uint32 times)
 {
+    FunctionNode *newFunc = new FunctionNode(func, delay_time, times);
     if (!first)
-        first = last = nextFunc;
+        first = last = newFunc;
     else
     {
-        last->next = nextFunc;
+        last->next = newFunc;
         last = last->next;
     }
 }
 
-void LinkedFunctions::Update()
+void LinkedFunction::Update()
 {
     if (Functions.empty())
         return;
@@ -77,13 +78,13 @@ void LinkedFunctions::Update()
         Remove(id);
 }
 
-void LinkedFunctions::Remove(Uint32 id)
+void LinkedFunction::Remove(Uint32 id)
 {
     if (!id)
         return;
     if (Functions.find(id) == Functions.end())
         return;
-    LinkedFunctions *&FN = Functions[id];
+    LinkedFunction *&FN = Functions[id];
     if (FN)
     {
         delete FN;

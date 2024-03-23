@@ -6,6 +6,63 @@ TTF_Font *myFont = nullptr;
 
 //----------------------------------------
 
+void TransformValue(float *value, float dest, float speed, Uint32 delay_time)
+{
+    if (!value)
+        return;
+
+    if (abs(*value - dest) <= 0.005)
+    {
+        *value = dest;
+        return;
+    }
+
+    float *temp_speed = new float(speed);
+    bool increasing = dest > *value;
+
+    auto transform = [](float *value, float dest, float *temp_speed, bool increasing) {
+        if (!value)
+            return 1;
+
+        if (increasing && *value < dest)
+        {
+            *value += *temp_speed;
+            if (*value > dest)
+            {
+                *value = dest;
+                delete temp_speed;
+                temp_speed = nullptr;
+                return 1;
+            }
+            *temp_speed /= 1.05;
+            return 0;
+        }
+
+        if (!increasing && *value > dest)
+        {
+            *value -= *temp_speed;
+            if (*value < dest)
+            {
+                *value = dest;
+                delete temp_speed;
+                temp_speed = nullptr;
+                return 1;
+            }
+            *temp_speed /= 1.05;
+            return 0;
+        }
+
+        *value = dest;
+        delete temp_speed;
+        temp_speed = nullptr;
+        return 1;
+    };
+
+    LinkedFunction *lf = new LinkedFunction(std::bind(transform, value, dest, temp_speed, increasing), delay_time);
+}
+
+//----------------------------------------
+
 RandomGenerator<Uint32> RandUint32;
 
 //----------------------------------------
