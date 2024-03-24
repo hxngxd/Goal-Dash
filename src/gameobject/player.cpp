@@ -327,13 +327,15 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                                   0) &&
                 !Game::Properties["player_won"].b)
             {
-                // print("player won");
-                // Game::Properties["player_won"].b = 1;
-                // DelayFunction::Create(100, []() {
-                //     if (Game::scene)
-                //         Game::scene->DeleteScene();
-                //     return 1;
-                // });
+                print("player won");
+                Game::Properties["player_won"].b = 1;
+                LinkedFunction *lf = new LinkedFunction(
+                    []() {
+                        if (Game::scene)
+                            Game::scene->DeleteScene();
+                        return 1;
+                    },
+                    100);
             }
         }
         else if (type & SPAWN)
@@ -382,12 +384,15 @@ void Player::Jump()
             if (!Game::Properties["immortal"].b)
             {
                 isDamaged[2] = true;
-                auto notDamage = [](Player *player) {
-                    if (player)
-                        player->isDamaged[2] = false;
-                    return 1;
-                };
-                // DelayFunction::Create(500, std::bind(notDamage, this));
+                LinkedFunction *lf = new LinkedFunction(std::bind(
+                                                            [](Player *player) {
+                                                                if (player)
+                                                                    player->isDamaged[2] = false;
+                                                                return 1;
+                                                            },
+                                                            this),
+                                                        500);
+                lf->Execute();
             }
 
             if (Game::Properties["sound"].b)

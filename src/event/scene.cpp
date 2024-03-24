@@ -25,12 +25,10 @@ Scene::Scene()
     Button::CreateButton("settings", Screen::resolution / 2, "Settings");
 
     auto exit = []() {
-        LinkedFunction *lf = new LinkedFunction(
-            []() {
-                game->Stop();
-                return 1;
-            },
-            500);
+        LinkedFunction *lf = new LinkedFunction([]() {
+            game->Stop();
+            return 1;
+        });
         lf->Execute();
     };
     Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 75), "Exit", exit);
@@ -52,14 +50,14 @@ Scene::Scene(int map)
                                                 Game::player = new Player(player_position);
                                                 return 1;
                                             }),
-                                            wait + 250);
+                                            wait);
     lf->NextFunction([]() { return TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f); }, 0);
     lf->NextFunction(
         []() {
             return TransformValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
                                   Game::Properties["rescale_speed"].f);
         },
-        500);
+        250);
     lf->NextFunction(
         []() {
             std::pair<int, MapTile *> &spawn_tile = TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
@@ -80,42 +78,44 @@ Scene::Scene(int map)
 void Scene::DeleteScene()
 {
     delete this;
-    // print("deleting current scene...");
-    // print("deleting uis...");
-    // UI::DeleteUIs();
-    // print("uis deleted");
+    print("deleting current scene...");
+    print("deleting uis...");
+    UI::DeleteUIs();
+    print("uis deleted");
 
-    // if (player)
-    // {
-    //     print("deleting player...");
-    //     playSound("win", spawn_win_channel, 0);
-    //     transformFValue(&player->scale, 0, Game::Properties["rescale_speed"].f, 0, []() {
-    //         print("player deleted");
-    //         print("deleting tiles...");
-    //         float wait = MapTile::DeleteTiles();
-    //         delete player;
-    //         player = nullptr;
-    //         DelayFunction::Create(
-    //             wait + 1500,
-    //             []() {
-    //                 if (Game::scene)
-    //                 {
-    //                     delete Game::scene;
-    //                     Game::scene = nullptr;
-    //                 }
-    //                 return 1;
-    //             },
-    //             []() { Game::scene = new Scene(++Game::Properties["map"].i); });
-    //         print("tiles deleted");
-    //     });
-    // }
-    // else
-    // {
-    //     print("deleting tiles...");
-    //     MapTile::DeleteTiles();
-    //     print("tiles deleted");
-    //     delete this;
-    // }
+    if (Game::player)
+    {
+        print("deleting player...");
+        PlaySound("win", channels.map, 0);
+        LinkedFunction *lf = new LinkedFunction(
+            []() { return TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f); });
+        transformFValue(&player->scale, 0, Game::Properties["rescale_speed"].f, 0, []() {
+            print("player deleted");
+            print("deleting tiles...");
+            float wait = MapTile::DeleteTiles();
+            delete player;
+            player = nullptr;
+            DelayFunction::Create(
+                wait + 1500,
+                []() {
+                    if (Game::scene)
+                    {
+                        delete Game::scene;
+                        Game::scene = nullptr;
+                    }
+                    return 1;
+                },
+                []() { Game::scene = new Scene(++Game::Properties["map"].i); });
+            print("tiles deleted");
+        });
+    }
+    else
+    {
+        print("deleting tiles...");
+        MapTile::DeleteTiles();
+        print("tiles deleted");
+        delete this;
+    }
 
-    // print("scene deleted");
+    print("scene deleted");
 }

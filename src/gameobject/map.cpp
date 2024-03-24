@@ -65,7 +65,6 @@ float MapTile::CreateTiles(int map)
         game->Stop();
         return {};
     }
-    //
 
     for (int i = 1; i < mp_size - 1; i++)
     {
@@ -97,7 +96,7 @@ float MapTile::CreateTiles(int map)
 
     CreateATile(SpawnTile.x, SpawnTile.y, wait);
     TileMap[WinTile.x][WinTile.y].first = 0;
-    return wait + Game::Properties["map_animation_delay"].f * 2;
+    return wait + Game::Properties["map_animation_delay"].f;
 }
 
 void MapTile::CreateATile(int i, int j, float &wait)
@@ -134,9 +133,9 @@ float MapTile::DeleteTiles()
         {
             if (!TileMap[i][j].second)
                 continue;
-            // LinkedFunction *lf = new LinkedFunction(TransformValue(&TileMap[i][j].second->scale, ))
-            // transformFValue(&TileMap[i][j].second->scale, 0, Game::Properties["rescale_speed"].f, wait,
-            //                 std::bind(post_func, i, j));
+            LinkedFunction *lf = new LinkedFunction(
+                std::bind(TransformValue, &TileMap[i][j].second->scale, 0, Game::Properties["rescale_speed"].f), wait);
+            lf->Execute();
             wait += Game::Properties["map_animation_delay"].f;
         }
     }
