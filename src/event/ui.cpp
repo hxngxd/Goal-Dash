@@ -86,7 +86,7 @@ void Button::Update()
         if (hoverButton != name || bg_opacity == 0)
         {
             hoverButton = name;
-            PlaySound("hover", channels.ui, 0);
+            // PlaySound("hover", channels.ui, 0);
             // DelayFunction::Remove(DFid[0]);
             // DFid[0] = transformFValue(&bg_opacity, 255, 20, 0);
             // DelayFunction::Remove(DFid[1]);

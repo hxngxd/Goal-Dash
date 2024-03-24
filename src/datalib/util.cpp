@@ -7,60 +7,39 @@ TTF_Font *myFont = nullptr;
 
 //----------------------------------------
 
-FunctionNode *TransformValue(float *value, float dest, float speed, Uint32 delay_time)
+bool TransformValue(float *value, float dest, float speed)
 {
     if (!value)
-        return nullptr;
+        return 1;
 
     if (abs(*value - dest) <= 0.005)
     {
         *value = dest;
-        return nullptr;
+        return 1;
     }
 
-    float *temp_speed = new float(speed);
-    bool increasing = dest > *value;
-
-    auto transform = [](float *value, float dest, float *temp_speed, bool increasing) {
-        if (!value)
+    if (*value < dest)
+    {
+        *value += speed;
+        if (*value > dest)
+        {
+            *value = dest;
             return 1;
-
-        if (increasing && *value < dest)
-        {
-            *value += *temp_speed;
-            if (*value > dest)
-            {
-                *value = dest;
-                delete temp_speed;
-                temp_speed = nullptr;
-                return 1;
-            }
-            *temp_speed /= 1.05;
-            return 0;
         }
-
-        if (!increasing && *value > dest)
+        return 0;
+    }
+    else if (*value > dest)
+    {
+        *value -= speed;
+        if (*value < dest)
         {
-            *value -= *temp_speed;
-            if (*value < dest)
-            {
-                *value = dest;
-                delete temp_speed;
-                temp_speed = nullptr;
-                return 1;
-            }
-            *temp_speed /= 1.05;
-            return 0;
+            *value = dest;
+            return 1;
         }
+        return 0;
+    }
 
-        *value = dest;
-        delete temp_speed;
-        temp_speed = nullptr;
-        return 1;
-    };
-
-    FunctionNode *newFunc = new FunctionNode(std::bind(transform, value, dest, temp_speed, increasing), delay_time);
-    return newFunc;
+    return 1;
 }
 
 //----------------------------------------

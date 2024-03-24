@@ -43,46 +43,38 @@ Scene::Scene(int map)
     print("creating new scene...");
     float wait = MapTile::CreateTiles(map);
 
-    float *temp_player_scale = new float(0);
-    float *temp_memory = temp_player_scale;
-    LinkedFunction *lf = new LinkedFunction(std::bind(
-                                                [](float *temp_player_scale, float *temp_memory) {
-                                                    print("creating player...");
-                                                    PlaySound("spawn", channels.map, 0);
+    LinkedFunction *lf = new LinkedFunction(std::bind([]() {
+                                                print("creating player...");
+                                                PlaySound("spawn", channels.map, 0);
 
-                                                    Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size,
-                                                                            MapTile::SpawnTile.x * Screen::tile_size);
-                                                    Game::player = new Player(player_position);
-                                                    temp_player_scale = &Game::player->scale;
-                                                    print(temp_player_scale);
-                                                    delete temp_memory;
-                                                    temp_memory = nullptr;
-                                                    return 1;
-                                                },
-                                                temp_player_scale, temp_memory),
+                                                Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size,
+                                                                        MapTile::SpawnTile.x * Screen::tile_size);
+                                                Game::player = new Player(player_position);
+                                                return 1;
+                                            }),
                                             wait + 250);
+    lf->NextFunction([]() { return TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f); }, 0);
+    lf->NextFunction(
+        []() {
+            return TransformValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
+                                  Game::Properties["rescale_speed"].f);
+        },
+        500);
+    lf->NextFunction(
+        []() {
+            std::pair<int, MapTile *> &spawn_tile = TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
+            spawn_tile.first = 0;
+            delete spawn_tile.second;
+            spawn_tile.second = nullptr;
+            print("player created");
+            return 1;
+        },
+        100);
+    lf->NextFunction([]() {
+        print("scene created");
+        return 1;
+    });
     lf->Execute();
-    // lf->NextFunction(TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f, 0), 0);
-    // DelayFunction::Create(wait + 250, []() {
-    //     auto hide_spawn = []() {
-    //         transformFValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
-    //                         Game::Properties["rescale_speed"].f, 500, []() {
-    //                             std::pair<int, MapTile *> &spawn_tile =
-    //                                 TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
-    //                             spawn_tile.first = 0;
-    //                             delete spawn_tile.second;
-    //                             spawn_tile.second = nullptr;
-    //                         });
-    //         print("player created");
-    //     };
-
-    //     transformFValue(&player->scale, 1, Game::Properties["rescale_speed"].f, 0, hide_spawn);
-
-    //     Game::Properties["player_won"].b = 0;
-    //     return 1;
-    // });
-
-    print("scene created");
 }
 
 void Scene::DeleteScene()

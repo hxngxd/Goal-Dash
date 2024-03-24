@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     //----------------------------------------
 
     if (game->isRunning())
-        print("game in running");
+        print("game is running");
 
     float frameStart, frameTime, frameDelay = 1000.0 / Game::Properties["fps"].f;
 

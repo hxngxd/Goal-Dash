@@ -12,7 +12,7 @@ extern TTF_Font *myFont;
 
 //----------------------------------------
 
-FunctionNode *TransformValue(float *value, float dest, float speed, Uint32 delay_time);
+bool TransformValue(float *value, float dest, float speed);
 
 //----------------------------------------
 
