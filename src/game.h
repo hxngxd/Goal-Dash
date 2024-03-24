@@ -23,6 +23,8 @@ class Game
     static SDL_Renderer *renderer;
     static Scene *scene;
     static Player *player;
+    static int player_score;
+    static bool player_won;
 
     void Start();
     void Stop()

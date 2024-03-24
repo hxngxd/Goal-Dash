@@ -41,13 +41,14 @@ class MapTile : public GameObject
   public:
     static Vector2 SpawnTile;
     static Vector2 WinTile;
+    static int nEmptyTiles;
 
     MapTile(Vector2 position, Vector2 size, float wait);
 
     static void CreateBorder();
-    static float CreateTiles(int map);
+    static void CreateTiles(int map);
     static void CreateATile(int i, int j, float &wait);
-    static float DeleteTiles();
+    static void DeleteTiles();
     static void Draw();
 };
 

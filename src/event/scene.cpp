@@ -39,7 +39,7 @@ Scene::Scene()
 Scene::Scene(int map)
 {
     print("creating new scene...");
-    float wait = MapTile::CreateTiles(map);
+    MapTile::CreateTiles(map);
 
     LinkedFunction *lf = new LinkedFunction(std::bind([]() {
                                                 print("creating player...");
@@ -50,14 +50,14 @@ Scene::Scene(int map)
                                                 Game::player = new Player(player_position);
                                                 return 1;
                                             }),
-                                            wait);
+                                            (MapTile::nEmptyTiles + 4) * Game::Properties["map_animation_delay"].f);
     lf->NextFunction([]() { return TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f); }, 0);
     lf->NextFunction(
         []() {
             return TransformValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
                                   Game::Properties["rescale_speed"].f);
         },
-        250);
+        500);
     lf->NextFunction(
         []() {
             std::pair<int, MapTile *> &spawn_tile = TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
@@ -70,6 +70,7 @@ Scene::Scene(int map)
         100);
     lf->NextFunction([]() {
         print("scene created");
+        Game::player_won = false;
         return 1;
     });
     lf->Execute();
@@ -88,34 +89,31 @@ void Scene::DeleteScene()
         print("deleting player...");
         PlaySound("win", channels.map, 0);
         LinkedFunction *lf = new LinkedFunction(
-            []() { return TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f); });
-        transformFValue(&player->scale, 0, Game::Properties["rescale_speed"].f, 0, []() {
+            []() { return TransformValue(&Game::player->scale, 0, Game::Properties["rescale_speed"].f); });
+        lf->NextFunction([]() {
+            delete Game::player;
+            Game::player = nullptr;
             print("player deleted");
             print("deleting tiles...");
-            float wait = MapTile::DeleteTiles();
-            delete player;
-            player = nullptr;
-            DelayFunction::Create(
-                wait + 1500,
-                []() {
-                    if (Game::scene)
-                    {
-                        delete Game::scene;
-                        Game::scene = nullptr;
-                    }
-                    return 1;
-                },
-                []() { Game::scene = new Scene(++Game::Properties["map"].i); });
-            print("tiles deleted");
+            MapTile::DeleteTiles();
+            return 1;
         });
+        lf->NextFunction(
+            []() {
+                if (Game::scene)
+                {
+                    delete Game::scene;
+                    Game::scene = nullptr;
+                }
+                print("tile deleted");
+                print("scene deleted");
+                return 1;
+            },
+            (MapTile::nEmptyTiles + 4) * Game::Properties["map_animation_delay"].f);
+        lf->NextFunction([]() {
+            Game::scene = new Scene(++Game::Properties["map"].i);
+            return 1;
+        });
+        lf->Execute();
     }
-    else
-    {
-        print("deleting tiles...");
-        MapTile::DeleteTiles();
-        print("tiles deleted");
-        delete this;
-    }
-
-    print("scene deleted");
 }

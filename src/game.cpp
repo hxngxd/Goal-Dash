@@ -7,7 +7,7 @@
 #include "event/ui.h"
 #include "func/func.h"
 
-Vector2 Screen::resolution(768, 768);
+Vector2 Screen::resolution(640, 640);
 int Screen::map_size = 16;
 int Screen::tile_size = Screen::resolution.x / Screen::map_size;
 
@@ -16,6 +16,8 @@ SDL_Window *Game::window = nullptr;
 SDL_Renderer *Game::renderer = nullptr;
 Scene *Game::scene = nullptr;
 Player *Game::player = nullptr;
+int Game::player_score = 0;
+bool Game::player_won = false;
 
 std::map<std::string, PropertiesType> Game::Properties;
 

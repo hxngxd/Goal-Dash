@@ -298,7 +298,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0))
             {
-                int score = ++Game::Properties["player_score"].i;
+                int score = ++Game::player_score;
                 std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];
                 coin_tile.first = 0;
                 delete coin_tile.second;
@@ -325,10 +325,10 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0) &&
-                !Game::Properties["player_won"].b)
+                !Game::player_won)
             {
                 print("player won");
-                Game::Properties["player_won"].b = 1;
+                Game::player_won = 1;
                 LinkedFunction *lf = new LinkedFunction(
                     []() {
                         if (Game::scene)
@@ -336,6 +336,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                         return 1;
                     },
                     100);
+                lf->Execute();
             }
         }
         else if (type & SPAWN)

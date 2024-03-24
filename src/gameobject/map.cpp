@@ -5,6 +5,7 @@
 
 std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 std::vector<Background> Backgrounds;
+int MapTile::nEmptyTiles = 0;
 
 Vector2 MapTile::SpawnTile;
 Vector2 MapTile::WinTile;
@@ -52,18 +53,19 @@ void MapTile::CreateBorder()
     }
 }
 
-float MapTile::CreateTiles(int map)
+void MapTile::CreateTiles(int map)
 {
     int mp_size = Screen::map_size;
 
     std::ifstream in;
     in.open("map/" + std::to_string(map) + ".map");
+    nEmptyTiles = 0;
 
     // temporary code
     if (!in.good())
     {
         game->Stop();
-        return {};
+        return;
     }
 
     for (int i = 1; i < mp_size - 1; i++)
@@ -71,6 +73,8 @@ float MapTile::CreateTiles(int map)
         for (int j = 1; j < mp_size - 1; j++)
         {
             in >> TileMap[i][j].first;
+            if (TileMap[i][j].first)
+                nEmptyTiles++;
         }
     }
     in.close();
@@ -96,7 +100,6 @@ float MapTile::CreateTiles(int map)
 
     CreateATile(SpawnTile.x, SpawnTile.y, wait);
     TileMap[WinTile.x][WinTile.y].first = 0;
-    return wait + Game::Properties["map_animation_delay"].f;
 }
 
 void MapTile::CreateATile(int i, int j, float &wait)
@@ -115,7 +118,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
     wait += Game::Properties["map_animation_delay"].f;
 }
 
-float MapTile::DeleteTiles()
+void MapTile::DeleteTiles()
 {
     float wait = 0.1;
     auto post_func = [](int i, int j) {
@@ -139,8 +142,6 @@ float MapTile::DeleteTiles()
             wait += Game::Properties["map_animation_delay"].f;
         }
     }
-
-    return wait;
 }
 
 void MapTile::Draw()
