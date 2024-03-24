@@ -1,4 +1,10 @@
-#include "game.h"
+#include "../datalib/mixer.h"
+#include "../datalib/sprite.h"
+#include "../datalib/util.h"
+#include "../game.h"
+#include "gameobject.h"
+#include <cstring>
+#include <string>
 
 Player::Player(Vector2 position)
 {
@@ -18,7 +24,7 @@ Player::Player(Vector2 position)
 
 Player::~Player()
 {
-    stopSound(run_channel);
+    StopSound(CHANNEL_RUN);
 }
 
 void Player::Update()
@@ -49,20 +55,20 @@ void Player::Animation()
         animation_delay = currentTicks;
     }
 
-    Sprite *current = nullptr;
+    std::string current = "";
     switch (current_state)
     {
     case IDLE:
-        current = Sprites["idle"];
+        current = "idle";
         break;
     case RUN:
-        current = Sprites["run"];
+        current = "run";
         break;
     case JUMP:
-        current = Sprites["jump"];
+        current = "jump";
         break;
     }
-    maxFrames = current->maxFrames;
+    maxFrames = Sprites[current]->maxFrames;
 
     DrawSprite(current, position, size, scale, std::min(currentFrame, maxFrames), (direction == LEFT));
 
@@ -151,22 +157,22 @@ void Player::MoveRightLeft()
     {
         if (!collide_down.second)
         {
-            if (Mix_Playing(run_channel))
-                stopSound(run_channel);
+            if (Mix_Playing(CHANNEL_RUN))
+                StopSound(CHANNEL_RUN);
         }
         else
         {
-            if (!Mix_Playing(run_channel))
+            if (!Mix_Playing(CHANNEL_RUN))
             {
                 if (Game::Properties["sound"].b)
-                    playSound("run", run_channel, -1);
+                    PlaySound("run", CHANNEL_RUN, -1);
             }
         }
     }
     else
     {
-        if (Mix_Playing(run_channel))
-            stopSound(run_channel);
+        if (Mix_Playing(CHANNEL_RUN))
+            StopSound(CHANNEL_RUN);
     }
 }
 
@@ -197,12 +203,12 @@ void Player::Collision()
 {
     if (!Game::Properties["collision"].b)
     {
-        position.x = clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
-        position.y = clamp(position.y, 0, Screen::resolution.y - size.y);
+        position.x = Clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
+        position.y = Clamp(position.y, 0.0f, Screen::resolution.y - size.y);
         return;
     }
 
-    Vector2 playerCenterTile = IntV2(Rect::getCenter(position, size) / Screen::tile_size);
+    Vector2 playerCenterTile = Int(Rect::GetCenter(position, size) / Screen::tile_size);
     std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> visit;
     std::queue<Vector2> Q;
     visit.insert({playerCenterTile, 1});
@@ -216,10 +222,10 @@ void Player::Collision()
         Vector2 u = Q.front();
         Q.pop();
 
-        MapCollision(u + v2down, visit, Q);
-        MapCollision(u + v2up, visit, Q);
-        MapCollision(u + v2right, visit, Q);
-        MapCollision(u + v2left, visit, Q);
+        MapCollision(u + Vector2::Down, visit, Q);
+        MapCollision(u + Vector2::Up, visit, Q);
+        MapCollision(u + Vector2::Right, visit, Q);
+        MapCollision(u + Vector2::Left, visit, Q);
     }
 
     collide_down.second = collide_down.first;
@@ -233,11 +239,11 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
     float maxDist = Screen::tile_size * sqrt(61) / 6 - 3;
     float eps = 0;
 
-    Vector2 playerCenter = Rect::getCenter(position, size);
+    Vector2 playerCenter = Rect::GetCenter(position, size);
     Vector2 nextCenter = (nextTile + Vector2(0.5)) * Screen::tile_size;
-    float h = playerCenter.distance(nextCenter);
+    float h = Distance(playerCenter, nextCenter);
 
-    if (IsV2InRange(nextTile, Vector2(), Vector2(15)) && visit.find(nextTile) == visit.end() && h <= maxDist)
+    if (InRange(nextTile, Vector2(), Vector2(15)) && visit.find(nextTile) == visit.end() && h <= maxDist)
     {
         int type = TileMap[nextTile.y][nextTile.x].first;
         if (type & (WALL | DAMAGE))
@@ -279,8 +285,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
 
             if (!Game::Properties["immortal"].b && type & DAMAGE)
             {
-                if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
-                                    Vector2(Screen::tile_size), 3))
+                if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
+                                      Vector2(Screen::tile_size), 3))
                     isDamaged[0] = true;
             }
         }
@@ -289,10 +295,10 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Game::Properties["draw_ray"].b)
                 Screen::SetDrawColor(Color::yellow(255));
 
-            if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
-                                0))
+            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
+                                  0))
             {
-                int score = ++Game::Properties["player_score"].i;
+                int score = ++Game::player_score;
                 std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];
                 coin_tile.first = 0;
                 delete coin_tile.second;
@@ -301,7 +307,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 print("player score", score);
 
                 if (Game::Properties["sound"].b)
-                    playSound("coin", coin_channel, 0);
+                    PlaySound("coin", CHANNEL_COIN, 0);
 
                 if (score == Game::Properties["coin"].i)
                 {
@@ -309,6 +315,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     win_tile.first = WIN;
                     float wait = 500;
                     MapTile::CreateATile(MapTile::WinTile.x, MapTile::WinTile.y, wait);
+                    MapTile::nEmptyTiles--;
                 }
             }
         }
@@ -317,17 +324,20 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Game::Properties["draw_ray"].b)
                 Screen::SetDrawColor(Color::green(255));
 
-            if (Rect::isCollide(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
-                                0) &&
-                !Game::Properties["player_won"].b)
+            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
+                                  0) &&
+                !Game::player_won && TileMap[MapTile::WinTile.x][MapTile::WinTile.y].second->scale == 1)
             {
                 print("player won");
-                Game::Properties["player_won"].b = 1;
-                DelayFunction::Create(100, []() {
-                    if (Game::scene)
-                        Game::scene->DeleteScene();
-                    return 1;
-                });
+                Game::player_won = 1;
+                LinkedFunction *lf = new LinkedFunction(
+                    []() {
+                        if (Game::scene)
+                            Game::scene->DeleteScene();
+                        return 1;
+                    },
+                    250);
+                lf->Execute();
             }
         }
         else if (type & SPAWN)
@@ -376,16 +386,19 @@ void Player::Jump()
             if (!Game::Properties["immortal"].b)
             {
                 isDamaged[2] = true;
-                auto notDamage = [](Player *player) {
-                    if (player)
-                        player->isDamaged[2] = false;
-                    return 1;
-                };
-                DelayFunction::Create(500, std::bind(notDamage, this));
+                LinkedFunction *lf = new LinkedFunction(std::bind(
+                                                            [](Player *player) {
+                                                                if (player)
+                                                                    player->isDamaged[2] = false;
+                                                                return 1;
+                                                            },
+                                                            this),
+                                                        500);
+                lf->Execute();
             }
 
             if (Game::Properties["sound"].b)
-                playSound("fall", fall_channel, 0);
+                PlaySound("fall", CHANNEL_JUMP_FALL, 0);
         }
 
         velocity.d = 0;

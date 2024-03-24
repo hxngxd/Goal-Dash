@@ -1,4 +1,9 @@
-#include "game.h"
+#include "input.h"
+#include "../datalib/mixer.h"
+#include "../game.h"
+#include "ui.h"
+
+Vector2 mousePosition = Vector2();
 
 void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
 {
@@ -30,7 +35,7 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
                 player->previous_state = player->current_state;
                 player->current_state = JUMP;
                 if (Game::Properties["sound"].b)
-                    playSound("jump", jump_channel, 0);
+                    PlaySound("jump", CHANNEL_JUMP_FALL, 0);
                 player->collide_down.second = false;
             }
         }
@@ -62,21 +67,25 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
 
 void EventHandler::MouseInputHandler()
 {
-    if (event.type == SDL_MOUSEBUTTONDOWN)
+    if (Game::event.type == SDL_MOUSEBUTTONDOWN)
     {
-        if (event.button.button == SDL_BUTTON_LEFT)
+        if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
             downButton = hoverButton;
         }
     }
-    else if (event.type == SDL_MOUSEBUTTONUP)
+    else if (Game::event.type == SDL_MOUSEBUTTONUP)
     {
-        if (event.button.button == SDL_BUTTON_LEFT)
+        if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
             upButton = hoverButton;
             if (downButton == upButton && Buttons.find(downButton) != Buttons.end() && Buttons[downButton])
             {
-                Buttons[downButton]->onClick();
+                if (SDL_GetTicks() - lastClicked >= 500)
+                {
+                    Buttons[downButton]->onClick();
+                    lastClicked = SDL_GetTicks();
+                }
             }
         }
     }

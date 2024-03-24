@@ -1,8 +1,13 @@
 #include "game.h"
+#include "datalib/mixer.h"
+#include "datalib/msg.h"
+#include "datalib/sprite.h"
+#include "datalib/util.h"
+#include "event/input.h"
+#include "event/ui.h"
+#include "func/func.h"
 
-#include "gameobject.h"
-
-Vector2 Screen::resolution(768, 768);
+Vector2 Screen::resolution(640, 640);
 int Screen::map_size = 16;
 int Screen::tile_size = Screen::resolution.x / Screen::map_size;
 
@@ -11,8 +16,9 @@ SDL_Window *Game::window = nullptr;
 SDL_Renderer *Game::renderer = nullptr;
 Scene *Game::scene = nullptr;
 Player *Game::player = nullptr;
+int Game::player_score = 0;
+bool Game::player_won = false;
 
-std::map<Uint32, DelayFunction *> DelayFunctions;
 std::map<std::string, PropertiesType> Game::Properties;
 
 void Game::Update()
@@ -29,7 +35,7 @@ void Game::Update()
 
     //----------------------------------------
 
-    DelayFunction::Update();
+    LinkedFunction::Update();
     MapTile::Draw();
     UI::Update();
     if (player)
@@ -48,7 +54,7 @@ void Game::Update()
         mousePosition = Vector2(x, y);
         EventHandler::MouseInputHandler();
         if (player)
-            EventHandler::PlayerInputHandler(player, Game::Properties["keyboard_layout"].b ? rightKeys : leftKeys);
+            EventHandler::PlayerInputHandler(player, Game::Properties["keyboard_layout"].b ? right_keys : left_keys);
     }
 
     //----------------------------------------
@@ -92,20 +98,14 @@ void Game::Start()
     if (Game::Properties["music"].b)
     {
         print("playing background music...");
-        playMusic("bg_music", -1);
+        PlayMusic("bg_music", -1);
         Mix_VolumeMusic(Game::Properties["music_volume"].i);
     }
 
     //----------------------------------------
 
-    print("creating border...");
-    MapTile::CreateBorder();
-    print("border created");
-
-    //----------------------------------------
-
     print("loading font...");
-    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), Game::Properties["font_size"].f);
+    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), 24);
     if (!myFont)
     {
         print("failed to load font");
@@ -219,15 +219,15 @@ bool Game::LoadMedia()
 {
     //----------------------------------------
 
-    if (!loadSprite("coin", "img/coin.png", 5, Vector2(16)))
+    if (!LoadSprite("coin", "img/coin.png", 5, Vector2(16)))
         return 0;
-    if (!loadSprite("idle", "img/idle.png", 10, Vector2(48)))
+    if (!LoadSprite("idle", "img/idle.png", 10, Vector2(48)))
         return 0;
-    if (!loadSprite("run", "img/run.png", 9, Vector2(48)))
+    if (!LoadSprite("run", "img/run.png", 9, Vector2(48)))
         return 0;
-    if (!loadSprite("jump", "img/jump.png", 4, Vector2(48)))
+    if (!LoadSprite("jump", "img/jump.png", 4, Vector2(48)))
         return 0;
-    if (!loadSprite("button_hover", "img/button_hover.png", 1, Vector2(695, 377)))
+    if (!LoadSprite("button_hover", "img/button_hover.png", 1, Vector2(695, 377)))
         return 0;
     //----------------------------------------
 
@@ -240,23 +240,23 @@ bool Game::LoadMedia()
 
     //----------------------------------------
 
-    if (!loadSound("coin", "sound/coin.ogg"))
+    if (!LoadSound("coin", "sound/coin.ogg"))
         return 0;
-    if (!loadSound("jump", "sound/jump.ogg"))
+    if (!LoadSound("jump", "sound/jump.ogg"))
         return 0;
-    if (!loadSound("run", "sound/run.ogg"))
+    if (!LoadSound("run", "sound/run.ogg"))
         return 0;
-    if (!loadSound("fall", "sound/fall.ogg"))
+    if (!LoadSound("fall", "sound/fall.ogg"))
         return 0;
-    if (!loadSound("click", "sound/click.ogg"))
+    if (!LoadSound("click", "sound/click.ogg"))
         return 0;
-    if (!loadSound("hover", "sound/hover.ogg"))
+    if (!LoadSound("hover", "sound/hover.ogg"))
         return 0;
-    if (!loadSound("win", "sound/win.ogg"))
+    if (!LoadSound("win", "sound/win.ogg"))
         return 0;
-    if (!loadSound("spawn", "sound/spawn.ogg"))
+    if (!LoadSound("spawn", "sound/spawn.ogg"))
         return 0;
-    if (!loadMusic("bg_music", "sound/bg_music.ogg"))
+    if (!LoadMusic("bg_music", "sound/bg_music.ogg"))
         return 0;
 
     //----------------------------------------

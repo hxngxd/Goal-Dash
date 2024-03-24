@@ -1,16 +1,11 @@
 #pragma once
-#include "datalib.h"
+#include "../datalib/util.h"
+#include "../datalib/vector2.h"
+#include <map>
+#include <queue>
+#include <unordered_map>
 
 class Player;
-class MapTile;
-class Background;
-class UI;
-class Button;
-
-extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
-extern std::vector<Background> Backgrounds;
-extern std::map<std::string, Button *> Buttons;
-extern std::string hoverButton, downButton, upButton;
 
 class GameObject
 {
@@ -39,20 +34,25 @@ class Background : public GameObject
     static void Draw();
 };
 
+extern std::vector<Background> Backgrounds;
+
 class MapTile : public GameObject
 {
   public:
     static Vector2 SpawnTile;
     static Vector2 WinTile;
+    static int nEmptyTiles;
 
     MapTile(Vector2 position, Vector2 size, float wait);
 
     static void CreateBorder();
-    static float CreateTiles(int map);
+    static void CreateTiles(int map);
     static void CreateATile(int i, int j, float &wait);
-    static float DeleteTiles();
+    static void DeleteTiles();
     static void Draw();
 };
+
+extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 
 class Player : public GameObject
 {
@@ -82,30 +82,4 @@ class Player : public GameObject
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
     bool isDamaged[3];
-};
-
-class UI
-{
-  public:
-    std::string name;
-    Vector2 position;
-    float scale;
-    float bg_opacity;
-    Uint32 DFid[3] = {0, 0, 0};
-
-    static void Update();
-    static void DeleteUIs();
-};
-
-class Button : public UI
-{
-  public:
-    std::string label;
-    float font_size;
-    std::function<void()> onClick;
-
-    static bool CreateButton(
-        std::string name, const Vector2 &position, std::string label, std::function<void()> onClick = []() {});
-
-    void Update();
 };

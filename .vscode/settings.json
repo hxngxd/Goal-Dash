@@ -69,5 +69,9 @@
         "typeinfo": "cpp",
         "valarray": "cpp"
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
+    "editor.defaultFormatter": "ms-vscode.cpptools"
 }
