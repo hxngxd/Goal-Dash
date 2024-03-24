@@ -16,23 +16,41 @@ FunctionNode::FunctionNode(std::function<bool()> func, Uint32 delay_time, Uint32
 LinkedFunction::LinkedFunction(std::function<bool()> func, Uint32 delay_time, Uint32 times)
 {
     first = last = nullptr;
-    id = RandUint32.rand();
-    while (Functions.find(id) != Functions.end() || !id)
-        id = RandUint32.rand();
-    Functions[id] = this;
     NextFunction(func, delay_time, times);
+}
+
+LinkedFunction::LinkedFunction(FunctionNode *firstFunc)
+{
+    first = last = nullptr;
+    NextFunction(firstFunc);
 }
 
 void LinkedFunction::NextFunction(std::function<bool()> func, Uint32 delay_time, Uint32 times)
 {
     FunctionNode *newFunc = new FunctionNode(func, delay_time, times);
+    NextFunction(newFunc);
+}
+
+void LinkedFunction::NextFunction(FunctionNode *nextFunc)
+{
+    if (!nextFunc)
+        return;
+
     if (!first)
-        first = last = newFunc;
+        first = last = nextFunc;
     else
     {
-        last->next = newFunc;
+        last->next = nextFunc;
         last = last->next;
     }
+}
+
+void LinkedFunction::Execute()
+{
+    id = RandUint32.rand();
+    while (Functions.find(id) != Functions.end() || !id)
+        id = RandUint32.rand();
+    Functions[id] = this;
 }
 
 void LinkedFunction::Update()

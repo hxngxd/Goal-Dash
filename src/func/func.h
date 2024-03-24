@@ -24,10 +24,12 @@ class LinkedFunction
     Uint32 id;
 
     LinkedFunction(std::function<bool()> func, Uint32 delay_time = 0, Uint32 times = 1);
-    void NextFunction(std::function<bool()> func, Uint32 delay_time, Uint32 times);
+    LinkedFunction(FunctionNode *firstFunc);
+    void NextFunction(std::function<bool()> func, Uint32 delay_time = 0, Uint32 times = 1);
+    void NextFunction(FunctionNode *nextFunc);
     static void Remove(Uint32 id);
-
     static void Update();
+    void Execute();
 };
 
 extern std::map<Uint32, LinkedFunction *> Functions;
