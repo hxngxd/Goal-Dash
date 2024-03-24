@@ -54,7 +54,7 @@ bool Button::CreateButton(std::string name, const Vector2 &position, std::string
     Buttons[name]->onClick = std::bind(
         [](std::function<void()> onClick) {
             onClick();
-            PlaySound("click", channels.ui, 0);
+            PlaySound("click", CHANNEL_BUTTON, 0);
         },
         onClick);
 

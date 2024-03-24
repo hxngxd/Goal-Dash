@@ -43,7 +43,7 @@ Scene::Scene(int map)
 
     LinkedFunction *lf = new LinkedFunction(std::bind([]() {
                                                 print("creating player...");
-                                                PlaySound("spawn", channels.map, 0);
+                                                PlaySound("spawn", CHANNEL_SPAWN_WIN, 0);
 
                                                 Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size,
                                                                         MapTile::SpawnTile.x * Screen::tile_size);
@@ -87,7 +87,7 @@ void Scene::DeleteScene()
     if (Game::player)
     {
         print("deleting player...");
-        PlaySound("win", channels.map, 0);
+        PlaySound("win", CHANNEL_SPAWN_WIN, 0);
         LinkedFunction *lf = new LinkedFunction(
             []() { return TransformValue(&Game::player->scale, 0, Game::Properties["rescale_speed"].f); });
         lf->NextFunction([]() {

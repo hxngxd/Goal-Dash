@@ -24,7 +24,7 @@ Player::Player(Vector2 position)
 
 Player::~Player()
 {
-    StopSound(channels.player);
+    StopSound(CHANNEL_RUN);
 }
 
 void Player::Update()
@@ -157,22 +157,22 @@ void Player::MoveRightLeft()
     {
         if (!collide_down.second)
         {
-            if (Mix_Playing(channels.player))
-                StopSound(channels.player);
+            if (Mix_Playing(CHANNEL_RUN))
+                StopSound(CHANNEL_RUN);
         }
         else
         {
-            if (!Mix_Playing(channels.player))
+            if (!Mix_Playing(CHANNEL_RUN))
             {
                 if (Game::Properties["sound"].b)
-                    PlaySound("run", channels.player, -1);
+                    PlaySound("run", CHANNEL_RUN, -1);
             }
         }
     }
     else
     {
-        if (Mix_Playing(channels.player))
-            StopSound(channels.player);
+        if (Mix_Playing(CHANNEL_RUN))
+            StopSound(CHANNEL_RUN);
     }
 }
 
@@ -307,7 +307,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 print("player score", score);
 
                 if (Game::Properties["sound"].b)
-                    PlaySound("coin", channels.player, 0);
+                    PlaySound("coin", CHANNEL_COIN, 0);
 
                 if (score == Game::Properties["coin"].i)
                 {
@@ -315,6 +315,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     win_tile.first = WIN;
                     float wait = 500;
                     MapTile::CreateATile(MapTile::WinTile.x, MapTile::WinTile.y, wait);
+                    MapTile::nEmptyTiles--;
                 }
             }
         }
@@ -335,7 +336,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                             Game::scene->DeleteScene();
                         return 1;
                     },
-                    100);
+                    250);
                 lf->Execute();
             }
         }
@@ -397,7 +398,7 @@ void Player::Jump()
             }
 
             if (Game::Properties["sound"].b)
-                PlaySound("fall", channels.player, 0);
+                PlaySound("fall", CHANNEL_JUMP_FALL, 0);
         }
 
         velocity.d = 0;

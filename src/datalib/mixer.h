@@ -22,9 +22,11 @@ void PlayMusic(std::string name, int loop);
 
 void StopMusic();
 
-struct
+enum mixer_channels
 {
-    int map = 0;
-    int player = 1;
-    int ui = 2;
-} channels;
+    CHANNEL_JUMP_FALL = 0,
+    CHANNEL_RUN,
+    CHANNEL_BUTTON,
+    CHANNEL_COIN,
+    CHANNEL_SPAWN_WIN
+};

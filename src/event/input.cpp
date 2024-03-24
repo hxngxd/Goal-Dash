@@ -35,7 +35,7 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
                 player->previous_state = player->current_state;
                 player->current_state = JUMP;
                 if (Game::Properties["sound"].b)
-                    PlaySound("jump", channels.player, 0);
+                    PlaySound("jump", CHANNEL_JUMP_FALL, 0);
                 player->collide_down.second = false;
             }
         }
