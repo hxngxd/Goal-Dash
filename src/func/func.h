@@ -22,6 +22,7 @@ class LinkedFunction
     FunctionNode *first;
     FunctionNode *last;
     Uint32 id;
+    int size = 0;
 
     LinkedFunction(std::function<bool()> func, Uint32 delay_time = 0, Uint32 times = 1);
     LinkedFunction(FunctionNode *firstFunc);

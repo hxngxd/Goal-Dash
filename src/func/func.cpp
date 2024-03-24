@@ -48,6 +48,7 @@ void LinkedFunction::NextFunction(FunctionNode *nextFunc)
         last->next = nextFunc;
         last = last->next;
     }
+    this->size++;
 }
 
 void LinkedFunction::Execute()
@@ -67,7 +68,7 @@ void LinkedFunction::Update()
 
     for (auto &func : Functions)
     {
-        if (!func.second || !func.second->first)
+        if (!func.second || !func.second->first || !func.second->size)
         {
             ids.push_back(func.first);
             continue;
@@ -86,6 +87,7 @@ void LinkedFunction::Update()
                 func.second->first = func.second->first->next;
                 delete temp;
                 temp = nullptr;
+                func.second->size--;
                 if (!func.second->first)
                     func.second->last = nullptr;
                 else

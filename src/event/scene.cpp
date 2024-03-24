@@ -43,17 +43,25 @@ Scene::Scene(int map)
     print("creating new scene...");
     float wait = MapTile::CreateTiles(map);
 
-    LinkedFunction *lf = new LinkedFunction(
-        []() {
-            print("creating player...");
-            PlaySound("spawn", channels.map, 0);
+    float *temp_player_scale = new float(0);
+    float *temp_memory = temp_player_scale;
+    LinkedFunction *lf = new LinkedFunction(std::bind(
+                                                [](float *temp_player_scale, float *temp_memory) {
+                                                    print("creating player...");
+                                                    PlaySound("spawn", channels.map, 0);
 
-            Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size, MapTile::SpawnTile.x * Screen::tile_size);
-            Game::player = new Player(player_position);
-            return 1;
-        },
-        wait + 250);
-
+                                                    Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size,
+                                                                            MapTile::SpawnTile.x * Screen::tile_size);
+                                                    Game::player = new Player(player_position);
+                                                    temp_player_scale = &Game::player->scale;
+                                                    print(temp_player_scale);
+                                                    delete temp_memory;
+                                                    temp_memory = nullptr;
+                                                    return 1;
+                                                },
+                                                temp_player_scale, temp_memory),
+                                            wait + 250);
+    lf->Execute();
     // lf->NextFunction(TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f, 0), 0);
     // DelayFunction::Create(wait + 250, []() {
     //     auto hide_spawn = []() {
