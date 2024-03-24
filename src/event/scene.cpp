@@ -51,10 +51,11 @@ Scene::Scene(int map)
                                                 return 1;
                                             }),
                                             (MapTile::nEmptyTiles + 4) * Game::Properties["map_animation_delay"].f);
-    lf->NextFunction([]() { return TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f); }, 0);
+    lf->NextFunction([]() { return TransformValue(&Game::player->scale, 1.0f, Game::Properties["rescale_speed"].f); },
+                     0);
     lf->NextFunction(
         []() {
-            return TransformValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
+            return TransformValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0.0f,
                                   Game::Properties["rescale_speed"].f);
         },
         500);
@@ -89,7 +90,7 @@ void Scene::DeleteScene()
         print("deleting player...");
         PlaySound("win", CHANNEL_SPAWN_WIN, 0);
         LinkedFunction *lf = new LinkedFunction(
-            []() { return TransformValue(&Game::player->scale, 0, Game::Properties["rescale_speed"].f); });
+            []() { return TransformValue(&Game::player->scale, 0.0f, Game::Properties["rescale_speed"].f); });
         lf->NextFunction([]() {
             delete Game::player;
             Game::player = nullptr;

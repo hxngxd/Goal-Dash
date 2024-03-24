@@ -12,7 +12,40 @@ extern TTF_Font *myFont;
 
 //----------------------------------------
 
-bool TransformValue(float *value, float dest, float speed);
+template <typename T> bool TransformValue(T *value, T dest, T speed)
+{
+    if (!value)
+        return 1;
+
+    if (abs(*value - dest) <= 0.01)
+    {
+        *value = dest;
+        return 1;
+    }
+
+    if (*value < dest)
+    {
+        *value += speed;
+        if (*value > dest)
+        {
+            *value = dest;
+            return 1;
+        }
+        return 0;
+    }
+    else if (*value > dest)
+    {
+        *value -= speed;
+        if (*value < dest)
+        {
+            *value = dest;
+            return 1;
+        }
+        return 0;
+    }
+
+    return 1;
+}
 
 //----------------------------------------
 

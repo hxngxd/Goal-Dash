@@ -11,7 +11,7 @@ class UI
     std::string name;
     Vector2 position;
     float scale;
-    float bg_opacity;
+    int bg_opacity;
     Uint32 DFid[3] = {0, 0, 0};
 
     static void Update();
@@ -22,7 +22,7 @@ class Button : public UI
 {
   public:
     std::string label;
-    float font_size;
+    int font_size;
     std::function<void()> onClick;
 
     static bool CreateButton(
@@ -33,3 +33,4 @@ class Button : public UI
 
 extern std::map<std::string, Button *> Buttons;
 extern std::string hoverButton, downButton, upButton;
+extern int normalFS, hoverFS, clickFS, lastClicked;

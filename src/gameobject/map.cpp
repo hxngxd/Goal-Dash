@@ -113,7 +113,8 @@ void MapTile::CreateATile(int i, int j, float &wait)
     TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size, wait);
 
     LinkedFunction *lf = new LinkedFunction(
-        std::bind(TransformValue, &TileMap[i][j].second->scale, 1, Game::Properties["rescale_speed"].f), wait);
+        std::bind(TransformValue<float>, &TileMap[i][j].second->scale, 1.0f, Game::Properties["rescale_speed"].f),
+        wait);
     lf->Execute();
     wait += Game::Properties["map_animation_delay"].f;
 }
@@ -136,8 +137,9 @@ void MapTile::DeleteTiles()
         {
             if (!TileMap[i][j].second)
                 continue;
-            LinkedFunction *lf = new LinkedFunction(
-                std::bind(TransformValue, &TileMap[i][j].second->scale, 0, Game::Properties["rescale_speed"].f), wait);
+            LinkedFunction *lf = new LinkedFunction(std::bind(TransformValue<float>, &TileMap[i][j].second->scale, 0.0f,
+                                                              Game::Properties["rescale_speed"].f),
+                                                    wait);
             lf->Execute();
             wait += Game::Properties["map_animation_delay"].f;
         }

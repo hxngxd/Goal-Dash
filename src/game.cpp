@@ -105,7 +105,7 @@ void Game::Start()
     //----------------------------------------
 
     print("loading font...");
-    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), Game::Properties["font_size"].f);
+    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), 24);
     if (!myFont)
     {
         print("failed to load font");

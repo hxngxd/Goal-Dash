@@ -81,7 +81,11 @@ void EventHandler::MouseInputHandler()
             upButton = hoverButton;
             if (downButton == upButton && Buttons.find(downButton) != Buttons.end() && Buttons[downButton])
             {
-                Buttons[downButton]->onClick();
+                if (SDL_GetTicks() - lastClicked >= 500)
+                {
+                    Buttons[downButton]->onClick();
+                    lastClicked = SDL_GetTicks();
+                }
             }
         }
     }

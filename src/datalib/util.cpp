@@ -7,43 +7,6 @@ TTF_Font *myFont = nullptr;
 
 //----------------------------------------
 
-bool TransformValue(float *value, float dest, float speed)
-{
-    if (!value)
-        return 1;
-
-    if (abs(*value - dest) <= 0.005)
-    {
-        *value = dest;
-        return 1;
-    }
-
-    if (*value < dest)
-    {
-        *value += speed;
-        if (*value > dest)
-        {
-            *value = dest;
-            return 1;
-        }
-        return 0;
-    }
-    else if (*value > dest)
-    {
-        *value -= speed;
-        if (*value < dest)
-        {
-            *value = dest;
-            return 1;
-        }
-        return 0;
-    }
-
-    return 1;
-}
-
-//----------------------------------------
-
 RandomGenerator<Uint32> RandUint32;
 
 //----------------------------------------

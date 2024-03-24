@@ -8,6 +8,7 @@
 
 std::map<std::string, Button *> Buttons;
 std::string hoverButton = "", downButton = "", upButton = "";
+int normalFS = 38, hoverFS = normalFS + 3, clickFS = hoverFS + 3, lastClicked = 0;
 
 void UI::Update()
 {
@@ -49,14 +50,24 @@ bool Button::CreateButton(std::string name, const Vector2 &position, std::string
     Buttons[name]->position = position;
     Buttons[name]->scale = 1;
     Buttons[name]->label = label;
-    Buttons[name]->font_size = 40;
+    Buttons[name]->font_size = normalFS;
     Buttons[name]->bg_opacity = 0;
     Buttons[name]->onClick = std::bind(
-        [](std::function<void()> onClick) {
-            onClick();
+        [](std::function<void()> onClick, std::string name) {
+            LinkedFunction *lf =
+                new LinkedFunction(std::bind(TransformValue<int>, &Buttons[name]->font_size, clickFS, 1));
+            lf->NextFunction(std::bind(TransformValue<int>, &Buttons[name]->font_size, hoverFS, 1));
+            lf->NextFunction(std::bind(
+                                 [](std::function<void()> onClick, std::string name) {
+                                     onClick();
+                                     return 1;
+                                 },
+                                 onClick, name),
+                             100);
+            lf->Execute();
             PlaySound("click", CHANNEL_BUTTON, 0);
         },
-        onClick);
+        onClick, name);
 
     print(name, "button created");
     return 1;
@@ -75,34 +86,44 @@ void Button::Update()
     labelRect.y = position.y - labelRect.h / 2;
 
     SDL_Rect bgRect = labelRect;
-    bgRect.x = Screen::resolution.x / 3;
-    bgRect.w = Screen::resolution.x / 3;
+    bgRect.x = Screen::resolution.x / 3 - Screen::tile_size;
+    bgRect.w = Screen::resolution.x / 3 + Screen::tile_size * 2;
 
     bool isHovered = InRange(mousePosition.x, bgRect.x, bgRect.x + bgRect.w) &&
                      InRange(mousePosition.y, bgRect.y, bgRect.y + bgRect.h);
 
     if (isHovered)
     {
-        if (hoverButton != name || bg_opacity == 0)
+        if (bg_opacity < 255)
         {
-            hoverButton = name;
-            // PlaySound("hover", channels.ui, 0);
-            // DelayFunction::Remove(DFid[0]);
-            // DFid[0] = transformFValue(&bg_opacity, 255, 20, 0);
-            // DelayFunction::Remove(DFid[1]);
-            // DFid[1] = transformFValue(&font_size, 45, 0.5, 0);
+            bg_opacity += 17;
+            bg_opacity = Clamp(bg_opacity, 0, 255);
         }
+        if (font_size < hoverFS)
+        {
+            font_size++;
+            font_size = Clamp(font_size, normalFS, hoverFS);
+        }
+        if (hoverButton != name)
+        {
+            PlaySound("hover", CHANNEL_BUTTON, 0);
+        }
+        hoverButton = name;
     }
     else
     {
-        if (hoverButton == name || bg_opacity == 255)
+        if (bg_opacity > 0)
         {
-            hoverButton = "";
-            // DelayFunction::Remove(DFid[0]);
-            // DFid[0] = transformFValue(&bg_opacity, 0, 20, 0);
-            // DelayFunction::Remove(DFid[1]);
-            // DFid[1] = transformFValue(&font_size, 40, 0.5, 0);
+            bg_opacity -= 17;
+            bg_opacity = Clamp(bg_opacity, 0, 255);
         }
+        if (font_size > normalFS)
+        {
+            font_size--;
+            font_size = Clamp(font_size, normalFS, hoverFS);
+        }
+        if (hoverButton == name)
+            hoverButton = "";
     }
 
     if (bg_opacity)
