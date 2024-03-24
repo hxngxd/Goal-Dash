@@ -6,15 +6,15 @@ TTF_Font *myFont = nullptr;
 
 //----------------------------------------
 
-void TransformValue(float *value, float dest, float speed, Uint32 delay_time)
+FunctionNode *TransformValue(float *value, float dest, float speed, Uint32 delay_time)
 {
     if (!value)
-        return;
+        return nullptr;
 
     if (abs(*value - dest) <= 0.005)
     {
         *value = dest;
-        return;
+        return nullptr;
     }
 
     float *temp_speed = new float(speed);
@@ -58,7 +58,8 @@ void TransformValue(float *value, float dest, float speed, Uint32 delay_time)
         return 1;
     };
 
-    LinkedFunction *lf = new LinkedFunction(std::bind(transform, value, dest, temp_speed, increasing), delay_time);
+    FunctionNode *newFunc = new FunctionNode(std::bind(transform, value, dest, temp_speed, increasing), delay_time);
+    return newFunc;
 }
 
 //----------------------------------------

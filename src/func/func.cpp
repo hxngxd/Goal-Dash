@@ -22,6 +22,11 @@ LinkedFunction::LinkedFunction(std::function<bool()> func, Uint32 delay_time, Ui
 LinkedFunction::LinkedFunction(FunctionNode *firstFunc)
 {
     first = last = nullptr;
+    if (!firstFunc)
+    {
+        delete this;
+        return;
+    }
     NextFunction(firstFunc);
 }
 

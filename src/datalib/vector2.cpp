@@ -15,6 +15,7 @@ float Distance(const Vector2 &v1, const Vector2 &v2)
 std::ostream &operator<<(std::ostream &out, const Vector2 &v)
 {
     out << "(" << v.x << ", " << v.y << ")";
+    return out;
 }
 
 void operator+=(Vector2 &v1, const Vector2 &v2)

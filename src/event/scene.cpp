@@ -17,6 +17,7 @@ Scene::Scene()
             return 1;
         };
         LinkedFunction *lf = new LinkedFunction(new_scene, 500);
+        lf->Execute();
         return 1;
     };
     Button::CreateButton("start", Screen::resolution / 2 - Vector2(0, 75), "Start", start);
@@ -30,6 +31,7 @@ Scene::Scene()
                 return 1;
             },
             500);
+        lf->Execute();
     };
     Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 75), "Exit", exit);
 
@@ -52,25 +54,25 @@ Scene::Scene(int map)
         },
         wait + 250);
 
-    lf->NextFunction(TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f, 0), 0);
-    DelayFunction::Create(wait + 250, []() {
-        auto hide_spawn = []() {
-            transformFValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
-                            Game::Properties["rescale_speed"].f, 500, []() {
-                                std::pair<int, MapTile *> &spawn_tile =
-                                    TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
-                                spawn_tile.first = 0;
-                                delete spawn_tile.second;
-                                spawn_tile.second = nullptr;
-                            });
-            print("player created");
-        };
+    // lf->NextFunction(TransformValue(&Game::player->scale, 1, Game::Properties["rescale_speed"].f, 0), 0);
+    // DelayFunction::Create(wait + 250, []() {
+    //     auto hide_spawn = []() {
+    //         transformFValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0,
+    //                         Game::Properties["rescale_speed"].f, 500, []() {
+    //                             std::pair<int, MapTile *> &spawn_tile =
+    //                                 TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
+    //                             spawn_tile.first = 0;
+    //                             delete spawn_tile.second;
+    //                             spawn_tile.second = nullptr;
+    //                         });
+    //         print("player created");
+    //     };
 
-        transformFValue(&player->scale, 1, Game::Properties["rescale_speed"].f, 0, hide_spawn);
+    //     transformFValue(&player->scale, 1, Game::Properties["rescale_speed"].f, 0, hide_spawn);
 
-        Game::Properties["player_won"].b = 0;
-        return 1;
-    });
+    //     Game::Properties["player_won"].b = 0;
+    //     return 1;
+    // });
 
     print("scene created");
 }
