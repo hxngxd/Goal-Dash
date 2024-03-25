@@ -40,6 +40,7 @@ void Game::Update()
     UI::Update();
     if (player)
     {
+        Texts["time"]->label = std::to_string(SDL_GetTicks() - createTime);
         player->Update();
     }
 
@@ -342,6 +343,8 @@ void Game::Quit()
         scene->DeleteScene();
         scene = nullptr;
     }
+
+    Text::DeleteTexts();
 
     //----------------------------------------
 

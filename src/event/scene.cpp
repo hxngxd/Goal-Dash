@@ -8,8 +8,11 @@
 Scene::Scene()
 {
     print("creating new scene...");
+    print("creating border...");
     MapTile::CreateBorder();
+    print("border created...");
 
+    print("creating buttons...");
     auto start = []() {
         Game::scene->DeleteScene();
         auto new_scene = []() {
@@ -33,21 +36,38 @@ Scene::Scene()
     };
     Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 75), "Exit", exit);
 
+    print("button created");
+
     print("scene created");
 }
 
 Scene::Scene(int map)
 {
     print("creating new scene...");
+
+    if (Texts.find("time") == Texts.end())
+    {
+        print("creating time text...");
+        Text::CreateText("time", Screen::resolution / 2, "0", 50);
+        print("time text created");
+    }
+
+    print("creating tiles...");
     MapTile::CreateTiles(map);
 
     LinkedFunction *lf = new LinkedFunction(std::bind([]() {
+                                                print("tiles created");
                                                 print("creating player...");
                                                 PlaySound("spawn", CHANNEL_SPAWN_WIN, 0);
 
                                                 Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size,
                                                                         MapTile::SpawnTile.x * Screen::tile_size);
                                                 Game::player = new Player(player_position);
+                                                if (!createTime)
+                                                    createTime = SDL_GetTicks();
+                                                startTime = SDL_GetTicks();
+                                                if (stopTime)
+                                                    createTime += (startTime - stopTime);
                                                 return 1;
                                             }),
                                             (MapTile::nEmptyTiles + 4) * Game::Properties["map_animation_delay"].f);
@@ -81,9 +101,7 @@ void Scene::DeleteScene()
 {
     delete this;
     print("deleting current scene...");
-    print("deleting uis...");
-    UI::DeleteUIs();
-    print("uis deleted");
+    Button::DeleteButtons();
 
     if (Game::player)
     {
@@ -94,8 +112,9 @@ void Scene::DeleteScene()
         lf->NextFunction([]() {
             delete Game::player;
             Game::player = nullptr;
+            stopTime = SDL_GetTicks();
             print("player deleted");
-            print("deleting tiles...");
+            print("deleting tiles (without border)...");
             MapTile::DeleteTiles();
             return 1;
         });
@@ -106,7 +125,7 @@ void Scene::DeleteScene()
                     delete Game::scene;
                     Game::scene = nullptr;
                 }
-                print("tile deleted");
+                print("tiles deleted");
                 print("scene deleted");
                 return 1;
             },
