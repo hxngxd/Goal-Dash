@@ -90,6 +90,10 @@ extern RandomGenerator<Uint32> RandUint32;
 
 //----------------------------------------
 
+std::string FormatMS(int ms);
+
+//----------------------------------------
+
 struct Keys
 {
     SDL_KeyCode right, left, down, up, space;

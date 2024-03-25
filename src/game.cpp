@@ -40,7 +40,7 @@ void Game::Update()
     UI::Update();
     if (player)
     {
-        Texts["time"]->label = std::to_string(SDL_GetTicks() - createTime);
+        Texts["time"]->label = FormatMS(SDL_GetTicks() - createTime);
         player->Update();
     }
 
@@ -228,8 +228,11 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSprite("jump", "img/jump.png", 4, Vector2(48)))
         return 0;
-    if (!LoadSprite("button_hover", "img/button_hover.png", 1, Vector2(695, 377)))
+    if (!LoadSprite("card", "img/card.png", 1, Vector2(695, 377)))
         return 0;
+    if (!LoadSprite("card1", "img/card1.png", 1, Vector2(695, 377)))
+        return 0;
+
     //----------------------------------------
 
     if (!Background::loadBackground("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096), 1.25))

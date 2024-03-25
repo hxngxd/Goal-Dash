@@ -11,6 +11,26 @@ RandomGenerator<Uint32> RandUint32;
 
 //----------------------------------------
 
+std::string FormatMS(int ms)
+{
+    float fsecond = (float)ms / 1000;
+    int second = fsecond;
+    fsecond -= (float)second;
+    fsecond *= 1000;
+    int hour = second / 3600;
+    second -= hour * 3600;
+    int minute = second / 60;
+    second -= minute * 60;
+    auto addzero = [](int n, int length) {
+        std::string strn = std::to_string(n);
+        return std::string(length - strn.size(), '0') + strn;
+    };
+    return (hour ? std::to_string(hour) : "00") + ":" + addzero(minute, 2) + ":" + addzero(second, 2) + "." +
+           addzero((int)fsecond, 3);
+}
+
+//----------------------------------------
+
 Keys left_keys(SDLK_d, SDLK_a, SDLK_s, SDLK_w, SDLK_SPACE);
 Keys right_keys(SDLK_RIGHT, SDLK_LEFT, SDLK_DOWN, SDLK_UP, SDLK_KP_ENTER);
 

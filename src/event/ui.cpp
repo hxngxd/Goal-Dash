@@ -23,6 +23,12 @@ void UI::Update()
         }
     }
 
+    if (Texts.find("time") != Texts.end())
+    {
+        DrawSprite("card1", Vector2(Screen::resolution.x / 2 - Screen::tile_size * 3, 0),
+                   Vector2(Screen::tile_size * 6, Screen::tile_size), 1, 0);
+        Texts["time"]->Update();
+    }
     if (!Texts.empty())
     {
         for (auto &text : Texts)
@@ -126,8 +132,8 @@ void Button::Update()
 
     if (bg_opacity)
     {
-        SetSpriteOpacity("button_hover", bg_opacity);
-        DrawSprite("button_hover", Vector2(bgRect.x, bgRect.y), Vector2(bgRect.w, bgRect.h), scale, 0, 0);
+        SetSpriteOpacity("card", bg_opacity);
+        DrawSprite("card", Vector2(bgRect.x, bgRect.y), Vector2(bgRect.w, bgRect.h), scale, 0, 0);
     }
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);

@@ -159,8 +159,8 @@ void MapTile::Draw()
             if (!TileMap[i][j].second->scale)
                 continue;
 
-            SDL_Rect rect = Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size,
-                                          TileMap[i][j].second->scale * 0.9);
+            SDL_Rect rect =
+                Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale);
 
             switch (TileMap[i][j].first)
             {

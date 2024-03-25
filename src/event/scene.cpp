@@ -48,7 +48,7 @@ Scene::Scene(int map)
     if (Texts.find("time") == Texts.end())
     {
         print("creating time text...");
-        Text::CreateText("time", Screen::resolution / 2, "0", 50);
+        Text::CreateText("time", Vector2(Screen::resolution.x / 2, 22), "00:00:00.000", 25);
         print("time text created");
     }
 
