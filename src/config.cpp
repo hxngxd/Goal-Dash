@@ -1,4 +1,5 @@
 #include "datalib/msg.h"
+#include "event/ui.h"
 #include "game.h"
 #include <fstream>
 #include <regex>
@@ -101,6 +102,18 @@ bool Game::LoadConfig()
             Properties[key] = prop;
         }
     }
+
+    //----------------------------------------
+
+    Screen::resolution = Vector2(Game::Properties["resolution"].i);
+    Screen::tile_size = Screen::resolution.x / Screen::map_size;
+    Game::Properties["gravity"].f *= Screen::resolution.x / 25100.0f;
+    Game::Properties["player_jump_speed"].f *= Screen::resolution.x / 80.0f;
+    Game::Properties["player_move_speed"].f *= Screen::resolution.x / 180.0f;
+    Game::Properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
+
+    normalFS = Game::Properties["button_font_size"].i;
+    hoverFS = normalFS + 3, clickFS = hoverFS + 3;
 
     //----------------------------------------
 

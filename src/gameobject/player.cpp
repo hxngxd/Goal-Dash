@@ -236,7 +236,7 @@ void Player::Collision()
 void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit,
                           std::queue<Vector2> &Q)
 {
-    float maxDist = Screen::tile_size * sqrt(61) / 6 - 3;
+    float maxDist = (Screen::tile_size * sqrt(61) / 6 - 3) * Game::Properties["player_collision_dist"].f;
     float eps = 0;
 
     Vector2 playerCenter = Rect::GetCenter(position, size);
@@ -278,9 +278,9 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Game::Properties["draw_ray"].b)
             {
                 if (type & WALL)
-                    Screen::SetDrawColor(Color::white(255));
+                    Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
                 else
-                    Screen::SetDrawColor(Color::red(255));
+                    Screen::SetDrawColor(Color::red(Game::Properties["ray_opacity"].i));
             }
 
             if (!Game::Properties["immortal"].b && type & DAMAGE)
@@ -293,7 +293,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         else if (type & COIN)
         {
             if (Game::Properties["draw_ray"].b)
-                Screen::SetDrawColor(Color::yellow(255));
+                Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0))
@@ -322,7 +322,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         else if (type & WIN)
         {
             if (Game::Properties["draw_ray"].b)
-                Screen::SetDrawColor(Color::green(255));
+                Screen::SetDrawColor(Color::green(Game::Properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0) &&
@@ -343,7 +343,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         else if (type & SPAWN)
         {
             if (Game::Properties["draw_ray"].b)
-                Screen::SetDrawColor(Color::cyan(255));
+                Screen::SetDrawColor(Color::cyan(Game::Properties["ray_opacity"].i));
         }
 
         if (Game::Properties["draw_ray"].b && type)
@@ -381,10 +381,13 @@ void Player::Jump()
             previous_state = JUMP;
         }
 
-        if (velocity.d > 11)
+        if (velocity.d > Screen::resolution.x / 70.0f)
         {
             if (!Game::Properties["immortal"].b)
             {
+                if (Game::Properties["sound"].b)
+                    PlaySound("fall", CHANNEL_JUMP_FALL, 0);
+
                 isDamaged[2] = true;
                 LinkedFunction *lf = new LinkedFunction(std::bind(
                                                             [](Player *player) {
@@ -396,9 +399,6 @@ void Player::Jump()
                                                         500);
                 lf->Execute();
             }
-
-            if (Game::Properties["sound"].b)
-                PlaySound("fall", CHANNEL_JUMP_FALL, 0);
         }
 
         velocity.d = 0;
@@ -409,7 +409,7 @@ void Player::DrawBox()
 {
     Vector2 startPos(position.x + size.x / 6, position.y);
     Vector2 endPos(position.x + size.x / 6 * 5, position.y + size.y);
-    Screen::SetDrawColor(Color::white(255));
+    Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
 
     SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, endPos.x, startPos.y);
     SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, startPos.x, endPos.y);

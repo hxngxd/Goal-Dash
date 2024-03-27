@@ -159,19 +159,19 @@ void MapTile::Draw()
             if (!TileMap[i][j].second->scale)
                 continue;
 
-            SDL_Rect rect =
-                Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale);
+            SDL_Rect rect = Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size,
+                                          TileMap[i][j].second->scale * Game::Properties["tile_scale"].f);
 
             switch (TileMap[i][j].first)
             {
             case WIN:
-                Screen::SetDrawColor(Color::green(255));
+                Screen::SetDrawColor(Color::green(Game::Properties["ray_opacity"].i));
                 break;
             case SPAWN:
-                Screen::SetDrawColor(Color::cyan(255));
+                Screen::SetDrawColor(Color::cyan(Game::Properties["ray_opacity"].i));
                 break;
             case WALL:
-                Screen::SetDrawColor(Color::white(255));
+                Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
                 break;
             case COIN:
                 if (currentTicks > TileMap[i][j].second->animation_delay + 1000 / TileMap[i][j].second->animation_speed)
@@ -181,12 +181,12 @@ void MapTile::Draw()
                         TileMap[i][j].second->currentFrame = 0;
                     TileMap[i][j].second->animation_delay = currentTicks;
                 }
-                Screen::SetDrawColor(Color::yellow(255));
+                Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
                 DrawSprite("coin", TileMap[i][j].second->position, TileMap[i][j].second->size,
                            TileMap[i][j].second->scale * 0.5, TileMap[i][j].second->currentFrame, 0);
                 break;
             case DAMAGE:
-                Screen::SetDrawColor(Color::red(255));
+                Screen::SetDrawColor(Color::red(Game::Properties["ray_opacity"].i));
                 break;
             default:
                 break;

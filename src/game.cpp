@@ -7,9 +7,9 @@
 #include "event/ui.h"
 #include "func/func.h"
 
-Vector2 Screen::resolution(768, 768);
+Vector2 Screen::resolution;
 int Screen::map_size = 16;
-int Screen::tile_size = Screen::resolution.x / Screen::map_size;
+int Screen::tile_size;
 
 SDL_Event Game::event;
 SDL_Window *Game::window = nullptr;

@@ -8,7 +8,7 @@
 
 std::map<std::string, Button *> Buttons;
 std::string hoverButton = "", downButton = "", upButton = "";
-int normalFS = 38, hoverFS = normalFS + 3, clickFS = hoverFS + 3, lastClicked = 0;
+int normalFS, hoverFS, clickFS, lastClicked = 0;
 std::map<std::string, Text *> Texts;
 int createTime = 0, startTime = 0, stopTime = 0;
 

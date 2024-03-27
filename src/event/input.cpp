@@ -28,7 +28,7 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
         }
         else if (key == keys.space)
         {
-            if (player->collide_down.second && !Game::Properties["no_gravity"].b)
+            if (player->collide_down.second && !player->collide_up.second && !Game::Properties["no_gravity"].b)
             {
                 player->velocity.d = -Game::Properties["player_jump_speed"].f;
                 player->position.y += player->velocity.d;

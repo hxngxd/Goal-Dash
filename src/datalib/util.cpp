@@ -13,7 +13,7 @@ RandomGenerator<Uint32> RandUint32;
 
 std::string FormatMS(int ms)
 {
-    float fsecond = (float)ms / 1000;
+    float fsecond = (float)ms / 1000.0f;
     int second = fsecond;
     fsecond -= (float)second;
     fsecond *= 1000;
@@ -56,10 +56,10 @@ Vector2 Rect::GetCenter(const Vector2 &position, const Vector2 &size)
 SDL_Rect Rect::Rescale(const Vector2 &position, const Vector2 &size, float scale)
 {
     SDL_Rect newRect;
-    newRect.x = position.x + (1 - scale) * size.x * 0.5;
-    newRect.y = position.y + (1 - scale) * size.y * 0.5;
-    newRect.w = scale * size.x;
-    newRect.h = scale * size.y;
+    newRect.x = position.x + ceil((1.0f - scale) * size.x * 0.5);
+    newRect.y = position.y + ceil((1.0f - scale) * size.y * 0.5);
+    newRect.w = ceil(scale * size.x);
+    newRect.h = ceil(scale * size.y);
     return newRect;
 }
 
