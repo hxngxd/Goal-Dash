@@ -70,7 +70,7 @@ bool Button::CreateButton(std::string name, const Vector2 &position, std::string
                                  onClick, name),
                              100);
             lf->Execute();
-            PlaySound("click", CHANNEL_BUTTON, 0);
+            PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
         },
         onClick, name);
 
@@ -110,7 +110,7 @@ void Button::Update()
             font_size = Clamp(font_size, normalFS, hoverFS);
         }
         if (hoverButton != name)
-            PlaySound("hover", CHANNEL_BUTTON, 0);
+            PlaySound("hover", CHANNEL_BUTTON_HOVER, 0);
 
         hoverButton = name;
     }

@@ -7,7 +7,7 @@
 #include "event/ui.h"
 #include "func/func.h"
 
-Vector2 Screen::resolution(640, 640);
+Vector2 Screen::resolution(768, 768);
 int Screen::map_size = 16;
 int Screen::tile_size = Screen::resolution.x / Screen::map_size;
 
