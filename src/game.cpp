@@ -232,6 +232,10 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSprite("card1", "img/card1.png", 1, Vector2(695, 377)))
         return 0;
+    if (!LoadSprite("spawn", "img/spawn.png", 6, Vector2(32)))
+        return 0;
+    if (!LoadSprite("win", "img/win.png", 6, Vector2(32)))
+        return 0;
 
     //----------------------------------------
 

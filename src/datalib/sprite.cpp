@@ -43,3 +43,16 @@ void DrawSprite(std::string name, const Vector2 &position, const Vector2 &size, 
     SDL_RenderCopyEx(Game::renderer, sprite->texture, &src, &dst, 0, NULL,
                      (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }
+
+void Animate(GameObject *gameobj, std::string sprite, bool flip)
+{
+    float Ticks = SDL_GetTicks();
+    if (Ticks > gameobj->animation_delay + 1000.0f / gameobj->animation_speed)
+    {
+        gameobj->currentFrame++;
+        if (gameobj->currentFrame >= Sprites[sprite]->maxFrames)
+            gameobj->currentFrame = 0;
+        gameobj->animation_delay = Ticks;
+    }
+    DrawSprite(sprite, gameobj->position, gameobj->size, gameobj->scale, gameobj->currentFrame, flip);
+}

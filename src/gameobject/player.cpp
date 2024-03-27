@@ -46,16 +46,7 @@ void Player::Update()
 
 void Player::Animation()
 {
-    float currentTicks = SDL_GetTicks();
-    if (currentTicks > animation_delay + 1000 / animation_speed)
-    {
-        currentFrame += 1;
-        if (currentFrame >= maxFrames)
-            currentFrame = 0;
-        animation_delay = currentTicks;
-    }
-
-    std::string current = "";
+    std::string current;
     switch (current_state)
     {
     case IDLE:
@@ -67,10 +58,11 @@ void Player::Animation()
     case JUMP:
         current = "jump";
         break;
+    default:
+        current = "idle";
+        break;
     }
-    maxFrames = Sprites[current]->maxFrames;
-
-    DrawSprite(current, position, size, scale, std::min(currentFrame, maxFrames), (direction == LEFT));
+    Animate(this, current, direction == LEFT);
 
     if (!Game::Properties["immortal"].b)
     {

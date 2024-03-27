@@ -1,4 +1,5 @@
 #include "vector2.h"
+#include "util.h"
 
 Vector2 Vector2::Right = Vector2(1, 0);
 Vector2 Vector2::Left = Vector2(-1, 0);
@@ -101,4 +102,15 @@ std::size_t Vector2Hash::operator()(const Vector2 &v) const
 bool Vector2Equal::operator()(const Vector2 &lhs, const Vector2 &rhs) const
 {
     return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+bool TransformVector2(Vector2 *v, Vector2 dest, float speed)
+{
+    if (!v)
+        return 1;
+
+    bool TransformX = TransformValue(&v->x, dest.x, speed);
+    bool TransformY = TransformValue(&v->y, dest.y, speed);
+
+    return TransformX && TransformY;
 }

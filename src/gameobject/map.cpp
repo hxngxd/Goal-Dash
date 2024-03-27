@@ -107,14 +107,15 @@ void MapTile::CreateATile(int i, int j, float &wait)
     if (!TileMap[i][j].first)
         return;
 
+    TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size, wait);
+
     if (TileMap[i][j].first == COIN)
         Game::Properties["coin"].i++;
 
-    TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size, wait);
-
-    LinkedFunction *lf = new LinkedFunction(
-        std::bind(TransformValue<float>, &TileMap[i][j].second->scale, 1.0f, Game::Properties["rescale_speed"].f),
-        wait);
+    LinkedFunction *lf =
+        new LinkedFunction(std::bind(TransformValue<float>, &TileMap[i][j].second->scale,
+                                     (TileMap[i][j].first == COIN ? 0.6f : 1.0f), Game::Properties["rescale_speed"].f),
+                           wait);
     lf->Execute();
     wait += Game::Properties["map_animation_delay"].f;
 }
@@ -155,35 +156,33 @@ void MapTile::Draw()
             if (!TileMap[i][j].first || !TileMap[i][j].second)
                 continue;
 
-            float currentTicks = SDL_GetTicks();
             if (!TileMap[i][j].second->scale)
                 continue;
 
             SDL_Rect rect = Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size,
                                           TileMap[i][j].second->scale * Game::Properties["tile_scale"].f);
 
+            bool &dr = Game::Properties["draw_ray"].b;
+
             switch (TileMap[i][j].first)
             {
             case WIN:
-                Screen::SetDrawColor(Color::green(Game::Properties["ray_opacity"].i));
+                Animate(TileMap[i][j].second, "win");
+                if (dr)
+                    Screen::SetDrawColor(Color::green(Game::Properties["ray_opacity"].i));
                 break;
             case SPAWN:
-                Screen::SetDrawColor(Color::cyan(Game::Properties["ray_opacity"].i));
+                Animate(TileMap[i][j].second, "spawn");
+                if (dr)
+                    Screen::SetDrawColor(Color::cyan(Game::Properties["ray_opacity"].i));
                 break;
             case WALL:
                 Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
                 break;
             case COIN:
-                if (currentTicks > TileMap[i][j].second->animation_delay + 1000 / TileMap[i][j].second->animation_speed)
-                {
-                    TileMap[i][j].second->currentFrame += 1;
-                    if (TileMap[i][j].second->currentFrame >= Sprites["coin"]->maxFrames)
-                        TileMap[i][j].second->currentFrame = 0;
-                    TileMap[i][j].second->animation_delay = currentTicks;
-                }
-                Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
-                DrawSprite("coin", TileMap[i][j].second->position, TileMap[i][j].second->size,
-                           TileMap[i][j].second->scale * 0.5, TileMap[i][j].second->currentFrame, 0);
+                Animate(TileMap[i][j].second, "coin");
+                if (dr)
+                    Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
                 break;
             case DAMAGE:
                 Screen::SetDrawColor(Color::red(Game::Properties["ray_opacity"].i));
@@ -192,7 +191,8 @@ void MapTile::Draw()
                 break;
             }
 
-            SDL_RenderDrawRect(Game::renderer, &rect);
+            if (dr)
+                SDL_RenderDrawRect(Game::renderer, &rect);
         }
     }
 }

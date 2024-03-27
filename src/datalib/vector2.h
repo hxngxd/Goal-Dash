@@ -58,3 +58,5 @@ struct Vector2Equal
 {
     bool operator()(const Vector2 &lhs, const Vector2 &rhs) const;
 };
+
+bool TransformVector2(Vector2 *v, Vector2 dest, float speed);

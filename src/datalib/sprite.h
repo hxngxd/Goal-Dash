@@ -25,3 +25,5 @@ void SetSpriteOpacity(std::string name, int opacity);
 
 void DrawSprite(std::string name, const Vector2 &position, const Vector2 &size, float scale, int currentFrame,
                 bool flip = false);
+
+void Animate(GameObject *gameobj, std::string sprite, bool flip = false);
