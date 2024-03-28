@@ -25,8 +25,8 @@ void UI::Update()
 
     if (Texts.find("time") != Texts.end())
     {
-        DrawSprite("card1", Vector2(Screen::resolution.x / 2 - Screen::tile_size * 3, 0),
-                   Vector2(Screen::tile_size * 6, Screen::tile_size), 1, 0);
+        // DrawSprite("card1", Vector2(Screen::resolution.x / 2 - Screen::tile_size * 3, 0),
+        //            Vector2(Screen::tile_size * 6, Screen::tile_size), 1, 0);
         Texts["time"]->Update();
     }
     if (!Texts.empty())

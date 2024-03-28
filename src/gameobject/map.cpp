@@ -114,7 +114,8 @@ void MapTile::CreateATile(int i, int j, float &wait)
 
     LinkedFunction *lf =
         new LinkedFunction(std::bind(TransformValue<float>, &TileMap[i][j].second->scale,
-                                     (TileMap[i][j].first == COIN ? 0.6f : 1.0f), Game::Properties["rescale_speed"].f),
+                                     Game::Properties["tile_scale"].f * (TileMap[i][j].first == COIN ? 0.6f : 1.0f),
+                                     Game::Properties["rescale_speed"].f),
                            wait);
     lf->Execute();
     wait += Game::Properties["map_animation_delay"].f;
@@ -159,8 +160,8 @@ void MapTile::Draw()
             if (!TileMap[i][j].second->scale)
                 continue;
 
-            SDL_Rect rect = Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size,
-                                          TileMap[i][j].second->scale * Game::Properties["tile_scale"].f);
+            SDL_Rect rect =
+                Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale);
 
             bool &dr = Game::Properties["draw_ray"].b;
 
@@ -168,31 +169,28 @@ void MapTile::Draw()
             {
             case WIN:
                 Animate(TileMap[i][j].second, "win");
-                if (dr)
-                    Screen::SetDrawColor(Color::green(Game::Properties["ray_opacity"].i));
                 break;
             case SPAWN:
                 Animate(TileMap[i][j].second, "spawn");
-                if (dr)
-                    Screen::SetDrawColor(Color::cyan(Game::Properties["ray_opacity"].i));
                 break;
             case WALL:
-                Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
+                Animate(TileMap[i][j].second, "wall");
                 break;
             case COIN:
                 Animate(TileMap[i][j].second, "coin");
-                if (dr)
-                    Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
                 break;
             case DAMAGE:
-                Screen::SetDrawColor(Color::red(Game::Properties["ray_opacity"].i));
+                Animate(TileMap[i][j].second, "damage");
                 break;
             default:
                 break;
             }
 
             if (dr)
+            {
+                Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
                 SDL_RenderDrawRect(Game::renderer, &rect);
+            }
         }
     }
 }

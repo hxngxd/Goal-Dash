@@ -150,6 +150,10 @@ struct Color
     {
         return {0, 255, 255, a};
     }
+    static SDL_Color gray(Uint8 v, Uint8 a)
+    {
+        return {v, v, v, a};
+    }
     static SDL_Color transparent;
 };
 
