@@ -31,34 +31,23 @@ void Game::Update()
         Screen::PointGrid(Color::white(255));
 
     if (Game::Properties["background"].b)
-        Background::Draw();
+        Background::Update();
 
     //----------------------------------------
 
     LinkedFunction::Update();
-    MapTile::Draw();
+
+    MapTile::Update();
+
+    EventHandler::Update();
+
     UI::Update();
+
     if (player)
-    {
-        Texts["time"]->label = FormatMS(SDL_GetTicks() - createTime);
         player->Update();
-    }
 
     //----------------------------------------
 
-    while (SDL_PollEvent(&event) != 0)
-    {
-        if (event.type == SDL_QUIT)
-            running = false;
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        mousePosition = Vector2(x, y);
-        EventHandler::MouseInputHandler();
-        if (player)
-            EventHandler::PlayerInputHandler(player, Game::Properties["keyboard_layout"].b ? right_keys : left_keys);
-    }
-
-    //----------------------------------------
     Screen::Display();
 }
 
@@ -113,6 +102,10 @@ void Game::Start()
         return;
     }
     print("font loaded");
+
+    //----------------------------------------
+
+    UI::Start();
 
     //----------------------------------------
 
@@ -355,7 +348,7 @@ void Game::Quit()
         scene = nullptr;
     }
 
-    Text::DeleteTexts();
+    // Text::DeleteTexts();
 
     //----------------------------------------
 

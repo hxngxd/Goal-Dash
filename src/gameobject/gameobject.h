@@ -31,7 +31,7 @@ class Background : public GameObject
     static bool loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale);
 
     static void Move(Vector2 velocity, int index, float ratio);
-    static void Draw();
+    static void Update();
 };
 
 extern std::vector<Background> Backgrounds;
@@ -49,7 +49,7 @@ class MapTile : public GameObject
     static void CreateTiles(int map);
     static void CreateATile(int i, int j, float &wait);
     static void DeleteTiles();
-    static void Draw();
+    static void Update();
 };
 
 extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;

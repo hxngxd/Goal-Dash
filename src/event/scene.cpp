@@ -14,43 +14,44 @@ Scene::Scene()
 
     print("creating buttons...");
     auto start = []() {
-        Game::scene->DeleteScene();
-        auto new_scene = []() {
-            Game::scene = new Scene(Game::Properties["map"].i);
-            return 1;
-        };
-        LinkedFunction *lf = new LinkedFunction(new_scene, 500);
-        lf->Execute();
+        print("START CLICKED!");
+        // Game::scene->DeleteScene();
+        // auto new_scene = []() {
+        //     Game::scene = new Scene(Game::Properties["map"].i);
+        //     return 1;
+        // };
+        // LinkedFunction *lf = new LinkedFunction(new_scene, 500);
+        // lf->Execute();
         return 1;
     };
-    Button::CreateButton("start", Screen::resolution / 2 - Vector2(0, 75), "Start", start);
+    Button::CreateButton("start", Screen::resolution / 2 - Vector2(200, 50), Vector2(400, 100), "Start", 500, start);
 
-    Button::CreateButton("settings", Screen::resolution / 2, "Settings");
+    // Button::CreateButton("settings", Screen::resolution / 2, "Settings");
 
-    auto exit = []() {
-        LinkedFunction *lf = new LinkedFunction([]() {
-            game->Stop();
-            return 1;
-        });
-        lf->Execute();
-    };
-    Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 75), "Exit", exit);
+    // auto exit = []() {
+    //     LinkedFunction *lf = new LinkedFunction([]() {
+    //         game->Stop();
+    //         return 1;
+    //     });
+    //     lf->Execute();
+    // };
+    // Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 75), "Exit", exit);
 
-    print("button created");
+    // print("button created");
 
-    print("scene created");
+    // print("scene created");
 }
 
 Scene::Scene(int map)
 {
     print("creating new scene...");
 
-    if (Texts.find("time") == Texts.end())
-    {
-        print("creating time text...");
-        Text::CreateText("time", Vector2(Screen::resolution.x / 2, 22), "00:00:00.000", 25);
-        print("time text created");
-    }
+    // if (Texts.find("time") == Texts.end())
+    // {
+    //     print("creating time text...");
+    //     Text::CreateText("time", Vector2(Screen::resolution.x / 2, 22), "00:00:00.000", 25);
+    //     print("time text created");
+    // }
 
     print("creating tiles...");
     MapTile::CreateTiles(map);
@@ -63,11 +64,11 @@ Scene::Scene(int map)
                                                 Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size,
                                                                         MapTile::SpawnTile.x * Screen::tile_size);
                                                 Game::player = new Player(player_position);
-                                                if (!createTime)
-                                                    createTime = SDL_GetTicks();
-                                                startTime = SDL_GetTicks();
-                                                if (stopTime)
-                                                    createTime += (startTime - stopTime);
+                                                // if (!createTime)
+                                                //     createTime = SDL_GetTicks();
+                                                // startTime = SDL_GetTicks();
+                                                // if (stopTime)
+                                                //     createTime += (startTime - stopTime);
                                                 return 1;
                                             }),
                                             (MapTile::nEmptyTiles + 4) * Game::Properties["map_animation_delay"].f);
@@ -112,7 +113,7 @@ void Scene::DeleteScene()
         lf->NextFunction([]() {
             delete Game::player;
             Game::player = nullptr;
-            stopTime = SDL_GetTicks();
+            // stopTime = SDL_GetTicks();
             print("player deleted");
             print("deleting tiles (without border)...");
             MapTile::DeleteTiles();

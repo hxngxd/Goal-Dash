@@ -10,11 +10,12 @@ class UI
   public:
     std::string name;
     Vector2 position;
+    Vector2 size;
     float scale;
     int bg_opacity;
     int label_opacity;
-    Uint32 DFid[3] = {0, 0, 0};
 
+    static void Start();
     static void Update();
 };
 
@@ -24,9 +25,12 @@ class Button : public UI
     std::string label;
     int font_size;
     std::function<void()> onClick;
+    bool button_mouse_hovering, button_mouse_click;
+    int lastButtonClick;
 
     static bool CreateButton(
-        std::string name, const Vector2 &position, std::string label, std::function<void()> onClick = []() {});
+        std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size,
+        std::function<void()> onClick = []() {});
 
     void Update();
     static void DeleteButtons();
@@ -38,15 +42,12 @@ class Text : public UI
     std::string label;
     int font_size;
 
-    static bool CreateText(std::string name, const Vector2 &position, std::string label, int font_size);
+    static bool CreateText(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
+                           int font_size);
 
     void Update();
     static void DeleteTexts();
 };
 
 extern std::map<std::string, Button *> Buttons;
-extern std::string hoverButton, downButton, upButton;
-extern int normalFS, hoverFS, clickFS, lastClicked;
-
 extern std::map<std::string, Text *> Texts;
-extern int createTime, stopTime, startTime;

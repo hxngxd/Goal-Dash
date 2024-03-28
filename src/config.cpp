@@ -112,9 +112,6 @@ bool Game::LoadConfig()
     Game::Properties["player_move_speed"].f *= Screen::resolution.x / 180.0f;
     Game::Properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
 
-    normalFS = Game::Properties["button_font_size"].i;
-    hoverFS = normalFS + 3, clickFS = hoverFS + 3;
-
     //----------------------------------------
 
     file.close();

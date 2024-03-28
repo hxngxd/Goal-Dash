@@ -9,4 +9,5 @@ class EventHandler
   public:
     static void PlayerInputHandler(Player *player, Keys &keys);
     static void MouseInputHandler();
+    static void Update();
 };

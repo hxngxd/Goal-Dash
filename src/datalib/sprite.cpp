@@ -6,20 +6,22 @@ bool LoadSprite(std::string name, std::string path, int maxFrames, Vector2 realS
 {
     print("loading sprite:", path);
     Sprites[name] = new Sprite();
+    Sprite *&sp = Sprites[name];
+
     SDL_Surface *sf = IMG_Load(path.c_str());
-    Sprites[name]->texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
-    if (!Sprites[name]->texture)
+    sp->texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
+    if (!sp->texture)
     {
-        delete Sprites[name];
-        Sprites[name] = nullptr;
+        delete sp;
+        sp = nullptr;
         Sprites.erase(name);
         print("failed to load sprite:", path);
         return 0;
     }
     print(path, "ok");
-    Sprites[name]->path = path;
-    Sprites[name]->maxFrames = maxFrames;
-    Sprites[name]->realSize = realSize;
+    sp->path = path;
+    sp->maxFrames = maxFrames;
+    sp->realSize = realSize;
     SDL_FreeSurface(sf);
     return 1;
 }

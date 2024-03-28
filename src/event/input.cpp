@@ -71,22 +71,53 @@ void EventHandler::MouseInputHandler()
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
-            downButton = hoverButton;
+            if (!Buttons.empty())
+            {
+                for (auto &btn : Buttons)
+                {
+                    if (!btn.second)
+                        continue;
+                    if (btn.second->button_mouse_hovering)
+                        btn.second->button_mouse_click = true;
+                }
+            }
         }
     }
     else if (Game::event.type == SDL_MOUSEBUTTONUP)
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
-            upButton = hoverButton;
-            if (downButton == upButton && Buttons.find(downButton) != Buttons.end() && Buttons[downButton])
+            if (!Buttons.empty())
             {
-                if (SDL_GetTicks() - lastClicked >= 500)
+                for (auto &btn : Buttons)
                 {
-                    Buttons[downButton]->onClick();
-                    lastClicked = SDL_GetTicks();
+                    if (!btn.second)
+                        continue;
+                    if (btn.second->button_mouse_click && btn.second->button_mouse_hovering &&
+                        (SDL_GetTicks() - btn.second->lastButtonClick >= 500))
+                    {
+                        btn.second->onClick();
+                        btn.second->lastButtonClick = SDL_GetTicks();
+                    }
+                    btn.second->button_mouse_click = false;
                 }
             }
         }
+    }
+}
+
+void EventHandler::Update()
+{
+    while (SDL_PollEvent(&Game::event) != 0)
+    {
+        if (Game::event.type == SDL_QUIT)
+            game->Stop();
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        mousePosition = Vector2(x, y);
+        EventHandler::MouseInputHandler();
+        if (Game::player)
+            EventHandler::PlayerInputHandler(Game::player,
+                                             Game::Properties["keyboard_layout"].b ? right_keys : left_keys);
     }
 }

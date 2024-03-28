@@ -148,7 +148,7 @@ void MapTile::DeleteTiles()
     }
 }
 
-void MapTile::Draw()
+void MapTile::Update()
 {
     for (int i = 0; i < Screen::map_size; i++)
     {
@@ -163,8 +163,6 @@ void MapTile::Draw()
             SDL_Rect rect =
                 Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale);
 
-            bool &dr = Game::Properties["draw_ray"].b;
-
             switch (TileMap[i][j].first)
             {
             case WIN:
@@ -174,22 +172,20 @@ void MapTile::Draw()
                 Animate(TileMap[i][j].second, "spawn");
                 break;
             case WALL:
-                Animate(TileMap[i][j].second, "wall");
+                Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
+                SDL_RenderDrawRect(Game::renderer, &rect);
+                // Animate(TileMap[i][j].second, "wall");
                 break;
             case COIN:
                 Animate(TileMap[i][j].second, "coin");
                 break;
             case DAMAGE:
-                Animate(TileMap[i][j].second, "damage");
+                Screen::SetDrawColor(Color::red(Game::Properties["ray_opacity"].i));
+                SDL_RenderDrawRect(Game::renderer, &rect);
+                // Animate(TileMap[i][j].second, "damage");
                 break;
             default:
                 break;
-            }
-
-            if (dr)
-            {
-                Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
-                SDL_RenderDrawRect(Game::renderer, &rect);
             }
         }
     }
@@ -218,7 +214,7 @@ bool Background::loadBackground(std::string name, std::string path, int maxFrame
     return 1;
 }
 
-void Background::Draw()
+void Background::Update()
 {
     Background &bg0 = Backgrounds[0];
     Background &bg1 = Backgrounds[1];
