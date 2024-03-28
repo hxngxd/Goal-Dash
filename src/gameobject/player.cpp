@@ -292,9 +292,6 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             {
                 int score = ++Game::player_score;
                 std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];
-                coin_tile.first = 0;
-                delete coin_tile.second;
-                coin_tile.second = nullptr;
 
                 print("player score", score);
 
@@ -309,6 +306,33 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     MapTile::CreateATile(MapTile::WinTile.x, MapTile::WinTile.y, wait);
                     MapTile::nEmptyTiles--;
                 }
+
+                MapTile *flying_coin = new MapTile(coin_tile.second->position, Screen::tile_size);
+                LinkedFunction *lf = new LinkedFunction(std::bind(
+                    [](MapTile *tile) {
+                        Animate(tile, "coin");
+                        return TransformValue(&tile->scale, 0.6f, Game::Properties["rescale_speed"].f) &&
+                               TransformVector2(&tile->position, Vector2(), 0.025f, 5);
+                    },
+                    flying_coin));
+                lf->NextFunction(std::bind(
+                    [](MapTile *tile) {
+                        Animate(tile, "coin");
+                        return TransformValue<float>(&tile->scale, 0, Game::Properties["rescale_speed"].f);
+                    },
+                    flying_coin));
+                lf->NextFunction(std::bind(
+                    [](MapTile *tile) {
+                        delete tile;
+                        tile = nullptr;
+                        return 1;
+                    },
+                    flying_coin));
+                lf->Execute();
+
+                coin_tile.first = 0;
+                delete coin_tile.second;
+                coin_tile.second = nullptr;
             }
         }
         else if (type & WIN)

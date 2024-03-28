@@ -10,7 +10,7 @@ int MapTile::nEmptyTiles = 0;
 Vector2 MapTile::SpawnTile;
 Vector2 MapTile::WinTile;
 
-MapTile::MapTile(Vector2 position, Vector2 size, float wait)
+MapTile::MapTile(Vector2 position, Vector2 size)
 {
     this->position = position;
     this->size = size;
@@ -107,7 +107,7 @@ void MapTile::CreateATile(int i, int j, float &wait)
     if (!TileMap[i][j].first)
         return;
 
-    TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size, wait);
+    TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size);
 
     if (TileMap[i][j].first == COIN)
         Game::Properties["coin"].i++;

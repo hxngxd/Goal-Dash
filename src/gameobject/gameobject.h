@@ -43,7 +43,7 @@ class MapTile : public GameObject
     static Vector2 WinTile;
     static int nEmptyTiles;
 
-    MapTile(Vector2 position, Vector2 size, float wait);
+    MapTile(Vector2 position, Vector2 size);
 
     static void CreateBorder();
     static void CreateTiles(int map);

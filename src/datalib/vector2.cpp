@@ -104,13 +104,20 @@ bool Vector2Equal::operator()(const Vector2 &lhs, const Vector2 &rhs) const
     return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
-bool TransformVector2(Vector2 *v, Vector2 dest, float speed)
+bool TransformVector2(Vector2 *v, Vector2 dest, float speed, float minimum_from_dest)
 {
     if (!v)
         return 1;
 
-    bool TransformX = TransformValue(&v->x, dest.x, speed);
-    bool TransformY = TransformValue(&v->y, dest.y, speed);
+    if (abs(v->x - dest.x) <= minimum_from_dest && abs(v->y - dest.y) <= minimum_from_dest)
+    {
+        v->x = dest.x;
+        v->y = dest.y;
+        return 1;
+    }
+
+    bool TransformX = TransformValue(&v->x, dest.x, speed * abs(v->x - dest.x));
+    bool TransformY = TransformValue(&v->y, dest.y, speed * abs(v->y - dest.y));
 
     return TransformX && TransformY;
 }
