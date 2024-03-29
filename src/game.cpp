@@ -25,10 +25,10 @@ void Game::Update()
 {
     //----------------------------------------
 
-    Screen::Clear(Color::black(255));
+    Screen::Clear(Color::black());
 
     if (Game::Properties["point_grid"].b)
-        Screen::PointGrid(Color::white(255));
+        Screen::PointGrid(Color::white());
 
     if (Game::Properties["background"].b)
         Background::Update();
@@ -348,7 +348,8 @@ void Game::Quit()
         scene = nullptr;
     }
 
-    // Text::DeleteTexts();
+    Button::DeleteButtons();
+    Canvas::DeleteCanvases();
 
     //----------------------------------------
 

@@ -110,47 +110,47 @@ extern Keys left_keys, right_keys;
 
 struct Color
 {
-    static SDL_Color white(Uint8 a)
+    static SDL_Color white(Uint8 a = 255)
     {
         return {255, 255, 255, a};
     }
-    static SDL_Color black(Uint8 a)
+    static SDL_Color black(Uint8 a = 255)
     {
         return {0, 0, 0, a};
     }
-    static SDL_Color blue(Uint8 a)
+    static SDL_Color blue(Uint8 a = 255)
     {
-        return {0, 0, 255, a};
+        return {51, 153, 255, a};
     }
-    static SDL_Color red(Uint8 a)
+    static SDL_Color red(Uint8 a = 255)
     {
         return {255, 0, 0, a};
     }
-    static SDL_Color green(Uint8 a)
+    static SDL_Color green(Uint8 a = 255)
     {
         return {0, 255, 0, a};
     }
-    static SDL_Color violet(Uint8 a)
+    static SDL_Color violet(Uint8 a = 255)
     {
         return {238, 130, 238, a};
     }
-    static SDL_Color pink(Uint8 a)
+    static SDL_Color pink(Uint8 a = 255)
     {
         return {255, 192, 203, a};
     }
-    static SDL_Color yellow(Uint8 a)
+    static SDL_Color yellow(Uint8 a = 255)
     {
         return {255, 255, 0, a};
     }
-    static SDL_Color orange(Uint8 a)
+    static SDL_Color orange(Uint8 a = 255)
     {
         return {255, 165, 0, a};
     }
-    static SDL_Color cyan(Uint8 a)
+    static SDL_Color cyan(Uint8 a = 255)
     {
         return {0, 255, 255, a};
     }
-    static SDL_Color gray(Uint8 v, Uint8 a)
+    static SDL_Color gray(Uint8 v, Uint8 a = 255)
     {
         return {v, v, v, a};
     }

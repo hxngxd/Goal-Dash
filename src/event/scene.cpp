@@ -12,34 +12,44 @@ Scene::Scene()
     MapTile::CreateBorder();
     print("border created...");
 
+    print("creating welcoming canvas...");
+    Canvas *cv = new Canvas("welcome", Screen::resolution / 2 - Vector2(200, 150), Vector2(400, 300), 128, 8, 8);
+    print("done");
+
     print("creating buttons...");
-    auto start = []() {
-        print("START CLICKED!");
-        // Game::scene->DeleteScene();
-        // auto new_scene = []() {
-        //     Game::scene = new Scene(Game::Properties["map"].i);
-        //     return 1;
-        // };
-        // LinkedFunction *lf = new LinkedFunction(new_scene, 500);
-        // lf->Execute();
-        return 1;
-    };
-    Button::CreateButton("start", Screen::resolution / 2 - Vector2(200, 50), Vector2(400, 100), "Start", 500, start);
+    Button *startbtn = new Button("start", "Start", []() {
+        Game::scene->DeleteScene();
+        LinkedFunction *lf = new LinkedFunction(
+            []() {
+                Game::scene = new Scene(Game::Properties["map"].i);
+                return 1;
+            },
+            250);
+        lf->NextFunction([]() {
+            Button::DeleteButtons();
+            Canvas::DeleteCanvases();
+            return 1;
+        });
+        lf->Execute();
+    });
+    Button *settingsbtn = new Button("settings", "Settings");
+    Button *exitbtn = new Button("exit", "Exit", []() {
+        LinkedFunction *lf = new LinkedFunction(
+            []() {
+                game->Stop();
+                return 1;
+            },
+            250);
+        lf->Execute();
+    });
 
-    // Button::CreateButton("settings", Screen::resolution / 2, "Settings");
+    cv->AddComponents("btn", "start");
+    cv->AddComponents("btn", "settings");
+    cv->AddComponents("btn", "exit");
 
-    // auto exit = []() {
-    //     LinkedFunction *lf = new LinkedFunction([]() {
-    //         game->Stop();
-    //         return 1;
-    //     });
-    //     lf->Execute();
-    // };
-    // Button::CreateButton("exit", Screen::resolution / 2 + Vector2(0, 75), "Exit", exit);
+    print("buttons created");
 
-    // print("button created");
-
-    // print("scene created");
+    print("scene created");
 }
 
 Scene::Scene(int map)
@@ -102,7 +112,6 @@ void Scene::DeleteScene()
 {
     delete this;
     print("deleting current scene...");
-    Button::DeleteButtons();
 
     if (Game::player)
     {
