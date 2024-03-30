@@ -46,8 +46,10 @@ class Canvas : public UI
   public:
     int spacing;
     int margin;
+    bool vertical_alignment;
 
-    Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin);
+    Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
+           bool vertical_alignment = true);
     std::vector<std::pair<std::string, std::string>> Components;
     void AddComponents(std::string type, std::string name);
     void RemoveComponents(std::string type, std::string name);

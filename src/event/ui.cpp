@@ -173,7 +173,8 @@ void Button::DeleteButtons()
 
 //----------------------------------------
 
-Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin)
+Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
+               bool vertical_alignment)
 {
     print("creating", name, "canvas");
     Canvases[name] = this;
@@ -183,7 +184,7 @@ Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, i
     this->bg_opacity = bg_opacity;
     this->spacing = spacing;
     this->margin = margin;
-
+    this->vertical_alignment = vertical_alignment;
     print(name, "canvas created");
 }
 
@@ -206,8 +207,11 @@ void Canvas::RecalculateComponentsPosition()
     if (!numOfComponents)
         return;
     int numOfSpacing = numOfComponents - 1;
-    Vector2 ComponentSize =
-        Vector2(size.x - 2 * margin, (size.y - 2 * margin - numOfSpacing * spacing) / numOfComponents);
+    Vector2 ComponentSize = Vector2();
+    if (vertical_alignment)
+        ComponentSize = Vector2(size.x - 2 * margin, (size.y - 2 * margin - numOfSpacing * spacing) / numOfComponents);
+    else
+        ComponentSize = Vector2((size.x - 2 * margin - numOfSpacing * spacing) / numOfComponents, size.y - 2 * margin);
     Vector2 currentPosition = position + Vector2(margin);
     if (!numOfComponents)
         return;
@@ -224,7 +228,10 @@ void Canvas::RecalculateComponentsPosition()
             ui->position = currentPosition;
             ui->size = ComponentSize;
             ui->font_size = CalculateFontSize(ComponentSize, ui->label);
-            currentPosition.y += ComponentSize.y + spacing;
+            if (vertical_alignment)
+                currentPosition.y += ComponentSize.y + spacing;
+            else
+                currentPosition.x += ComponentSize.x + spacing;
         }
     }
 }

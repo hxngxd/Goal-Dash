@@ -13,7 +13,7 @@ Scene::Scene()
     print("border created...");
 
     print("creating welcoming canvas...");
-    Canvas *cv = new Canvas("welcome", Screen::resolution / 2 - Vector2(200, 150), Vector2(400, 300), 128, 8, 8);
+    Canvas *cv = new Canvas("welcome", Screen::resolution / 2 - Vector2(200, 175), Vector2(400, 350), 128, 8, 8);
     print("done");
 
     print("creating buttons...");
@@ -33,6 +33,7 @@ Scene::Scene()
         lf->Execute();
     });
     Button *settingsbtn = new Button("settings", "Settings");
+    Button *aboutbtn = new Button("about", "About");
     Button *exitbtn = new Button("exit", "Exit", []() {
         LinkedFunction *lf = new LinkedFunction(
             []() {
@@ -45,6 +46,7 @@ Scene::Scene()
 
     cv->AddComponents("btn", "start");
     cv->AddComponents("btn", "settings");
+    cv->AddComponents("btn", "about");
     cv->AddComponents("btn", "exit");
 
     print("buttons created");
