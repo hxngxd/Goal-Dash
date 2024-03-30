@@ -17,11 +17,13 @@ class UI
     int bg_opacity;
     int label_opacity;
     std::string label;
+    int original_font_size;
     int font_size;
     int type;
 
     UI(int type, std::string name, int bg_opacity = 255);
-    UI(int type, std::string name, std::string label, int bg_opacity = 255, int label_opacity = 255);
+    UI(int type, std::string name, std::string label, const Vector2 &size, int bg_opacity = 255,
+       int label_opacity = 255);
 
     static void Start();
     static void Update();
@@ -38,7 +40,8 @@ class Button : public UI
     int lastButtonClick;
 
     Button(
-        std::string name, std::string label, std::function<void()> onClick = []() {});
+        std::string name, std::string label, const Vector2 &size, std::function<void()> onClick = []() {},
+        int font_size = 150);
 
     void Update();
 };
@@ -46,7 +49,8 @@ class Button : public UI
 class Text : public UI
 {
   public:
-    Text(std::string name, std::string label, int bg_opacity = 255, int label_opacity = 255);
+    Text(std::string name, std::string label, const Vector2 &size, int font_size = 150, int bg_opacity = 255,
+         int label_opacity = 255);
 
     void Update();
 };
@@ -57,9 +61,10 @@ class Canvas : public UI
     int spacing;
     int margin;
     bool vertical_alignment;
+    bool fixed_size;
 
-    Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
-           bool vertical_alignment = true);
+    Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing = 0,
+           int margin = 0, bool vertical_alignment = true, bool fixed_size = true);
 
     std::vector<std::string> Components;
     void AddComponents(std::string name);
@@ -73,3 +78,5 @@ class Canvas : public UI
 extern std::map<std::string, UI *> UIs;
 
 int CalculateFontSize(const Vector2 &bg_size, std::string label);
+
+void HUD();

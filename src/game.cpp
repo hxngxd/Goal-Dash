@@ -18,6 +18,7 @@ Scene *Game::scene = nullptr;
 Player *Game::player = nullptr;
 int Game::player_score = 0;
 bool Game::player_won = false;
+int Game::player_time[3] = {0, 0, 0};
 
 std::map<std::string, PropertiesType> Game::Properties;
 
@@ -44,7 +45,10 @@ void Game::Update()
     UI::Update();
 
     if (player)
+    {
         player->Update();
+        UIs["time"]->label = "Time: " + FormatMS(SDL_GetTicks() - player_time[0]);
+    }
 
     //----------------------------------------
 

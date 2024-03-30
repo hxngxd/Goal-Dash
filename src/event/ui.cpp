@@ -11,6 +11,28 @@ std::map<std::string, UI *> UIs;
 
 //----------------------------------------
 
+void HUD()
+{
+    Canvas *hcv = nullptr;
+    if (UIs.find("horizontalhub") == UIs.end())
+    {
+        hcv = new Canvas("horizontalhub", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    }
+    if (UIs.find("score") == UIs.end())
+    {
+        Text *score =
+            new Text("score", "Score: " + std::to_string(Game::player_score), Vector2(Screen::tile_size * 3, 0), 25);
+        hcv->AddComponents("score");
+    }
+    if (UIs.find("time") == UIs.end())
+    {
+        Text *time = new Text("time", "Time: 00:00:00.000", Vector2(Screen::tile_size * 5, 0), 25);
+        hcv->AddComponents("time");
+    }
+}
+
+//----------------------------------------
+
 void UI::Start()
 {
 }
@@ -37,16 +59,15 @@ UI::UI(int type, std::string name, int bg_opacity)
     this->bg_opacity = bg_opacity;
 }
 
-UI::UI(int type, std::string name, std::string label, int bg_opacity, int label_opacity)
+UI::UI(int type, std::string name, std::string label, const Vector2 &size, int bg_opacity, int label_opacity)
 {
     this->type = type;
     this->name = name;
     this->position = Vector2();
-    this->size = Vector2();
+    this->size = size;
     this->label = label;
     this->bg_opacity = bg_opacity;
     this->label_opacity = label_opacity;
-    this->font_size = 1000;
 }
 
 void UI::DeleteUI(std::string name)
@@ -74,7 +95,8 @@ void UI::DeleteUIs()
 
 //----------------------------------------
 
-Button::Button(std::string name, std::string label, std::function<void()> onClick) : UI(BUTTON, name, label)
+Button::Button(std::string name, std::string label, const Vector2 &size, std::function<void()> onClick, int font_size)
+    : UI(BUTTON, name, label, size)
 {
     print("creating", name, "button");
     UIs[name] = this;
@@ -87,6 +109,7 @@ Button::Button(std::string name, std::string label, std::function<void()> onClic
         onClick);
     this->hovering_sound = this->button_mouse_hovering = this->button_mouse_click = false;
     this->lastButtonClick = 0;
+    this->original_font_size = font_size;
 
     print(name, "button created");
 }
@@ -160,11 +183,12 @@ void Button::Update()
 
 //----------------------------------------
 
-Text::Text(std::string name, std::string label, int bg_opacity, int label_opacity)
-    : UI(TEXT, name, label, bg_opacity, label_opacity)
+Text::Text(std::string name, std::string label, const Vector2 &size, int font_size, int bg_opacity, int label_opacity)
+    : UI(TEXT, name, label, size, bg_opacity, label_opacity)
 {
     print("creating", name, "text");
     UIs[name] = this;
+    this->original_font_size = font_size;
     print(name, "text created");
 }
 
@@ -202,7 +226,7 @@ void Text::Update()
 //----------------------------------------
 
 Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
-               bool vertical_alignment)
+               bool vertical_alignment, bool fixed_size)
     : UI(CANVAS, name, bg_opacity)
 {
     print("creating", name, "canvas");
@@ -212,6 +236,7 @@ Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, i
     this->spacing = spacing;
     this->margin = margin;
     this->vertical_alignment = vertical_alignment;
+    this->fixed_size = fixed_size;
     print(name, "canvas created");
 }
 
@@ -239,28 +264,91 @@ void Canvas::RecalculateComponentsPosition()
     int numOfComponents = Components.size();
     if (!numOfComponents)
         return;
-    int numOfSpacing = numOfComponents - 1;
-    Vector2 ComponentSize = Vector2();
-    if (vertical_alignment)
-        ComponentSize = Vector2(size.x - 2 * margin, (size.y - 2 * margin - numOfSpacing * spacing) / numOfComponents);
-    else
-        ComponentSize = Vector2((size.x - 2 * margin - numOfSpacing * spacing) / numOfComponents, size.y - 2 * margin);
-    Vector2 currentPosition = position + Vector2(margin);
-    if (!numOfComponents)
-        return;
 
-    for (auto &com : Components)
+    if (numOfComponents == 1)
     {
-        UI *&ui = UIs[com];
-        if (!ui)
-            continue;
-        ui->position = currentPosition;
-        ui->size = ComponentSize;
-        ui->font_size = CalculateFontSize(ComponentSize, ui->label);
-        if (vertical_alignment)
-            currentPosition.y += ComponentSize.y + spacing;
+        UI *&ui = UIs[Components.front()];
+        ui->position = position + Vector2(margin);
+        if (fixed_size)
+            ui->size = size - Vector2(2 * margin);
         else
-            currentPosition.x += ComponentSize.x + spacing;
+        {
+            if (vertical_alignment)
+            {
+                ui->size.x = size.x - 2 * margin;
+                size.y = ui->size.y + 2 * margin;
+            }
+            else
+            {
+                ui->size.y = size.y - 2 * margin;
+                size.x = ui->size.x + 2 * margin;
+            }
+        }
+        ui->font_size = std::min(ui->original_font_size, CalculateFontSize(ui->size, ui->label));
+        return;
+    }
+
+    int numOfSpacing = numOfComponents - 1;
+    Vector2 currentPosition = position + Vector2(margin);
+
+    if (fixed_size)
+    {
+        Vector2 ComponentSize = Vector2();
+        if (vertical_alignment)
+        {
+            ComponentSize =
+                Vector2(size.x - 2 * margin, ceil((size.y - 2 * margin - numOfSpacing * spacing) / numOfComponents));
+        }
+        else
+        {
+            ComponentSize =
+                Vector2(ceil((size.x - 2 * margin - numOfSpacing * spacing) / numOfComponents), size.y - 2 * margin);
+        }
+
+        for (auto &com : Components)
+        {
+            UI *&ui = UIs[com];
+            if (!ui)
+                continue;
+            ui->size = ComponentSize;
+            ui->position = currentPosition;
+            if (vertical_alignment)
+                currentPosition.y += ComponentSize.y + spacing;
+            else
+                currentPosition.x += ComponentSize.x + spacing;
+            ui->font_size = std::min(ui->original_font_size, CalculateFontSize(ui->size, ui->label));
+        }
+    }
+    else
+    {
+        if (vertical_alignment)
+            size.y = 2 * margin;
+        else
+            size.x = 2 * margin;
+        for (auto &com : Components)
+        {
+            UI *&ui = UIs[com];
+            if (!ui)
+                continue;
+            ui->position = currentPosition;
+            if (vertical_alignment)
+            {
+                currentPosition.y += ui->size.y + spacing;
+                size.y += ui->size.y + spacing;
+                ui->size.x = size.x - 2 * margin;
+            }
+            else
+            {
+                currentPosition.x += ui->size.x + spacing;
+                size.x += ui->size.x + spacing;
+                ui->size.y = size.y - 2 * margin;
+            }
+            ui->font_size = std::min(ui->original_font_size, CalculateFontSize(ui->size, ui->label));
+        }
+        if (vertical_alignment)
+            size.y -= spacing;
+        else
+            size.x -= spacing;
     }
 }
 
@@ -300,7 +388,7 @@ int CalculateFontSize(const Vector2 &bg_size, std::string label)
     int perfectFs = 500;
     SDL_Rect rect;
     rect.w = rect.h = 100000;
-    while (rect.w >= bg_size.x || rect.h >= bg_size.y)
+    while ((rect.w >= bg_size.x || rect.h >= bg_size.y) && perfectFs >= 10)
     {
         TTF_SetFontSize(myFont, perfectFs);
         TTF_SizeText(myFont, label.c_str(), &rect.w, &rect.h);

@@ -1,6 +1,7 @@
 #include "../datalib/mixer.h"
 #include "../datalib/sprite.h"
 #include "../datalib/util.h"
+#include "../event/ui.h"
 #include "../game.h"
 #include "gameobject.h"
 #include <cstring>
@@ -294,6 +295,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];
 
                 print("player score", score);
+                UIs["score"]->label = "Score: " + std::to_string(score);
 
                 if (Game::Properties["sound"].b)
                     PlaySound("coin", CHANNEL_COIN, 0);
@@ -312,7 +314,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     [](MapTile *tile) {
                         Animate(tile, "coin");
                         return TransformValue(&tile->scale, 0.6f, Game::Properties["rescale_speed"].f) &&
-                               TransformVector2(&tile->position, Vector2(), 0.025f, 5);
+                               TransformVector2(&tile->position, Vector2(), 0.04f, 5);
                     },
                     flying_coin));
                 lf->NextFunction(std::bind(

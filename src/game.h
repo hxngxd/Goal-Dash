@@ -25,6 +25,7 @@ class Game
     static Player *player;
     static int player_score;
     static bool player_won;
+    static int player_time[3];
 
     void Start();
     void Stop()
