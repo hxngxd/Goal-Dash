@@ -1,8 +1,6 @@
 #include "ui.h"
 #include "../datalib/mixer.h"
-#include "../datalib/msg.h"
 #include "../datalib/sprite.h"
-#include "../datalib/util.h"
 #include "../game.h"
 #include "algorithm"
 #include "input.h"
@@ -11,6 +9,7 @@
 
 std::map<std::string, Button *> Buttons;
 std::map<std::string, Canvas *> Canvases;
+std::map<std::string, Text *> Texts;
 std::string hoverButton = "", downButton = "", upButton = "";
 
 //----------------------------------------
@@ -32,31 +31,6 @@ void UI::Update()
 }
 
 //----------------------------------------
-
-Button::Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size,
-               std::function<void()> onClick)
-{
-    print("creating", name, "button");
-    Buttons[name] = this;
-    this->name = name;
-    this->position = position;
-    this->size = size;
-    this->scale = 1;
-    this->label = label;
-    this->bg_opacity = 0;
-    this->label_opacity = 255;
-    this->onClick = std::bind(
-        [](std::function<void()> onClick) {
-            onClick();
-            PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
-        },
-        onClick);
-    this->hovering_sound = this->button_mouse_hovering = this->button_mouse_click = false;
-    this->lastButtonClick = 0;
-    this->font_size = std::min(font_size, CalculateFontSize(size, label));
-
-    print(name, "button created");
-}
 
 Button::Button(std::string name, std::string label, std::function<void()> onClick)
 {
@@ -148,27 +122,52 @@ void Button::Update()
     SDL_DestroyTexture(texture);
 }
 
-void Button::DeleteButton(std::string name)
+//----------------------------------------
+
+Text::Text(std::string name, int bg_opacity, std::string label)
 {
-    if (Buttons.find(name) == Buttons.end())
-        return;
-    Button *&btn = Buttons[name];
-    if (btn)
-    {
-        delete btn;
-        btn = nullptr;
-    }
-    Buttons.erase(name);
-    print("button", name, "deleted");
+    print("creating", name, "text");
+    Texts[name] = this;
+    this->name = name;
+    this->position = Vector2();
+    this->size = Vector2();
+    this->scale = 1;
+    this->label = label;
+    this->bg_opacity = bg_opacity;
+    this->label_opacity = 255;
+
+    print(name, "text created");
 }
 
-void Button::DeleteButtons()
+void Text::Update()
 {
-    print("deleting buttons...");
-    for (auto &btn : Buttons)
-        DeleteButton(btn.first);
-    print("buttons deleted");
-    Buttons.clear();
+    TTF_SetFontSize(myFont, font_size);
+    SDL_Surface *sf = TTF_RenderText_Blended(myFont, label.c_str(), Color::white(label_opacity));
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
+
+    SDL_Rect labelRect;
+    TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
+    Vector2 center = Rect::GetCenter(position, size);
+    labelRect.x = center.x - labelRect.w / 2;
+    labelRect.y = center.y - labelRect.h / 2;
+
+    SDL_Rect bgRect;
+    bgRect.x = position.x;
+    bgRect.y = position.y;
+    bgRect.w = size.x;
+    bgRect.h = size.y;
+
+    if (bg_opacity)
+    {
+        Screen::SetDrawColor(Color::gray(16, bg_opacity));
+        SDL_RenderFillRect(Game::renderer, &bgRect);
+    }
+
+    SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
+
+    SDL_FreeSurface(sf);
+    SDL_DestroyTexture(texture);
 }
 
 //----------------------------------------
@@ -215,6 +214,7 @@ void Canvas::RecalculateComponentsPosition()
     Vector2 currentPosition = position + Vector2(margin);
     if (!numOfComponents)
         return;
+
     for (auto &com : Components)
     {
         UI *ui = nullptr;
@@ -222,6 +222,11 @@ void Canvas::RecalculateComponentsPosition()
         {
             if (Buttons.find(com.second) != Buttons.end() && Buttons[com.second])
                 ui = (UI *)Buttons[com.second];
+        }
+        else if (com.first == "txt")
+        {
+            if (Texts.find(com.second) != Texts.end() && Texts[com.second])
+                ui = (UI *)Texts[com.second];
         }
         if (ui)
         {
@@ -254,30 +259,12 @@ void Canvas::Update()
             if (Buttons.find(com.second) != Buttons.end() && Buttons[com.second])
                 Buttons[com.second]->Update();
         }
+        else if (com.first == "txt")
+        {
+            if (Texts.find(com.second) != Texts.end() && Texts[com.second])
+                Texts[com.second]->Update();
+        }
     }
-}
-
-void Canvas::DeleteCanvas(std::string name)
-{
-    if (Canvases.find(name) == Canvases.end())
-        return;
-    Canvas *&cv = Canvases[name];
-    if (cv)
-    {
-        delete cv;
-        cv = nullptr;
-    }
-    Canvases.erase(name);
-    print("canvas", name, "deleted");
-}
-
-void Canvas::DeleteCanvases()
-{
-    print("deleting canvases...");
-    for (auto &cv : Canvases)
-        DeleteCanvas(cv.first);
-    print("canvases deleted");
-    Canvases.clear();
 }
 
 //----------------------------------------

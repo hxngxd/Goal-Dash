@@ -348,8 +348,9 @@ void Game::Quit()
         scene = nullptr;
     }
 
-    Button::DeleteButtons();
-    Canvas::DeleteCanvases();
+    DeleteUIs<Button *>(Buttons, "button");
+    DeleteUIs<Text *>(Texts, "text");
+    DeleteUIs<Canvas *>(Canvases, "canvas");
 
     //----------------------------------------
 

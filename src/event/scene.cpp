@@ -26,8 +26,8 @@ Scene::Scene()
             },
             250);
         lf->NextFunction([]() {
-            Button::DeleteButtons();
-            Canvas::DeleteCanvases();
+            DeleteUIs<Button *>(Buttons, "button");
+            DeleteUIs<Canvas *>(Canvases, "canvas");
             return 1;
         });
         lf->Execute();
@@ -43,7 +43,6 @@ Scene::Scene()
             250);
         lf->Execute();
     });
-
     cv->AddComponents("btn", "start");
     cv->AddComponents("btn", "settings");
     cv->AddComponents("btn", "about");

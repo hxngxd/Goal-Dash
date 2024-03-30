@@ -1,5 +1,6 @@
 #pragma once
 #include "../../include/SDL2/SDL.h"
+#include "../datalib/msg.h"
 #include "../datalib/util.h"
 #include "../datalib/vector2.h"
 #include <functional>
@@ -31,14 +32,17 @@ class Button : public UI
     int lastButtonClick;
 
     Button(
-        std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size,
-        std::function<void()> onClick = []() {});
-    Button(
         std::string name, std::string label, std::function<void()> onClick = []() {});
 
     void Update();
-    static void DeleteButton(std::string name);
-    static void DeleteButtons();
+};
+
+class Text : public UI
+{
+  public:
+    Text(std::string name, int bg_opacity, std::string label);
+
+    void Update();
 };
 
 class Canvas : public UI
@@ -56,11 +60,33 @@ class Canvas : public UI
     void RecalculateComponentsPosition();
 
     void Update();
-    static void DeleteCanvas(std::string name);
-    static void DeleteCanvases();
 };
 
 extern std::map<std::string, Button *> Buttons;
+extern std::map<std::string, Text *> Texts;
 extern std::map<std::string, Canvas *> Canvases;
 
 int CalculateFontSize(const Vector2 &bg_size, std::string label);
+
+template <typename T> void DeleteUI(std::string name, std::map<std::string, T> &UIs, std::string type)
+{
+    if (UIs.find(name) == UIs.end())
+        return;
+    T &ui = UIs[name];
+    if (ui)
+    {
+        delete ui;
+        ui = nullptr;
+    }
+    UIs.erase(name);
+    print(type, name, "deleted");
+}
+
+template <typename T> void DeleteUIs(std::map<std::string, T> &UIs, std::string type)
+{
+    print("deleting", type);
+    for (auto &ui : UIs)
+        DeleteUI<T>(ui.first, UIs, type);
+    print(type, "deleted");
+    UIs.clear();
+}
