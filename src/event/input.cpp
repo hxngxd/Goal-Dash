@@ -71,15 +71,15 @@ void EventHandler::MouseInputHandler()
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
-            if (!Buttons.empty())
+            for (auto &ui : UIs)
             {
-                for (auto &btn : Buttons)
-                {
-                    if (!btn.second)
-                        continue;
-                    if (btn.second->button_mouse_hovering)
-                        btn.second->button_mouse_click = true;
-                }
+                if (!ui.second)
+                    continue;
+                if (ui.second->type != BUTTON)
+                    continue;
+                Button *btn = (Button *)ui.second;
+                if (btn->button_mouse_hovering)
+                    btn->button_mouse_click = true;
             }
         }
     }
@@ -87,20 +87,20 @@ void EventHandler::MouseInputHandler()
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
-            if (!Buttons.empty())
+            for (auto &ui : UIs)
             {
-                for (auto &btn : Buttons)
+                if (!ui.second)
+                    continue;
+                if (ui.second->type != BUTTON)
+                    continue;
+                Button *btn = (Button *)ui.second;
+                if (btn->button_mouse_click && btn->button_mouse_hovering &&
+                    (SDL_GetTicks() - btn->lastButtonClick >= 500))
                 {
-                    if (!btn.second)
-                        continue;
-                    if (btn.second->button_mouse_click && btn.second->button_mouse_hovering &&
-                        (SDL_GetTicks() - btn.second->lastButtonClick >= 500))
-                    {
-                        btn.second->onClick();
-                        btn.second->lastButtonClick = SDL_GetTicks();
-                    }
-                    btn.second->button_mouse_click = false;
+                    btn->onClick();
+                    btn->lastButtonClick = SDL_GetTicks();
                 }
+                btn->button_mouse_click = false;
             }
         }
     }

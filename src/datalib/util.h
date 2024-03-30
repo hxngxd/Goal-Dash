@@ -209,6 +209,13 @@ enum animation_directions
     RIGHT
 };
 
+enum ui_types
+{
+    CANVAS,
+    BUTTON,
+    TEXT
+};
+
 //----------------------------------------
 
 struct PropertiesType

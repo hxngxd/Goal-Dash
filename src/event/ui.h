@@ -14,14 +14,20 @@ class UI
     std::string name;
     Vector2 position;
     Vector2 size;
-    float scale;
     int bg_opacity;
     int label_opacity;
     std::string label;
     int font_size;
+    int type;
+
+    UI(int type, std::string name, int bg_opacity = 255);
+    UI(int type, std::string name, std::string label, int bg_opacity = 255, int label_opacity = 255);
 
     static void Start();
     static void Update();
+
+    static void DeleteUI(std::string name);
+    static void DeleteUIs();
 };
 
 class Button : public UI
@@ -40,7 +46,7 @@ class Button : public UI
 class Text : public UI
 {
   public:
-    Text(std::string name, int bg_opacity, std::string label);
+    Text(std::string name, std::string label, int bg_opacity = 255, int label_opacity = 255);
 
     void Update();
 };
@@ -54,39 +60,16 @@ class Canvas : public UI
 
     Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
            bool vertical_alignment = true);
-    std::vector<std::pair<std::string, std::string>> Components;
-    void AddComponents(std::string type, std::string name);
-    void RemoveComponents(std::string type, std::string name);
+
+    std::vector<std::string> Components;
+    void AddComponents(std::string name);
+    void AddComponents(const std::vector<std::string> &names);
+    void RemoveComponents(std::string name);
     void RecalculateComponentsPosition();
 
     void Update();
 };
 
-extern std::map<std::string, Button *> Buttons;
-extern std::map<std::string, Text *> Texts;
-extern std::map<std::string, Canvas *> Canvases;
+extern std::map<std::string, UI *> UIs;
 
 int CalculateFontSize(const Vector2 &bg_size, std::string label);
-
-template <typename T> void DeleteUI(std::string name, std::map<std::string, T> &UIs, std::string type)
-{
-    if (UIs.find(name) == UIs.end())
-        return;
-    T &ui = UIs[name];
-    if (ui)
-    {
-        delete ui;
-        ui = nullptr;
-    }
-    UIs.erase(name);
-    print(type, name, "deleted");
-}
-
-template <typename T> void DeleteUIs(std::map<std::string, T> &UIs, std::string type)
-{
-    print("deleting", type);
-    for (auto &ui : UIs)
-        DeleteUI<T>(ui.first, UIs, type);
-    print(type, "deleted");
-    UIs.clear();
-}

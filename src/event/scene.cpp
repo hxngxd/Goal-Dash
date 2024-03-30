@@ -26,8 +26,7 @@ Scene::Scene()
             },
             250);
         lf->NextFunction([]() {
-            DeleteUIs<Button *>(Buttons, "button");
-            DeleteUIs<Canvas *>(Canvases, "canvas");
+            UI::DeleteUIs();
             return 1;
         });
         lf->Execute();
@@ -43,10 +42,8 @@ Scene::Scene()
             250);
         lf->Execute();
     });
-    cv->AddComponents("btn", "start");
-    cv->AddComponents("btn", "settings");
-    cv->AddComponents("btn", "about");
-    cv->AddComponents("btn", "exit");
+    Text *title = new Text("title", "Goal Dash", 128);
+    cv->AddComponents({"title", "start", "settings", "about", "exit"});
 
     print("buttons created");
 

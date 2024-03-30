@@ -7,10 +7,7 @@
 
 //----------------------------------------
 
-std::map<std::string, Button *> Buttons;
-std::map<std::string, Canvas *> Canvases;
-std::map<std::string, Text *> Texts;
-std::string hoverButton = "", downButton = "", upButton = "";
+std::map<std::string, UI *> UIs;
 
 //----------------------------------------
 
@@ -20,29 +17,68 @@ void UI::Start()
 
 void UI::Update()
 {
-    if (!Canvases.empty())
+    for (auto &ui : UIs)
     {
-        for (auto &cv : Canvases)
+        if (ui.second)
         {
-            if (cv.second)
-                cv.second->Update();
+            if (ui.second->type == CANVAS)
+            {
+                Canvas *cv = (Canvas *)ui.second;
+                cv->Update();
+            }
         }
     }
 }
 
-//----------------------------------------
-
-Button::Button(std::string name, std::string label, std::function<void()> onClick)
+UI::UI(int type, std::string name, int bg_opacity)
 {
-    print("creating", name, "button");
-    Buttons[name] = this;
+    this->type = type;
+    this->name = name;
+    this->bg_opacity = bg_opacity;
+}
+
+UI::UI(int type, std::string name, std::string label, int bg_opacity, int label_opacity)
+{
+    this->type = type;
     this->name = name;
     this->position = Vector2();
     this->size = Vector2();
-    this->scale = 1;
     this->label = label;
+    this->bg_opacity = bg_opacity;
+    this->label_opacity = label_opacity;
+    this->font_size = 1000;
+}
+
+void UI::DeleteUI(std::string name)
+{
+    if (UIs.find(name) == UIs.end())
+        return;
+    UI *&ui = UIs[name];
+    if (ui)
+    {
+        delete ui;
+        ui = nullptr;
+    }
+    UIs.erase(name);
+    print("ui", name, "deleted");
+}
+
+void UI::DeleteUIs()
+{
+    print("deleting uis...");
+    for (auto &ui : UIs)
+        DeleteUI(ui.first);
+    print("uis deleted");
+    UIs.clear();
+}
+
+//----------------------------------------
+
+Button::Button(std::string name, std::string label, std::function<void()> onClick) : UI(BUTTON, name, label)
+{
+    print("creating", name, "button");
+    UIs[name] = this;
     this->bg_opacity = 0;
-    this->label_opacity = 255;
     this->onClick = std::bind(
         [](std::function<void()> onClick) {
             onClick();
@@ -124,18 +160,11 @@ void Button::Update()
 
 //----------------------------------------
 
-Text::Text(std::string name, int bg_opacity, std::string label)
+Text::Text(std::string name, std::string label, int bg_opacity, int label_opacity)
+    : UI(TEXT, name, label, bg_opacity, label_opacity)
 {
     print("creating", name, "text");
-    Texts[name] = this;
-    this->name = name;
-    this->position = Vector2();
-    this->size = Vector2();
-    this->scale = 1;
-    this->label = label;
-    this->bg_opacity = bg_opacity;
-    this->label_opacity = 255;
-
+    UIs[name] = this;
     print(name, "text created");
 }
 
@@ -174,29 +203,34 @@ void Text::Update()
 
 Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
                bool vertical_alignment)
+    : UI(CANVAS, name, bg_opacity)
 {
     print("creating", name, "canvas");
-    Canvases[name] = this;
-    this->name = name;
+    UIs[name] = this;
     this->position = position;
     this->size = size;
-    this->bg_opacity = bg_opacity;
     this->spacing = spacing;
     this->margin = margin;
     this->vertical_alignment = vertical_alignment;
     print(name, "canvas created");
 }
 
-void Canvas::AddComponents(std::string type, std::string name)
+void Canvas::AddComponents(std::string name)
 {
-    Components.push_back(std::make_pair(type, name));
+    Components.push_back(name);
     RecalculateComponentsPosition();
 }
 
-void Canvas::RemoveComponents(std::string type, std::string name)
+void Canvas::AddComponents(const std::vector<std::string> &names)
 {
-    std::pair<std::string, std::string> p = std::make_pair(type, name);
-    Components.erase(std::remove(Components.begin(), Components.end(), p), Components.end());
+    for (auto &name : names)
+        Components.push_back(name);
+    RecalculateComponentsPosition();
+}
+
+void Canvas::RemoveComponents(std::string name)
+{
+    Components.erase(std::remove(Components.begin(), Components.end(), name), Components.end());
     RecalculateComponentsPosition();
 }
 
@@ -217,27 +251,16 @@ void Canvas::RecalculateComponentsPosition()
 
     for (auto &com : Components)
     {
-        UI *ui = nullptr;
-        if (com.first == "btn")
-        {
-            if (Buttons.find(com.second) != Buttons.end() && Buttons[com.second])
-                ui = (UI *)Buttons[com.second];
-        }
-        else if (com.first == "txt")
-        {
-            if (Texts.find(com.second) != Texts.end() && Texts[com.second])
-                ui = (UI *)Texts[com.second];
-        }
-        if (ui)
-        {
-            ui->position = currentPosition;
-            ui->size = ComponentSize;
-            ui->font_size = CalculateFontSize(ComponentSize, ui->label);
-            if (vertical_alignment)
-                currentPosition.y += ComponentSize.y + spacing;
-            else
-                currentPosition.x += ComponentSize.x + spacing;
-        }
+        UI *&ui = UIs[com];
+        if (!ui)
+            continue;
+        ui->position = currentPosition;
+        ui->size = ComponentSize;
+        ui->font_size = CalculateFontSize(ComponentSize, ui->label);
+        if (vertical_alignment)
+            currentPosition.y += ComponentSize.y + spacing;
+        else
+            currentPosition.x += ComponentSize.x + spacing;
     }
 }
 
@@ -254,15 +277,18 @@ void Canvas::Update()
     SDL_RenderDrawRect(Game::renderer, &rect);
     for (auto &com : Components)
     {
-        if (com.first == "btn")
+        UI *&ui = UIs[com];
+        if (!ui)
+            continue;
+        if (ui->type == BUTTON)
         {
-            if (Buttons.find(com.second) != Buttons.end() && Buttons[com.second])
-                Buttons[com.second]->Update();
+            Button *btn = (Button *)ui;
+            btn->Update();
         }
-        else if (com.first == "txt")
+        else if (ui->type == TEXT)
         {
-            if (Texts.find(com.second) != Texts.end() && Texts[com.second])
-                Texts[com.second]->Update();
+            Text *txt = (Text *)ui;
+            txt->Update();
         }
     }
 }
