@@ -24,7 +24,8 @@ Scene::Scene()
         LinkedFunction *lf = new LinkedFunction(
             []() {
                 UI::DeleteUIs();
-                Game::scene = new Scene(Game::Properties["map"].i);
+                HUD();
+                Game::scene = new Scene(++Game::Properties["map"].i);
                 return 1;
             },
             250);
@@ -52,9 +53,10 @@ Scene::Scene()
 Scene::Scene(int map)
 {
     print("creating new scene...");
-    HUD();
     print("creating tiles...");
     MapTile::CreateTiles(map);
+    if (UIs["map"])
+        UIs["map"]->label = "Map: " + std::to_string(map);
 
     LinkedFunction *lf = new LinkedFunction(
         std::bind([]() {

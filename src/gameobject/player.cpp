@@ -291,16 +291,17 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0))
             {
-                int score = ++Game::player_score;
+                Game::player_score++;
                 std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];
 
-                print("player score", score);
-                UIs["score"]->label = "Score: " + std::to_string(score);
+                print("player score", Game::player_score);
+                if (UIs["score"])
+                    UIs["score"]->label = "Score: " + std::to_string(Game::player_score);
 
                 if (Game::Properties["sound"].b)
                     PlaySound("coin", CHANNEL_COIN, 0);
 
-                if (score == Game::Properties["coin"].i)
+                if (Game::player_score == Game::Properties["coin"].i)
                 {
                     std::pair<int, MapTile *> &win_tile = TileMap[MapTile::WinTile.x][MapTile::WinTile.y];
                     win_tile.first = WIN;
@@ -314,7 +315,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     [](MapTile *tile) {
                         Animate(tile, "coin");
                         return TransformValue(&tile->scale, 0.6f, Game::Properties["rescale_speed"].f) &&
-                               TransformVector2(&tile->position, Vector2(), 0.04f, 5);
+                               TransformVector2(&tile->position, Vector2(Screen::tile_size * 2, 0), 0.05f, 5);
                     },
                     flying_coin));
                 lf->NextFunction(std::bind(

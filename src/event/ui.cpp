@@ -14,21 +14,27 @@ std::map<std::string, UI *> UIs;
 void HUD()
 {
     Canvas *hcv = nullptr;
-    if (UIs.find("horizontalhub") == UIs.end())
-    {
-        hcv = new Canvas("horizontalhub", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    }
-    if (UIs.find("score") == UIs.end())
-    {
-        Text *score =
-            new Text("score", "Score: " + std::to_string(Game::player_score), Vector2(Screen::tile_size * 3, 0), 25);
-        hcv->AddComponents("score");
-    }
-    if (UIs.find("time") == UIs.end())
-    {
-        Text *time = new Text("time", "Time: 00:00:00.000", Vector2(Screen::tile_size * 5, 0), 25);
-        hcv->AddComponents("time");
-    }
+    Canvas *vcv = nullptr;
+    hcv = new Canvas("horizontalhub", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    Text *score =
+        new Text("score", "Score: " + std::to_string(Game::player_score), Vector2(Screen::tile_size * 3, 0), 25);
+    score->bg_border = true;
+    hcv->AddComponents("score");
+    Text *time = new Text("time", "Time: 00:00:00.000", Vector2(Screen::tile_size * 5, 0), 25);
+    hcv->AddComponents("time");
+    time->bg_border = true;
+    Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
+    hcv->AddComponents("map");
+    map->bg_border = true;
+    Text *difficulty = new Text("difficulty", "Difficulty: Easy", Vector2(Screen::tile_size * 5, 0), 25);
+    hcv->AddComponents("difficulty");
+    difficulty->bg_border = true;
+    vcv = new Canvas("verticalhub", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
+                     Vector2(Screen::tile_size, Screen::tile_size * 2), 0, 0, 0);
+    Button *exitbtn = new Button("exit", "X", Vector2(), []() { game->Stop(); });
+    vcv->AddComponents("exit");
+    Button *settings = new Button("settings", "*", Vector2());
+    vcv->AddComponents("settings");
 }
 
 //----------------------------------------
@@ -101,6 +107,7 @@ Button::Button(std::string name, std::string label, const Vector2 &size, std::fu
     print("creating", name, "button");
     UIs[name] = this;
     this->bg_opacity = 0;
+    this->bg_border = true;
     this->onClick = std::bind(
         [](std::function<void()> onClick) {
             onClick();
@@ -172,7 +179,7 @@ void Button::Update()
         SDL_RenderFillRect(Game::renderer, &bgRect);
     }
 
-    Screen::SetDrawColor(button_mouse_click ? Color::blue() : Color::white(64));
+    Screen::SetDrawColor(button_mouse_click ? Color::blue() : Color::white(bg_border ? 64 : 0));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
@@ -188,6 +195,7 @@ Text::Text(std::string name, std::string label, const Vector2 &size, int font_si
 {
     print("creating", name, "text");
     UIs[name] = this;
+    this->bg_border = false;
     this->original_font_size = font_size;
     print(name, "text created");
 }
@@ -215,6 +223,11 @@ void Text::Update()
     {
         Screen::SetDrawColor(Color::gray(16, bg_opacity));
         SDL_RenderFillRect(Game::renderer, &bgRect);
+    }
+    if (bg_border)
+    {
+        Screen::SetDrawColor(Color::white(255));
+        SDL_RenderDrawRect(Game::renderer, &bgRect);
     }
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);

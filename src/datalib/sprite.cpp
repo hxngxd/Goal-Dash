@@ -42,6 +42,7 @@ void DrawSprite(std::string name, const Vector2 &position, const Vector2 &size, 
     src.w = sprite->realSize.x;
     src.h = sprite->realSize.y;
     SDL_Rect dst = Rect::Rescale(position, size, scale);
+    SDL_SetRenderTarget(Game::renderer, sprite->texture);
     SDL_RenderCopyEx(Game::renderer, sprite->texture, &src, &dst, 0, NULL,
                      (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }

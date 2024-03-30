@@ -15,14 +15,15 @@ class UI
     Vector2 position;
     Vector2 size;
     int bg_opacity;
+    bool bg_border;
     int label_opacity;
     std::string label;
     int original_font_size;
     int font_size;
     int type;
 
-    UI(int type, std::string name, int bg_opacity = 255);
-    UI(int type, std::string name, std::string label, const Vector2 &size, int bg_opacity = 255,
+    UI(int type, std::string name, int bg_opacity = 64);
+    UI(int type, std::string name, std::string label, const Vector2 &size, int bg_opacity = 64,
        int label_opacity = 255);
 
     static void Start();
@@ -49,7 +50,7 @@ class Button : public UI
 class Text : public UI
 {
   public:
-    Text(std::string name, std::string label, const Vector2 &size, int font_size = 150, int bg_opacity = 255,
+    Text(std::string name, std::string label, const Vector2 &size, int font_size = 150, int bg_opacity = 64,
          int label_opacity = 255);
 
     void Update();

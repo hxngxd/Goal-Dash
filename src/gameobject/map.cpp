@@ -26,7 +26,7 @@ void MapTile::CreateBorder()
     TileMap.clear();
     TileMap.resize(ms, std::vector<std::pair<int, MapTile *>>(ms, std::make_pair(0, nullptr)));
 
-    float wait = 0;
+    float wait = 500;
 
     for (int i = 0; i < ms; i++)
     {
@@ -158,6 +158,9 @@ void MapTile::Update()
                 continue;
 
             if (!TileMap[i][j].second->scale)
+                continue;
+
+            if (Game::Properties["map"].i && i == 0)
                 continue;
 
             SDL_Rect rect =

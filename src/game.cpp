@@ -36,18 +36,19 @@ void Game::Update()
 
     //----------------------------------------
 
-    LinkedFunction::Update();
-
     MapTile::Update();
 
     EventHandler::Update();
 
     UI::Update();
 
+    LinkedFunction::Update();
+
     if (player)
     {
         player->Update();
-        UIs["time"]->label = "Time: " + FormatMS(SDL_GetTicks() - player_time[0]);
+        if (UIs["time"])
+            UIs["time"]->label = "Time: " + FormatMS(SDL_GetTicks() - player_time[0]);
     }
 
     //----------------------------------------
