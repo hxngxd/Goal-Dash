@@ -31,7 +31,7 @@ Scene::Scene()
         lf->Execute();
     });
     Button *settingsbtn = new Button("settings", "Settings", Vector2());
-    Button *aboutbtn = new Button("about", "About", Vector2());
+    Button *aboutbtn = new Button("about", "About", Vector2(), []() { SDL_OpenURL("https://github.com/hxngxd"); });
     Button *exitbtn = new Button("exit", "Exit", Vector2(), []() {
         LinkedFunction *lf = new LinkedFunction(
             []() {
