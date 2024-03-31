@@ -65,6 +65,14 @@ void Player::Animation()
     }
     Animate(this, current, direction == LEFT);
 
+    Vector2 startPos(position.x + size.x / 6, position.y);
+    Vector2 endPos(position.x + size.x / 6 * 5, position.y + size.y);
+    Vector2 centerPos = Rect::GetCenter(startPos, endPos - startPos);
+    Vector2 hbSize = Vector2(size.x * 1.5, size.y / 5);
+    Vector2 hbPos = centerPos - (hbSize / 2);
+    hbPos.y -= size.y * 7 / 10;
+    DrawSprite("healthbar", hbPos, hbSize, scale, (int)(4.0f - (float)Game::player_health / 25.0f));
+
     if (!Game::Properties["immortal"].b)
     {
         if (isDamaged[1] || isDamaged[2])
@@ -407,6 +415,9 @@ void Player::Jump()
             {
                 if (Game::Properties["sound"].b)
                     PlaySound("fall", CHANNEL_JUMP_FALL, 0);
+
+                Game::player_health -= velocity.d / 2.5;
+                UIs["health"]->label = "Health: " + std::to_string(Game::player_health);
 
                 isDamaged[2] = true;
                 LinkedFunction *lf = new LinkedFunction(std::bind(

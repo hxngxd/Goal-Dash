@@ -68,7 +68,7 @@ class Canvas : public UI
            int margin = 0, bool vertical_alignment = true, bool fixed_size = true);
 
     std::vector<std::string> Components;
-    void AddComponents(std::string name);
+    void AddComponent(std::string name);
     void AddComponents(const std::vector<std::string> &names);
     void RemoveComponents(std::string name);
     void RecalculateComponentsPosition();

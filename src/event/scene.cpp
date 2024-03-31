@@ -108,7 +108,8 @@ void Scene::DeleteScene()
     if (Game::player)
     {
         print("deleting player...");
-        PlaySound("win", CHANNEL_SPAWN_WIN, 0);
+        if (Game::Properties["sound"].b)
+            PlaySound("win", CHANNEL_SPAWN_WIN, 0);
         LinkedFunction *lf = new LinkedFunction(
             []() { return TransformValue(&Game::player->scale, 0.0f, Game::Properties["rescale_speed"].f); });
         lf->NextFunction([]() {

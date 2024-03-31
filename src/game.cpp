@@ -19,6 +19,7 @@ Player *Game::player = nullptr;
 int Game::player_score = 0;
 bool Game::player_won = false;
 int Game::player_time[3] = {0, 0, 0};
+int Game::player_health = 100;
 
 std::map<std::string, PropertiesType> Game::Properties;
 
@@ -226,10 +227,6 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSprite("jump", "img/jump.png", 4, Vector2(48)))
         return 0;
-    if (!LoadSprite("card", "img/card.png", 1, Vector2(695, 377)))
-        return 0;
-    if (!LoadSprite("card1", "img/card1.png", 1, Vector2(695, 377)))
-        return 0;
     if (!LoadSprite("spawn", "img/spawn.png", 6, Vector2(32)))
         return 0;
     if (!LoadSprite("win", "img/win.png", 6, Vector2(32)))
@@ -237,6 +234,8 @@ bool Game::LoadMedia()
     if (!LoadSprite("wall", "img/wall.png", 1, Vector2(160)))
         return 0;
     if (!LoadSprite("damage", "img/damage.png", 1, Vector2(1024)))
+        return 0;
+    if (!LoadSprite("healthbar", "img/healthbar.png", 5, Vector2(48, 7)))
         return 0;
 
     //----------------------------------------

@@ -160,7 +160,7 @@ void MapTile::Update()
             if (!TileMap[i][j].second->scale)
                 continue;
 
-            if (Game::Properties["map"].i && i == 0)
+            if (Game::Properties["map"].i && (i == 0 || i == Screen::map_size - 1 && j <= 2))
                 continue;
 
             SDL_Rect rect =

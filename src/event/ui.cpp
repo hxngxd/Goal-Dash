@@ -13,28 +13,41 @@ std::map<std::string, UI *> UIs;
 
 void HUD()
 {
-    Canvas *hcv = nullptr;
-    Canvas *vcv = nullptr;
-    hcv = new Canvas("horizontalhub", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
     Text *score =
         new Text("score", "Score: " + std::to_string(Game::player_score), Vector2(Screen::tile_size * 3, 0), 25);
     score->bg_border = true;
-    hcv->AddComponents("score");
     Text *time = new Text("time", "Time: 00:00:00.000", Vector2(Screen::tile_size * 5, 0), 25);
-    hcv->AddComponents("time");
     time->bg_border = true;
     Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
-    hcv->AddComponents("map");
     map->bg_border = true;
     Text *difficulty = new Text("difficulty", "Difficulty: Easy", Vector2(Screen::tile_size * 5, 0), 25);
-    hcv->AddComponents("difficulty");
     difficulty->bg_border = true;
-    vcv = new Canvas("verticalhub", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
-                     Vector2(Screen::tile_size, Screen::tile_size * 2), 0, 0, 0);
-    Button *exitbtn = new Button("exit", "X", Vector2(), []() { game->Stop(); });
-    vcv->AddComponents("exit");
-    Button *settings = new Button("settings", "*", Vector2());
-    vcv->AddComponents("settings");
+    hcv1->AddComponents({"score", "time", "map", "difficulty"});
+
+    Canvas *vcv = new Canvas("verticalhub", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
+                             Vector2(Screen::tile_size, Screen::tile_size * 2), 0, 0, 0);
+    Button *exitbtn = new Button("exit", "Exit", Vector2(), []() { game->Stop(); });
+    Button *mutebtn = new Button("mute", "Mute", Vector2(), []() {
+        bool &msc = Game::Properties["music"].b;
+        bool &snd = Game::Properties["sound"].b;
+        if (msc)
+            Mix_PauseMusic();
+        else
+            Mix_ResumeMusic();
+        if (snd)
+            StopAllSound();
+        msc = !msc;
+        snd = !snd;
+    });
+    vcv->AddComponents({"exit", "mute"});
+
+    Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+                              Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    Text *health =
+        new Text("health", "Health: " + std::to_string(Game::player_health), Vector2(Screen::tile_size * 3, 0), 25);
+    health->bg_border = true;
+    hcv2->AddComponents({"health"});
 }
 
 //----------------------------------------
@@ -253,7 +266,7 @@ Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, i
     print(name, "canvas created");
 }
 
-void Canvas::AddComponents(std::string name)
+void Canvas::AddComponent(std::string name)
 {
     Components.push_back(name);
     RecalculateComponentsPosition();
