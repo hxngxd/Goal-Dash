@@ -102,7 +102,6 @@ Scene::Scene(int map)
 
 void Scene::DeleteScene()
 {
-    delete this;
     print("deleting current scene...");
 
     if (Game::player)
@@ -138,5 +137,9 @@ void Scene::DeleteScene()
             return 1;
         });
         lf->Execute();
+    }
+    else
+    {
+        delete this;
     }
 }
