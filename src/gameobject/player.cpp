@@ -296,8 +296,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Game::Properties["draw_ray"].b)
                 Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
 
-            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
-                                  0))
+            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
+                                  Vector2(Screen::tile_size * 0.6f), 0))
             {
                 Game::player_score++;
                 std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];

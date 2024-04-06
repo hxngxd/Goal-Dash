@@ -169,6 +169,10 @@ struct Rect
     static SDL_Rect Rescale(const Vector2 &position, const Vector2 &size, float scale);
 
     static SDL_Rect Rescale(SDL_Rect rect, float scale);
+
+    static Vector2 GetPosition(SDL_Rect rect);
+
+    static Vector2 GetSize(SDL_Rect rect);
 };
 
 //----------------------------------------

@@ -67,3 +67,13 @@ SDL_Rect Rect::Rescale(SDL_Rect rect, float scale)
 {
     return Rescale(Vector2(rect.x, rect.y), Vector2(rect.w, rect.h), scale);
 }
+
+Vector2 Rect::GetPosition(SDL_Rect rect)
+{
+    return Vector2(rect.x, rect.y);
+}
+
+Vector2 Rect::GetSize(SDL_Rect rect)
+{
+    return Vector2(rect.w, rect.h);
+}

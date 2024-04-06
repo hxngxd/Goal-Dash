@@ -29,6 +29,10 @@ void operator*=(Vector2 &v, float k);
 
 void operator/=(Vector2 &v, float k);
 
+bool operator==(const Vector2 &v1, const Vector2 &v2);
+
+bool operator!=(const Vector2 &v1, const Vector2 &v2);
+
 Vector2 operator+(const Vector2 &v1, const Vector2 &v2);
 
 Vector2 operator-(const Vector2 &v1, const Vector2 &v2);

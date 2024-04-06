@@ -180,6 +180,8 @@ void MapTile::Update()
                 // Animate(TileMap[i][j].second, "wall");
                 break;
             case COIN:
+                Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
+                SDL_RenderDrawRect(Game::renderer, &rect);
                 Animate(TileMap[i][j].second, "coin");
                 break;
             case DAMAGE:
