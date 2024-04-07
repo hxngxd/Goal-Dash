@@ -130,6 +130,7 @@ Button::Button(std::string name, std::string label, const Vector2 &size, std::fu
     this->hovering_sound = this->button_mouse_hovering = this->button_mouse_click = false;
     this->lastButtonClick = 0;
     this->original_font_size = font_size;
+    this->enabled = true;
 
     print(name, "button created");
 }

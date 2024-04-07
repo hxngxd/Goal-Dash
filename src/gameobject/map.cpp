@@ -1,3 +1,4 @@
+#include "../datalib/PerlinNoise/PerlinNoise.hpp"
 #include "../datalib/sprite.h"
 #include "../event/input.h"
 #include "../event/ui.h"
@@ -15,9 +16,6 @@ Vector2 MapTile::WinTile;
 
 bool MapTile::isMakingMap = false;
 int CurrentDrawingType = EMPTY;
-bool isRight = false;
-int x0 = 9;
-int y0 = 4;
 
 MapTile::MapTile(Vector2 position, Vector2 size)
 {
@@ -133,28 +131,36 @@ void MapTile::CreateATile(int i, int j, float &wait)
 void MapTile::DeleteTiles()
 {
     float wait = 0.1;
-    auto post_func = [](int i, int j) {
-        TileMap[i][j].first = 0;
-        if (TileMap[i][j].second)
-        {
-            delete TileMap[i][j].second;
-            TileMap[i][j].second = nullptr;
-        }
-    };
 
     for (int i = 1; i < Screen::map_size - 1; i++)
     {
         for (int j = 1; j < Screen::map_size - 1; j++)
         {
-            if (!TileMap[i][j].second)
-                continue;
-            LinkedFunction *lf = new LinkedFunction(std::bind(TransformValue<float>, &TileMap[i][j].second->scale, 0.0f,
-                                                              Game::Properties["rescale_speed"].f),
-                                                    wait);
-            lf->Execute();
-            wait += Game::Properties["map_animation_delay"].f;
+            DeleteATile(i, j, wait);
         }
     }
+}
+
+void MapTile::DeleteATile(int i, int j, float &wait)
+{
+    if (!TileMap[i][j].first || !TileMap[i][j].second)
+        return;
+    LinkedFunction *lf = new LinkedFunction(
+        std::bind(TransformValue<float>, &TileMap[i][j].second->scale, 0.0f, Game::Properties["rescale_speed"].f),
+        wait);
+    lf->NextFunction(std::bind(
+        [](int i, int j) {
+            TileMap[i][j].first = 0;
+            if (TileMap[i][j].second)
+            {
+                delete TileMap[i][j].second;
+                TileMap[i][j].second = nullptr;
+            }
+            return 1;
+        },
+        i, j));
+    lf->Execute();
+    wait += Game::Properties["map_animation_delay"].f;
 }
 
 void MapTile::Update()
@@ -167,9 +173,6 @@ void MapTile::Update()
                 continue;
 
             if (!TileMap[i][j].second->scale)
-                continue;
-
-            if (Game::Properties["map"].i && (i == 0 || i == Screen::map_size - 1 && j <= 2))
                 continue;
 
             SDL_Rect rect =
@@ -206,14 +209,16 @@ void MapTile::Update()
 
     if (isMakingMap)
     {
-        Vector2 mouseTile = Int(Vector2(mousePosition.x / Screen::tile_size, mousePosition.y / Screen::tile_size));
-        if (InRange(mouseTile, Vector2(1), Vector2(14)))
-        {
-            mouseTile *= Screen::tile_size;
-            SDL_Rect mouseRect = {mouseTile.x, mouseTile.y, Screen::tile_size, Screen::tile_size};
-            Screen::SetDrawColor(Color::white(64));
-            SDL_RenderFillRect(Game::renderer, &mouseRect);
-        }
+        // Vector2 mouseTile = Int(Vector2(mousePosition.x / Screen::tile_size, mousePosition.y / Screen::tile_size));
+        // if (InRange(mouseTile, Vector2(1), Vector2(14)))
+        // {
+        //     mouseTile *= Screen::tile_size;
+        //     SDL_Rect mouseRect = {mouseTile.x, mouseTile.y, Screen::tile_size, Screen::tile_size};
+        //     Screen::SetDrawColor(Color::white(64));
+        //     SDL_RenderFillRect(Game::renderer, &mouseRect);
+        // }
+
+        // bool isRight = false;
         // bool up_touched = false;
         // Vector2 touched_pos(-1, -1);
         // Vector2 touched_tile(-1, -1);
@@ -228,19 +233,24 @@ void MapTile::Update()
         // float A = g / (2.0f * v0x * v0x);
         // float B = v0y / v0x;
 
-        // float x00 = (x0 + 0.5f) * Screen::tile_size;
-        // float y00 = (y0 + 0.5f) * Screen::tile_size;
+        // float x0 = mousePosition.x;
+        // float y0 = mousePosition.y;
         // float x, y;
 
-        // for (x = x00; isRight ? x < Game::Properties["resolution"].i : x > 0; isRight ? x++ : x--)
+        // // nem xien
+        // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
+        //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
+        //      isRight ? x++ : x--)
         // {
-        //     float C = x00 - (isRight ? 0 : (2.0f * v0x * v0y) / g);
-        //     y = A * (x - C) * (x - C) - B * (x - C) + y00;
+        //     float C = x0 - (isRight ? 0 : (2.0f * v0x * v0y) / g);
+        //     y = A * (x - C) * (x - C) - B * (x - C) + y0;
 
         //     float dx = 2.0f * A * (x - C) - B;
         //     bool up = (isRight && dx < 0) || (!isRight && dx > 0);
 
         //     Vector2 current_tile = Int(Vector2(x, y) / Screen::tile_size);
+        //     if (!InRange(current_tile.y, 0, 15))
+        //         break;
         //     if (up && TileMap[current_tile.y][current_tile.x].first == WALL && !up_touched)
         //     {
         //         up_touched = true;
@@ -250,10 +260,10 @@ void MapTile::Update()
 
         //     if (up_touched)
         //     {
-        //         float C1 = C + ((v0x * v0y) / g - abs(touched_pos.x - x00)) * (isRight ? -1 : 1);
-        //         touched_pos.y = A * (touched_pos.x - C) * (touched_pos.x - C) - B * (touched_pos.x - C) + y00;
-        //         y = A * (x - C1) * (x - C1) - B * (x - C1) + y00 +
-        //             abs((v0y * v0y) / (2.0f * g) - abs(y00 - touched_pos.y)) + 3;
+        //         float C1 = C + ((v0x * v0y) / g - abs(touched_pos.x - x0)) * (isRight ? -1 : 1);
+        //         touched_pos.y = A * (touched_pos.x - C) * (touched_pos.x - C) - B * (touched_pos.x - C) + y0;
+        //         y = A * (x - C1) * (x - C1) - B * (x - C1) + y0 +
+        //             abs((v0y * v0y) / (2.0f * g) - abs(y0 - touched_pos.y)) + 3;
 
         //         if (!(touched_tile.x * Screen::tile_size <= x <= (touched_tile.x + 1) * Screen::tile_size &&
         //               y >= (touched_tile.y + 1) * Screen::tile_size))
@@ -278,6 +288,22 @@ void MapTile::Update()
         //     }
         // }
 
+        // // ngang
+        // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
+        //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
+        //      isRight ? x += 4 : x -= 4)
+        // {
+        //     SDL_RenderDrawPoint(Game::renderer, x, y0);
+        //     Vector2 current_tile = Int(Vector2(x, y0) / Screen::tile_size);
+        //     if (TileMap[current_tile.y][current_tile.x].first == 4)
+        //         break;
+        //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
+        //     {
+        //         if (tiles.find(current_tile) == tiles.end())
+        //             tiles.insert(current_tile);
+        //     }
+        // }
+
         // for (auto &tile : tiles)
         // {
         //     print(tile);
@@ -285,22 +311,107 @@ void MapTile::Update()
     }
 }
 
+void RandomMap::Random()
+{
+    ((Button *)UIs["random"])->enabled = false;
+    MapTile::DeleteTiles();
+    LinkedFunction *lf = new LinkedFunction(
+        []() {
+            bool valid = false;
+            while (!valid)
+            {
+                MapTile::nEmptyTiles = 0;
+                const siv::PerlinNoise::seed_type seed = IntegralRandom<Uint32>(0, UINT32_MAX);
+                const siv::PerlinNoise perlin{seed};
+                int ei, ej;
+                for (int i = 1; i < Screen::map_size - 1; i++)
+                {
+                    for (int j = 1; j < Screen::map_size - 1; j++)
+                    {
+                        float v = perlin.octave2D_01(j, i, 8) * 100.0f;
+                        if (v > 64)
+                        {
+                            TileMap[i][j].first = WALL;
+                            MapTile::nEmptyTiles++;
+                        }
+                        else
+                        {
+                            TileMap[i][j].first = EMPTY;
+                            ei = i;
+                            ej = j;
+                        }
+                    }
+                }
+                valid = Validation(ei, ej);
+            }
+            float wait = 0.1f;
+            for (int i = 1; i < Screen::map_size - 1; i++)
+            {
+                for (int j = 1; j < Screen::map_size - 1; j++)
+                {
+                    MapTile::CreateATile(i, j, wait);
+                }
+            }
+
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    ((Button *)UIs["random"])->enabled = true;
+                    return 1;
+                },
+                MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 250);
+            lf->Execute();
+
+            return 1;
+        },
+        MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 750);
+    lf->Execute();
+}
+
+void RandomMap::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit)
+{
+    visit[i][j] = true;
+    for (int u = -1; u <= 1; u++)
+    {
+        for (int v = -1; v <= 1; v++)
+        {
+            if (u * v)
+                continue;
+            int next_i = i + u;
+            int next_j = j + v;
+            if (!InRange(next_i, 1, 14) || !InRange(next_j, 1, 14))
+                continue;
+            if (!visit[next_i][next_j] && TileMap[next_i][next_j].first == EMPTY)
+                EmptyToEmpty(next_i, next_j, visit);
+        }
+    }
+}
+
+bool RandomMap::Validation(int ei, int ej)
+{
+    std::vector<std::vector<bool>> visit(16, std::vector<bool>(16, false));
+    EmptyToEmpty(ei, ej, visit);
+    int countEmpty = 0;
+    for (int i = 1; i < Screen::map_size - 1; i++)
+    {
+        for (int j = 1; j < Screen::map_size - 1; j++)
+        {
+            if (visit[i][j])
+                countEmpty++;
+        }
+    }
+    if (countEmpty < (Screen::map_size - 2) * (Screen::map_size - 2) - MapTile::nEmptyTiles)
+        return false;
+    return true;
+}
+
 void MapHUD()
 {
     Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    Button *clear = new Button(
-        "clear", "Clear", Vector2(Screen::tile_size * 2, 0), []() { MapTile::DeleteTiles(); }, 25);
+    Button *clear = new Button("clear", "Clear", Vector2(Screen::tile_size * 2, 0), MapTile::DeleteTiles, 25);
     Button *save = new Button(
         "save", "Save", Vector2(Screen::tile_size * 2, 0), []() {}, 25);
-    Button *goright = new Button(
-        "goright", "Go ->", Vector2(Screen::tile_size, 0), []() { x0++; }, 25);
-    Button *goleft = new Button(
-        "goleft", "Go <-", Vector2(Screen::tile_size, 0), []() { x0--; }, 25);
-    Button *goup = new Button(
-        "goup", "Go ^", Vector2(Screen::tile_size, 0), []() { y0--; }, 25);
-    Button *godown = new Button(
-        "godown", "Go v", Vector2(Screen::tile_size, 0), []() { y0++; }, 25);
-    hcv1->AddComponents({"clear", "save", "goleft", "goright", "goup", "godown"});
+    Button *random = new Button("random", "Random", Vector2(Screen::tile_size * 2, 0), RandomMap::Random, 25);
+    hcv1->AddComponents({"clear", "save", "random"});
 
     Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                               Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);

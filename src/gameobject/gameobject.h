@@ -50,7 +50,16 @@ class MapTile : public GameObject
     static void CreateTiles(int map);
     static void CreateATile(int i, int j, float &wait);
     static void DeleteTiles();
+    static void DeleteATile(int i, int j, float &wait);
     static void Update();
+};
+
+class RandomMap
+{
+  public:
+    static void Random();
+    static bool Validation(int ei, int ej);
+    static void EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit);
 };
 
 extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;

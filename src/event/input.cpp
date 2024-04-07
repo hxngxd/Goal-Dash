@@ -78,7 +78,7 @@ void EventHandler::MouseInputHandler()
                 if (ui.second->type != BUTTON)
                     continue;
                 Button *btn = (Button *)ui.second;
-                if (btn->button_mouse_hovering)
+                if (btn->button_mouse_hovering && btn->enabled)
                     btn->button_mouse_click = true;
             }
         }
@@ -95,7 +95,7 @@ void EventHandler::MouseInputHandler()
                     continue;
                 Button *btn = (Button *)ui.second;
                 if (btn->button_mouse_click && btn->button_mouse_hovering &&
-                    (SDL_GetTicks() - btn->lastButtonClick >= 250))
+                    (SDL_GetTicks() - btn->lastButtonClick >= 500) && btn->enabled)
                 {
                     btn->onClick();
                     btn->lastButtonClick = SDL_GetTicks();
