@@ -96,65 +96,6 @@ void Player::Animation()
     hbPos.y -= size.y * 7 / 10;
     DrawSprite("healthbar", hbPos, hbSize, scale, (int)(4.0f - (float)Game::player_health / 25.0f));
 
-    bool up_touched = false;
-    Vector2 touched_pos(-1, -1);
-    Vector2 touched_tile(-1, -1);
-
-    Screen::SetDrawColor(Color::white(255));
-
-    float v0x = Game::Properties["player_move_speed"].f;
-    float v0y = Game::Properties["player_jump_speed"].f;
-    float g = Game::Properties["gravity"].f;
-
-    float A = g / (2.0f * v0x * v0x);
-    float B = v0y / v0x;
-
-    float x0 = 10.5 * Screen::tile_size;
-    float y0 = 1.5 * Screen::tile_size;
-
-    for (float x = x0; isRight ? x < Game::Properties["resolution"].i : x > 0; isRight ? x++ : x--)
-    {
-        float C = x0 - (isRight ? 0 : (2.0f * v0x * v0y) / g);
-        float y = A * (x - C) * (x - C) - B * (x - C) + y0;
-
-        Vector2 current_tile = Int(Vector2(x, y) / Screen::tile_size);
-        if (!InRange(current_tile.y, 0, 15))
-            break;
-
-        float dx = 2.0f * A * (x - C) - B;
-        bool up = (isRight && dx < 0) || (!isRight && dx > 0);
-
-        if (up && TileMap[current_tile.y][current_tile.x].first == 4 && !up_touched)
-        {
-            up_touched = true;
-            touched_pos.x = x;
-            touched_tile = current_tile;
-        }
-
-        if (up_touched)
-        {
-            float C1 = C + ((v0x * v0y) / g - abs(touched_pos.x - x0)) * (isRight ? -1 : 1);
-            touched_pos.y = A * (touched_pos.x - C) * (touched_pos.x - C) - B * (touched_pos.x - C) + y0;
-            y = A * (x - C1) * (x - C1) - B * (x - C1) + y0 + abs((v0y * v0y) / (2.0f * g) - abs(y0 - touched_pos.y)) +
-                3;
-
-            if (!(touched_tile.x * Screen::tile_size <= x <= (touched_tile.x + 1) * Screen::tile_size &&
-                  y >= (touched_tile.y + 1) * Screen::tile_size))
-                break;
-
-            dx = 2.0f * A * (x - C1) - B;
-            up = (isRight && dx < 0) || (!isRight && dx > 0);
-
-            Screen::SetDrawColor(Color::green(255));
-        }
-
-        SDL_RenderDrawPoint(Game::renderer, x, y);
-
-        current_tile = Int(Vector2(x, y) / Screen::tile_size);
-        if (TileMap[current_tile.y][current_tile.x].first == 4 && !up && abs(x - touched_pos.x) >= Screen::tile_size)
-            break;
-    }
-
     if (!Game::Properties["immortal"].b)
     {
         if (isDamaged[1] || isDamaged[2])

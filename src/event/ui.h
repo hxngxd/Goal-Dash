@@ -80,4 +80,4 @@ extern std::map<std::string, UI *> UIs;
 
 int CalculateFontSize(const Vector2 &bg_size, std::string label);
 
-void HUD();
+void PlayerHUD();

@@ -41,6 +41,7 @@ class MapTile : public GameObject
   public:
     static Vector2 SpawnTile;
     static Vector2 WinTile;
+    static bool isMakingMap;
     static int nEmptyTiles;
 
     MapTile(Vector2 position, Vector2 size);
@@ -83,3 +84,5 @@ class Player : public GameObject
     std::pair<bool, bool> collide_up;
     bool isDamaged[3];
 };
+
+void MapHUD();

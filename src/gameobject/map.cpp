@@ -1,7 +1,10 @@
 #include "../datalib/sprite.h"
+#include "../event/input.h"
+#include "../event/ui.h"
 #include "../game.h"
 #include "gameobject.h"
 #include <fstream>
+#include <set>
 
 std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 std::vector<Background> Backgrounds;
@@ -9,6 +12,12 @@ int MapTile::nEmptyTiles = 0;
 
 Vector2 MapTile::SpawnTile;
 Vector2 MapTile::WinTile;
+
+bool MapTile::isMakingMap = false;
+int CurrentDrawingType = EMPTY;
+bool isRight = false;
+int x0 = 9;
+int y0 = 4;
 
 MapTile::MapTile(Vector2 position, Vector2 size)
 {
@@ -194,6 +203,118 @@ void MapTile::Update()
             }
         }
     }
+
+    if (isMakingMap)
+    {
+        Vector2 mouseTile = Int(Vector2(mousePosition.x / Screen::tile_size, mousePosition.y / Screen::tile_size));
+        if (InRange(mouseTile, Vector2(1), Vector2(14)))
+        {
+            mouseTile *= Screen::tile_size;
+            SDL_Rect mouseRect = {mouseTile.x, mouseTile.y, Screen::tile_size, Screen::tile_size};
+            Screen::SetDrawColor(Color::white(64));
+            SDL_RenderFillRect(Game::renderer, &mouseRect);
+        }
+        // bool up_touched = false;
+        // Vector2 touched_pos(-1, -1);
+        // Vector2 touched_tile(-1, -1);
+        // std::set<Vector2> tiles;
+
+        // Screen::SetDrawColor(Color::white(255));
+
+        // float v0x = Game::Properties["player_move_speed"].f;
+        // float v0y = Game::Properties["player_jump_speed"].f;
+        // float g = Game::Properties["gravity"].f;
+
+        // float A = g / (2.0f * v0x * v0x);
+        // float B = v0y / v0x;
+
+        // float x00 = (x0 + 0.5f) * Screen::tile_size;
+        // float y00 = (y0 + 0.5f) * Screen::tile_size;
+        // float x, y;
+
+        // for (x = x00; isRight ? x < Game::Properties["resolution"].i : x > 0; isRight ? x++ : x--)
+        // {
+        //     float C = x00 - (isRight ? 0 : (2.0f * v0x * v0y) / g);
+        //     y = A * (x - C) * (x - C) - B * (x - C) + y00;
+
+        //     float dx = 2.0f * A * (x - C) - B;
+        //     bool up = (isRight && dx < 0) || (!isRight && dx > 0);
+
+        //     Vector2 current_tile = Int(Vector2(x, y) / Screen::tile_size);
+        //     if (up && TileMap[current_tile.y][current_tile.x].first == WALL && !up_touched)
+        //     {
+        //         up_touched = true;
+        //         touched_pos.x = x;
+        //         touched_tile = current_tile;
+        //     }
+
+        //     if (up_touched)
+        //     {
+        //         float C1 = C + ((v0x * v0y) / g - abs(touched_pos.x - x00)) * (isRight ? -1 : 1);
+        //         touched_pos.y = A * (touched_pos.x - C) * (touched_pos.x - C) - B * (touched_pos.x - C) + y00;
+        //         y = A * (x - C1) * (x - C1) - B * (x - C1) + y00 +
+        //             abs((v0y * v0y) / (2.0f * g) - abs(y00 - touched_pos.y)) + 3;
+
+        //         if (!(touched_tile.x * Screen::tile_size <= x <= (touched_tile.x + 1) * Screen::tile_size &&
+        //               y >= (touched_tile.y + 1) * Screen::tile_size))
+        //             break;
+
+        //         dx = 2.0f * A * (x - C1) - B;
+        //         up = (isRight && dx < 0) || (!isRight && dx > 0);
+
+        //         Screen::SetDrawColor(Color::green(255));
+        //     }
+
+        //     SDL_RenderDrawPoint(Game::renderer, x, y);
+
+        //     current_tile = Int(Vector2(x, y) / Screen::tile_size);
+        //     if (TileMap[current_tile.y][current_tile.x].first == 4 && !up &&
+        //         abs(x - touched_pos.x) >= Screen::tile_size)
+        //         break;
+        //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
+        //     {
+        //         if (tiles.find(current_tile) == tiles.end())
+        //             tiles.insert(current_tile);
+        //     }
+        // }
+
+        // for (auto &tile : tiles)
+        // {
+        //     print(tile);
+        // }
+    }
+}
+
+void MapHUD()
+{
+    Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    Button *clear = new Button(
+        "clear", "Clear", Vector2(Screen::tile_size * 2, 0), []() { MapTile::DeleteTiles(); }, 25);
+    Button *save = new Button(
+        "save", "Save", Vector2(Screen::tile_size * 2, 0), []() {}, 25);
+    Button *goright = new Button(
+        "goright", "Go ->", Vector2(Screen::tile_size, 0), []() { x0++; }, 25);
+    Button *goleft = new Button(
+        "goleft", "Go <-", Vector2(Screen::tile_size, 0), []() { x0--; }, 25);
+    Button *goup = new Button(
+        "goup", "Go ^", Vector2(Screen::tile_size, 0), []() { y0--; }, 25);
+    Button *godown = new Button(
+        "godown", "Go v", Vector2(Screen::tile_size, 0), []() { y0++; }, 25);
+    hcv1->AddComponents({"clear", "save", "goleft", "goright", "goup", "godown"});
+
+    Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+                              Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    Button *drawEmpty = new Button(
+        "empty", "Empty", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = EMPTY; }, 25);
+    Button *drawWall = new Button(
+        "wall", "Wall", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = WALL; }, 25);
+    Button *drawCoin = new Button(
+        "coin", "Coin", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = COIN; }, 25);
+    Button *drawSpawn = new Button(
+        "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = SPAWN; }, 25);
+    Button *drawWin = new Button(
+        "win", "Win", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = WIN; }, 25);
+    hcv2->AddComponents({"empty", "wall", "coin", "spawn", "win"});
 }
 
 Background::Background(std::string name, float scale)

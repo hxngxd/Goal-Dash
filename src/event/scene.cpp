@@ -24,7 +24,7 @@ Scene::Scene()
         LinkedFunction *lf = new LinkedFunction(
             []() {
                 UI::DeleteUIs();
-                HUD();
+                PlayerHUD();
                 Game::scene = new Scene(++Game::Properties["map"].i);
                 return 1;
             },
@@ -33,6 +33,19 @@ Scene::Scene()
     });
     Button *settingsbtn = new Button("settings", "Settings", Vector2());
     Button *aboutbtn = new Button("about", "About", Vector2(), []() { SDL_OpenURL("https://github.com/hxngxd"); });
+    Button *mapbutton = new Button("map", "Map Making", Vector2(), []() {
+        Game::scene->DeleteScene();
+        LinkedFunction *lf = new LinkedFunction(
+            []() {
+                UI::DeleteUIs();
+                MapHUD();
+                MapTile::isMakingMap = true;
+                Game::scene = new Scene(-1);
+                return 1;
+            },
+            250);
+        lf->Execute();
+    });
     Button *exitbtn = new Button("exit", "Exit", Vector2(), []() {
         LinkedFunction *lf = new LinkedFunction(
             []() {
@@ -43,7 +56,7 @@ Scene::Scene()
         lf->Execute();
     });
     Text *title = new Text("title", "Goal Dash", Vector2(), 150);
-    cv->AddComponents({"title", "start", "settings", "about", "exit"});
+    cv->AddComponents({"title", "start", "settings", "map", "about", "exit"});
 
     print("buttons created");
 
@@ -57,6 +70,9 @@ Scene::Scene(int map)
     MapTile::CreateTiles(map);
     if (UIs["map"])
         UIs["map"]->label = "Map: " + std::to_string(map);
+
+    if (map == -1)
+        return;
 
     LinkedFunction *lf = new LinkedFunction(
         std::bind([]() {

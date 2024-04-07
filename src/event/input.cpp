@@ -95,7 +95,7 @@ void EventHandler::MouseInputHandler()
                     continue;
                 Button *btn = (Button *)ui.second;
                 if (btn->button_mouse_click && btn->button_mouse_hovering &&
-                    (SDL_GetTicks() - btn->lastButtonClick >= 500))
+                    (SDL_GetTicks() - btn->lastButtonClick >= 250))
                 {
                     btn->onClick();
                     btn->lastButtonClick = SDL_GetTicks();
