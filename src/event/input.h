@@ -3,6 +3,7 @@
 #include "../gameobject/gameobject.h"
 
 extern Vector2 mousePosition;
+extern bool mouseLeft;
 
 class EventHandler
 {

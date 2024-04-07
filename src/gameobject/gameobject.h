@@ -48,15 +48,18 @@ class MapTile : public GameObject
 
     static void CreateBorder();
     static void CreateTiles(int map);
-    static void CreateATile(int i, int j, float &wait);
+    static void CreateATile(int i, int j, float &wait, bool animation = true);
     static void DeleteTiles();
-    static void DeleteATile(int i, int j, float &wait);
+    static void DeleteATile(int i, int j, float &wait, bool animation = true);
     static void Update();
 };
 
-class RandomMap
+class MapMaking
 {
   public:
+    static Vector2 mouseTile;
+    static bool drawSpawn, drawWin;
+    static int currentDrawingType;
     static void Random();
     static bool Validation(int ei, int ej);
     static void EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit);

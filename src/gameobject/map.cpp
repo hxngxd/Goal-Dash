@@ -15,7 +15,10 @@ Vector2 MapTile::SpawnTile;
 Vector2 MapTile::WinTile;
 
 bool MapTile::isMakingMap = false;
-int CurrentDrawingType = EMPTY;
+
+Vector2 MapMaking::mouseTile(-1);
+int MapMaking::currentDrawingType = EMPTY;
+bool MapMaking::drawSpawn = false, MapMaking::drawWin = false;
 
 MapTile::MapTile(Vector2 position, Vector2 size)
 {
@@ -109,7 +112,7 @@ void MapTile::CreateTiles(int map)
     TileMap[WinTile.x][WinTile.y].first = 0;
 }
 
-void MapTile::CreateATile(int i, int j, float &wait)
+void MapTile::CreateATile(int i, int j, float &wait, bool animation)
 {
     if (!TileMap[i][j].first)
         return;
@@ -119,12 +122,19 @@ void MapTile::CreateATile(int i, int j, float &wait)
     if (TileMap[i][j].first == COIN)
         Game::Properties["coin"].i++;
 
-    LinkedFunction *lf =
-        new LinkedFunction(std::bind(TransformValue<float>, &TileMap[i][j].second->scale,
-                                     Game::Properties["tile_scale"].f * (TileMap[i][j].first == COIN ? 0.6f : 1.0f),
-                                     Game::Properties["rescale_speed"].f),
-                           wait);
-    lf->Execute();
+    if (animation)
+    {
+        LinkedFunction *lf =
+            new LinkedFunction(std::bind(TransformValue<float>, &TileMap[i][j].second->scale,
+                                         Game::Properties["tile_scale"].f * (TileMap[i][j].first == COIN ? 0.6f : 1.0f),
+                                         Game::Properties["rescale_speed"].f),
+                               wait);
+        lf->Execute();
+    }
+    else
+    {
+        TileMap[i][j].second->scale = (TileMap[i][j].first == COIN ? 0.6f : 1.0f);
+    }
     wait += Game::Properties["map_animation_delay"].f;
 }
 
@@ -141,25 +151,37 @@ void MapTile::DeleteTiles()
     }
 }
 
-void MapTile::DeleteATile(int i, int j, float &wait)
+void MapTile::DeleteATile(int i, int j, float &wait, bool animation)
 {
     if (!TileMap[i][j].first || !TileMap[i][j].second)
         return;
-    LinkedFunction *lf = new LinkedFunction(
-        std::bind(TransformValue<float>, &TileMap[i][j].second->scale, 0.0f, Game::Properties["rescale_speed"].f),
-        wait);
-    lf->NextFunction(std::bind(
-        [](int i, int j) {
-            TileMap[i][j].first = 0;
-            if (TileMap[i][j].second)
-            {
-                delete TileMap[i][j].second;
-                TileMap[i][j].second = nullptr;
-            }
-            return 1;
-        },
-        i, j));
-    lf->Execute();
+    if (animation)
+    {
+        LinkedFunction *lf = new LinkedFunction(
+            std::bind(TransformValue<float>, &TileMap[i][j].second->scale, 0.0f, Game::Properties["rescale_speed"].f),
+            wait);
+        lf->NextFunction(std::bind(
+            [](int i, int j) {
+                TileMap[i][j].first = 0;
+                if (TileMap[i][j].second)
+                {
+                    delete TileMap[i][j].second;
+                    TileMap[i][j].second = nullptr;
+                }
+                return 1;
+            },
+            i, j));
+        lf->Execute();
+    }
+    else
+    {
+        TileMap[i][j].first = 0;
+        if (TileMap[i][j].second)
+        {
+            delete TileMap[i][j].second;
+            TileMap[i][j].second = nullptr;
+        }
+    }
     wait += Game::Properties["map_animation_delay"].f;
 }
 
@@ -209,114 +231,184 @@ void MapTile::Update()
 
     if (isMakingMap)
     {
-        // Vector2 mouseTile = Int(Vector2(mousePosition.x / Screen::tile_size, mousePosition.y / Screen::tile_size));
-        // if (InRange(mouseTile, Vector2(1), Vector2(14)))
-        // {
-        //     mouseTile *= Screen::tile_size;
-        //     SDL_Rect mouseRect = {mouseTile.x, mouseTile.y, Screen::tile_size, Screen::tile_size};
-        //     Screen::SetDrawColor(Color::white(64));
-        //     SDL_RenderFillRect(Game::renderer, &mouseRect);
-        // }
-
-        // bool isRight = false;
-        // bool up_touched = false;
-        // Vector2 touched_pos(-1, -1);
-        // Vector2 touched_tile(-1, -1);
-        // std::set<Vector2> tiles;
-
-        // Screen::SetDrawColor(Color::white(255));
-
-        // float v0x = Game::Properties["player_move_speed"].f;
-        // float v0y = Game::Properties["player_jump_speed"].f;
-        // float g = Game::Properties["gravity"].f;
-
-        // float A = g / (2.0f * v0x * v0x);
-        // float B = v0y / v0x;
-
-        // float x0 = mousePosition.x;
-        // float y0 = mousePosition.y;
-        // float x, y;
-
-        // // nem xien
-        // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
-        //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
-        //      isRight ? x++ : x--)
-        // {
-        //     float C = x0 - (isRight ? 0 : (2.0f * v0x * v0y) / g);
-        //     y = A * (x - C) * (x - C) - B * (x - C) + y0;
-
-        //     float dx = 2.0f * A * (x - C) - B;
-        //     bool up = (isRight && dx < 0) || (!isRight && dx > 0);
-
-        //     Vector2 current_tile = Int(Vector2(x, y) / Screen::tile_size);
-        //     if (!InRange(current_tile.y, 0, 15))
-        //         break;
-        //     if (up && TileMap[current_tile.y][current_tile.x].first == WALL && !up_touched)
-        //     {
-        //         up_touched = true;
-        //         touched_pos.x = x;
-        //         touched_tile = current_tile;
-        //     }
-
-        //     if (up_touched)
-        //     {
-        //         float C1 = C + ((v0x * v0y) / g - abs(touched_pos.x - x0)) * (isRight ? -1 : 1);
-        //         touched_pos.y = A * (touched_pos.x - C) * (touched_pos.x - C) - B * (touched_pos.x - C) + y0;
-        //         y = A * (x - C1) * (x - C1) - B * (x - C1) + y0 +
-        //             abs((v0y * v0y) / (2.0f * g) - abs(y0 - touched_pos.y)) + 3;
-
-        //         if (!(touched_tile.x * Screen::tile_size <= x <= (touched_tile.x + 1) * Screen::tile_size &&
-        //               y >= (touched_tile.y + 1) * Screen::tile_size))
-        //             break;
-
-        //         dx = 2.0f * A * (x - C1) - B;
-        //         up = (isRight && dx < 0) || (!isRight && dx > 0);
-
-        //         Screen::SetDrawColor(Color::green(255));
-        //     }
-
-        //     SDL_RenderDrawPoint(Game::renderer, x, y);
-
-        //     current_tile = Int(Vector2(x, y) / Screen::tile_size);
-        //     if (TileMap[current_tile.y][current_tile.x].first == 4 && !up &&
-        //         abs(x - touched_pos.x) >= Screen::tile_size)
-        //         break;
-        //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
-        //     {
-        //         if (tiles.find(current_tile) == tiles.end())
-        //             tiles.insert(current_tile);
-        //     }
-        // }
-
-        // // ngang
-        // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
-        //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
-        //      isRight ? x += 4 : x -= 4)
-        // {
-        //     SDL_RenderDrawPoint(Game::renderer, x, y0);
-        //     Vector2 current_tile = Int(Vector2(x, y0) / Screen::tile_size);
-        //     if (TileMap[current_tile.y][current_tile.x].first == 4)
-        //         break;
-        //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
-        //     {
-        //         if (tiles.find(current_tile) == tiles.end())
-        //             tiles.insert(current_tile);
-        //     }
-        // }
-
-        // for (auto &tile : tiles)
-        // {
-        //     print(tile);
-        // }
+        Vector2 currentMouseTile = Int(mousePosition / Screen::tile_size);
+        if (InRange(currentMouseTile, Vector2(1), Vector2(Screen::map_size - 2)))
+        {
+            MapMaking::mouseTile = currentMouseTile;
+            currentMouseTile *= Screen::tile_size;
+            SDL_Rect mouseRect = {currentMouseTile.x, currentMouseTile.y, Screen::tile_size, Screen::tile_size};
+            switch (MapMaking::currentDrawingType)
+            {
+            case WIN:
+                Screen::SetDrawColor(Color::green(64));
+                break;
+            case SPAWN:
+                Screen::SetDrawColor(Color::blue(64));
+                break;
+            case WALL:
+                Screen::SetDrawColor(Color::white(64));
+                break;
+            case COIN:
+                Screen::SetDrawColor(Color::yellow(64));
+                break;
+            case DAMAGE:
+                Screen::SetDrawColor(Color::red(64));
+                break;
+            case EMPTY:
+                Screen::SetDrawColor(Color::black(128));
+                break;
+            default:
+                break;
+            }
+            SDL_RenderFillRect(Game::renderer, &mouseRect);
+        }
+        else
+        {
+            MapMaking::mouseTile = Vector2(-1);
+        }
     }
+
+    if (mouseLeft)
+    {
+        int mx = MapMaking::mouseTile.x;
+        int my = MapMaking::mouseTile.y;
+        float wait = 0;
+        int &type = MapMaking::currentDrawingType;
+        if (type)
+        {
+            if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first == EMPTY)
+            {
+                if (type == SPAWN && !MapMaking::drawSpawn)
+                {
+                    TileMap[my][mx].first = type;
+                    CreateATile(my, mx, wait, 0);
+                    MapMaking::drawSpawn = true;
+                }
+                else if (type == WIN && !MapMaking::drawWin)
+                {
+                    TileMap[my][mx].first = type;
+                    CreateATile(my, mx, wait, 0);
+                    MapMaking::drawWin = true;
+                }
+                else if (type != SPAWN && type != WIN)
+                {
+                    TileMap[my][mx].first = type;
+                    CreateATile(my, mx, wait, 0);
+                }
+            }
+        }
+        else
+        {
+            if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first != EMPTY)
+            {
+                if (TileMap[my][mx].first == SPAWN)
+                    MapMaking::drawSpawn = false;
+                else if (TileMap[my][mx].first == WIN)
+                    MapMaking::drawWin = false;
+                DeleteATile(my, mx, wait, 0);
+            }
+        }
+    }
+
+    // bool isRight = false;
+    // bool up_touched = false;
+    // Vector2 touched_pos(-1, -1);
+    // Vector2 touched_tile(-1, -1);
+    // std::set<Vector2> tiles;
+
+    // Screen::SetDrawColor(Color::white(255));
+
+    // float v0x = Game::Properties["player_move_speed"].f;
+    // float v0y = Game::Properties["player_jump_speed"].f;
+    // float g = Game::Properties["gravity"].f;
+
+    // float A = g / (2.0f * v0x * v0x);
+    // float B = v0y / v0x;
+
+    // float x0 = mousePosition.x;
+    // float y0 = mousePosition.y;
+    // float x, y;
+
+    // // nem xien
+    // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
+    //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
+    //      isRight ? x++ : x--)
+    // {
+    //     float C = x0 - (isRight ? 0 : (2.0f * v0x * v0y) / g);
+    //     y = A * (x - C) * (x - C) - B * (x - C) + y0;
+
+    //     float dx = 2.0f * A * (x - C) - B;
+    //     bool up = (isRight && dx < 0) || (!isRight && dx > 0);
+
+    //     Vector2 current_tile = Int(Vector2(x, y) / Screen::tile_size);
+    //     if (!InRange(current_tile.y, 0, 15))
+    //         break;
+    //     if (up && TileMap[current_tile.y][current_tile.x].first == WALL && !up_touched)
+    //     {
+    //         up_touched = true;
+    //         touched_pos.x = x;
+    //         touched_tile = current_tile;
+    //     }
+
+    //     if (up_touched)
+    //     {
+    //         float C1 = C + ((v0x * v0y) / g - abs(touched_pos.x - x0)) * (isRight ? -1 : 1);
+    //         touched_pos.y = A * (touched_pos.x - C) * (touched_pos.x - C) - B * (touched_pos.x - C) + y0;
+    //         y = A * (x - C1) * (x - C1) - B * (x - C1) + y0 +
+    //             abs((v0y * v0y) / (2.0f * g) - abs(y0 - touched_pos.y)) + 3;
+
+    //         if (!(touched_tile.x * Screen::tile_size <= x <= (touched_tile.x + 1) * Screen::tile_size &&
+    //               y >= (touched_tile.y + 1) * Screen::tile_size))
+    //             break;
+
+    //         dx = 2.0f * A * (x - C1) - B;
+    //         up = (isRight && dx < 0) || (!isRight && dx > 0);
+
+    //         Screen::SetDrawColor(Color::green(255));
+    //     }
+
+    //     SDL_RenderDrawPoint(Game::renderer, x, y);
+
+    //     current_tile = Int(Vector2(x, y) / Screen::tile_size);
+    //     if (TileMap[current_tile.y][current_tile.x].first == 4 && !up &&
+    //         abs(x - touched_pos.x) >= Screen::tile_size)
+    //         break;
+    //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
+    //     {
+    //         if (tiles.find(current_tile) == tiles.end())
+    //             tiles.insert(current_tile);
+    //     }
+    // }
+
+    // // ngang
+    // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
+    //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
+    //      isRight ? x += 4 : x -= 4)
+    // {
+    //     SDL_RenderDrawPoint(Game::renderer, x, y0);
+    //     Vector2 current_tile = Int(Vector2(x, y0) / Screen::tile_size);
+    //     if (TileMap[current_tile.y][current_tile.x].first == 4)
+    //         break;
+    //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
+    //     {
+    //         if (tiles.find(current_tile) == tiles.end())
+    //             tiles.insert(current_tile);
+    //     }
+    // }
+
+    // for (auto &tile : tiles)
+    // {
+    //     print(tile);
+    // }
 }
 
-void RandomMap::Random()
+void MapMaking::Random()
 {
     ((Button *)UIs["random"])->enabled = false;
     MapTile::DeleteTiles();
     LinkedFunction *lf = new LinkedFunction(
         []() {
+            MapMaking::drawSpawn = MapMaking::drawWin = false;
             bool valid = false;
             while (!valid)
             {
@@ -367,7 +459,7 @@ void RandomMap::Random()
     lf->Execute();
 }
 
-void RandomMap::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit)
+void MapMaking::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit)
 {
     visit[i][j] = true;
     for (int u = -1; u <= 1; u++)
@@ -386,7 +478,7 @@ void RandomMap::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit
     }
 }
 
-bool RandomMap::Validation(int ei, int ej)
+bool MapMaking::Validation(int ei, int ej)
 {
     std::vector<std::vector<bool>> visit(16, std::vector<bool>(16, false));
     EmptyToEmpty(ei, ej, visit);
@@ -407,25 +499,31 @@ bool RandomMap::Validation(int ei, int ej)
 void MapHUD()
 {
     Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    Button *clear = new Button("clear", "Clear", Vector2(Screen::tile_size * 2, 0), MapTile::DeleteTiles, 25);
+    Button *clear = new Button(
+        "clear", "Clear", Vector2(Screen::tile_size * 2, 0),
+        []() {
+            MapTile::DeleteTiles();
+            MapMaking::drawSpawn = MapMaking::drawWin = false;
+        },
+        25);
     Button *save = new Button(
         "save", "Save", Vector2(Screen::tile_size * 2, 0), []() {}, 25);
-    Button *random = new Button("random", "Random", Vector2(Screen::tile_size * 2, 0), RandomMap::Random, 25);
+    Button *random = new Button("random", "Random", Vector2(Screen::tile_size * 2, 0), MapMaking::Random, 25);
     hcv1->AddComponents({"clear", "save", "random"});
 
     Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                               Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    Button *drawEmpty = new Button(
-        "empty", "Empty", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = EMPTY; }, 25);
+    Button *erase = new Button(
+        "erase", "Erase", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = EMPTY; }, 25);
     Button *drawWall = new Button(
-        "wall", "Wall", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = WALL; }, 25);
+        "wall", "Wall", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = WALL; }, 25);
     Button *drawCoin = new Button(
-        "coin", "Coin", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = COIN; }, 25);
+        "coin", "Coin", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = COIN; }, 25);
     Button *drawSpawn = new Button(
-        "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = SPAWN; }, 25);
+        "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = SPAWN; }, 25);
     Button *drawWin = new Button(
-        "win", "Win", Vector2(Screen::tile_size * 2, 0), []() { CurrentDrawingType = WIN; }, 25);
-    hcv2->AddComponents({"empty", "wall", "coin", "spawn", "win"});
+        "win", "Win", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = WIN; }, 25);
+    hcv2->AddComponents({"erase", "wall", "coin", "spawn", "win"});
 }
 
 Background::Background(std::string name, float scale)

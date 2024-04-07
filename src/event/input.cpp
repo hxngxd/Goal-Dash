@@ -4,6 +4,7 @@
 #include "ui.h"
 
 Vector2 mousePosition = Vector2();
+bool mouseLeft = false;
 
 void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
 {
@@ -71,6 +72,7 @@ void EventHandler::MouseInputHandler()
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
+            mouseLeft = true;
             for (auto &ui : UIs)
             {
                 if (!ui.second)
@@ -87,6 +89,7 @@ void EventHandler::MouseInputHandler()
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
+            mouseLeft = false;
             for (auto &ui : UIs)
             {
                 if (!ui.second)
