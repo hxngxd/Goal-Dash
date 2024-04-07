@@ -7,10 +7,6 @@ TTF_Font *myFont = nullptr;
 
 //----------------------------------------
 
-RandomGenerator<Uint32> RandUint32;
-
-//----------------------------------------
-
 std::string FormatMS(int ms)
 {
     float fsecond = (float)ms / 1000.0f;

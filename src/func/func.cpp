@@ -54,9 +54,9 @@ void LinkedFunction::NextFunction(FunctionNode *nextFunc)
 
 void LinkedFunction::Execute()
 {
-    id = RandUint32.rand();
+    id = IntegralRandom<Uint32>(0, UINT32_MAX);
     while (Functions.find(id) != Functions.end() || !id)
-        id = RandUint32.rand();
+        id = IntegralRandom<Uint32>(0, UINT32_MAX);
     Functions[id] = this;
 }
 

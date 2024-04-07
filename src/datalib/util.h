@@ -67,26 +67,21 @@ template <typename T> bool InRange(T value, T min_value, T max_value)
 
 //----------------------------------------
 
-template <typename T> class RandomGenerator
+template <typename T> T IntegralRandom(T min, T max)
 {
-  private:
-    std::mt19937 gen;
-    std::uniform_int_distribution<> distrib;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<T> dis(min, max);
+    return dis(gen);
+}
 
-  public:
-    RandomGenerator()
-    {
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-        gen = std::mt19937(seed);
-        distrib = std::uniform_int_distribution<>(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-    }
-    T rand()
-    {
-        return distrib(gen);
-    }
-};
-
-extern RandomGenerator<Uint32> RandUint32;
+template <typename T> T RealRandom(T min, T max)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<T> dis(min, max);
+    return dis(gen);
+}
 
 //----------------------------------------
 
