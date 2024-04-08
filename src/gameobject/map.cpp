@@ -268,6 +268,70 @@ void MapTile::Update()
         }
     }
 
+    bool isRight = false;
+    bool touched = false;
+    Vector2 touched_pos(-1), touched_tile(-1);
+
+    Vector2 v0(Game::Properties["player_move_speed"].f, Game::Properties["player_jump_speed"].f);
+    float g = Game::Properties["gravity"].f;
+
+    Vector2 p0 = mousePosition;
+    Vector2 p, pt;
+
+    float A = g / (2.0f * v0.x * v0.x);
+    float B = v0.y / v0.x;
+    float R = (2.0f * v0.x * v0.y) / g;
+    float C = p0.x - (isRight ? 0 : R);
+    float D;
+    float h = (v0.y * v0.y) / (2.0f * g);
+
+    float low = Screen::tile_size;
+    float high = Game::Properties["resolution"].i - Screen::tile_size;
+
+    Screen::SetDrawColor(Color::green(255));
+    for (p.x = p0.x; isRight ? p.x <= high : p.x >= low; isRight ? p.x++ : p.x--)
+    {
+        if (!touched)
+        {
+            p.y = A * (p.x - C) * (p.x - C) - B * (p.x - C) + p0.y;
+            D = 2.0f * A * (p.x - C) - B;
+        }
+        else
+        {
+            float dx = R / 2.0f - abs(pt.x - p0.x);
+            float dy = h - abs(p0.y - pt.y);
+            float C1 = C + (dx * (isRight ? -1 : 1));
+            p.y = A * (p.x - C1) * (p.x - C1) - B * (p.x - C1) + p0.y + dy;
+            D = 2.0f * A * (p.x - C1) - B + 0.5f;
+        }
+
+        bool up = (isRight == (D < 0));
+
+        Vector2 current = Int(Vector2(p.x, p.y) / Screen::tile_size);
+        if (!InRange(current.y, 0, Screen::map_size - 1))
+            break;
+        int &current_type = TileMap[current.y][current.x].first;
+        if (current_type == WALL)
+        {
+            if (up && !touched)
+            {
+                touched = true;
+                pt = p;
+                Vector2 tmp_p = current * Screen::tile_size;
+                bool a = tmp_p.y + Screen::tile_size * 0.5f <= pt.y && pt.y <= tmp_p.y + Screen::tile_size;
+                float tmp_dy = tmp_p.y + Screen::tile_size - pt.y;
+                bool b = tmp_p.x + tmp_dy <= pt.x && pt.x <= tmp_p.x + Screen::tile_size - tmp_dy;
+                if (!a || !b)
+                    break;
+            }
+            if (!up)
+            {
+                break;
+            }
+        }
+        SDL_RenderDrawPoint(Game::renderer, p.x, p.y);
+    }
+
     if (mouseLeft)
     {
         int mx = MapMaking::mouseTile.x;
@@ -309,97 +373,6 @@ void MapTile::Update()
             }
         }
     }
-
-    // bool isRight = false;
-    // bool up_touched = false;
-    // Vector2 touched_pos(-1, -1);
-    // Vector2 touched_tile(-1, -1);
-    // std::set<Vector2> tiles;
-
-    // Screen::SetDrawColor(Color::white(255));
-
-    // float v0x = Game::Properties["player_move_speed"].f;
-    // float v0y = Game::Properties["player_jump_speed"].f;
-    // float g = Game::Properties["gravity"].f;
-
-    // float A = g / (2.0f * v0x * v0x);
-    // float B = v0y / v0x;
-
-    // float x0 = mousePosition.x;
-    // float y0 = mousePosition.y;
-    // float x, y;
-
-    // // nem xien
-    // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
-    //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
-    //      isRight ? x++ : x--)
-    // {
-    //     float C = x0 - (isRight ? 0 : (2.0f * v0x * v0y) / g);
-    //     y = A * (x - C) * (x - C) - B * (x - C) + y0;
-
-    //     float dx = 2.0f * A * (x - C) - B;
-    //     bool up = (isRight && dx < 0) || (!isRight && dx > 0);
-
-    //     Vector2 current_tile = Int(Vector2(x, y) / Screen::tile_size);
-    //     if (!InRange(current_tile.y, 0, 15))
-    //         break;
-    //     if (up && TileMap[current_tile.y][current_tile.x].first == WALL && !up_touched)
-    //     {
-    //         up_touched = true;
-    //         touched_pos.x = x;
-    //         touched_tile = current_tile;
-    //     }
-
-    //     if (up_touched)
-    //     {
-    //         float C1 = C + ((v0x * v0y) / g - abs(touched_pos.x - x0)) * (isRight ? -1 : 1);
-    //         touched_pos.y = A * (touched_pos.x - C) * (touched_pos.x - C) - B * (touched_pos.x - C) + y0;
-    //         y = A * (x - C1) * (x - C1) - B * (x - C1) + y0 +
-    //             abs((v0y * v0y) / (2.0f * g) - abs(y0 - touched_pos.y)) + 3;
-
-    //         if (!(touched_tile.x * Screen::tile_size <= x <= (touched_tile.x + 1) * Screen::tile_size &&
-    //               y >= (touched_tile.y + 1) * Screen::tile_size))
-    //             break;
-
-    //         dx = 2.0f * A * (x - C1) - B;
-    //         up = (isRight && dx < 0) || (!isRight && dx > 0);
-
-    //         Screen::SetDrawColor(Color::green(255));
-    //     }
-
-    //     SDL_RenderDrawPoint(Game::renderer, x, y);
-
-    //     current_tile = Int(Vector2(x, y) / Screen::tile_size);
-    //     if (TileMap[current_tile.y][current_tile.x].first == 4 && !up &&
-    //         abs(x - touched_pos.x) >= Screen::tile_size)
-    //         break;
-    //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
-    //     {
-    //         if (tiles.find(current_tile) == tiles.end())
-    //             tiles.insert(current_tile);
-    //     }
-    // }
-
-    // // ngang
-    // for (x = x0; (isRight ? x < Game::Properties["resolution"].i : x > 0) &&
-    //              InRange(Int(Vector2(x0, y0)), Vector2(), Vector2(Game::Properties["resolution"].i - 1));
-    //      isRight ? x += 4 : x -= 4)
-    // {
-    //     SDL_RenderDrawPoint(Game::renderer, x, y0);
-    //     Vector2 current_tile = Int(Vector2(x, y0) / Screen::tile_size);
-    //     if (TileMap[current_tile.y][current_tile.x].first == 4)
-    //         break;
-    //     if (TileMap[current_tile.y][current_tile.x].first == COIN)
-    //     {
-    //         if (tiles.find(current_tile) == tiles.end())
-    //             tiles.insert(current_tile);
-    //     }
-    // }
-
-    // for (auto &tile : tiles)
-    // {
-    //     print(tile);
-    // }
 }
 
 void MapMaking::Random()
@@ -409,6 +382,9 @@ void MapMaking::Random()
     LinkedFunction *lf = new LinkedFunction(
         []() {
             MapMaking::drawSpawn = MapMaking::drawWin = false;
+            std::vector<std::vector<bool>> visitable(Screen::map_size, std::vector<bool>(Screen::map_size, false));
+
+            // Generate walls
             bool valid = false;
             while (!valid)
             {
@@ -436,6 +412,33 @@ void MapMaking::Random()
                 }
                 valid = Validation(ei, ej);
             }
+
+            // Generate spawn
+            int spawn_i = IntegralRandom<int>(1, 14);
+            int spawn_j = IntegralRandom<int>(1, 14);
+            while (TileMap[spawn_i][spawn_j].first != EMPTY)
+            {
+                spawn_i = IntegralRandom<int>(1, 14);
+                spawn_j = IntegralRandom<int>(1, 14);
+            }
+            TileMap[spawn_i][spawn_j].first = SPAWN;
+            while (TileMap[spawn_i][spawn_j].first != WALL && spawn_i < Screen::map_size - 1)
+            {
+                visitable[spawn_i][spawn_j] = true;
+                spawn_i++;
+            }
+
+            // Generate coins
+
+            for (int i = 0; i < 16; i++)
+            {
+                for (int j = 0; j < 16; j++)
+                {
+                    std::cout << visitable[i][j] << " ";
+                }
+                print("");
+            }
+
             float wait = 0.1f;
             for (int i = 1; i < Screen::map_size - 1; i++)
             {
@@ -470,7 +473,7 @@ void MapMaking::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit
                 continue;
             int next_i = i + u;
             int next_j = j + v;
-            if (!InRange(next_i, 1, 14) || !InRange(next_j, 1, 14))
+            if (!InRange(next_i, 1, Screen::map_size - 2) || !InRange(next_j, 1, Screen::map_size - 2))
                 continue;
             if (!visit[next_i][next_j] && TileMap[next_i][next_j].first == EMPTY)
                 EmptyToEmpty(next_i, next_j, visit);
@@ -480,7 +483,7 @@ void MapMaking::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit
 
 bool MapMaking::Validation(int ei, int ej)
 {
-    std::vector<std::vector<bool>> visit(16, std::vector<bool>(16, false));
+    std::vector<std::vector<bool>> visit(Screen::map_size, std::vector<bool>(Screen::map_size, false));
     EmptyToEmpty(ei, ej, visit);
     int countEmpty = 0;
     for (int i = 1; i < Screen::map_size - 1; i++)
