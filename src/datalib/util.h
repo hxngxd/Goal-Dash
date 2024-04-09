@@ -83,6 +83,8 @@ template <typename T> T RealRandom(T min, T max)
     return dis(gen);
 }
 
+bool RandomChoice(int possibility);
+
 //----------------------------------------
 
 std::string FormatMS(int ms);

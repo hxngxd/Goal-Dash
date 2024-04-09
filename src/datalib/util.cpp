@@ -7,6 +7,14 @@ TTF_Font *myFont = nullptr;
 
 //----------------------------------------
 
+bool RandomChoice(int possibility)
+{
+    int n = IntegralRandom<int>(0, 100);
+    return n <= possibility;
+}
+
+//----------------------------------------
+
 std::string FormatMS(int ms)
 {
     float fsecond = (float)ms / 1000.0f;

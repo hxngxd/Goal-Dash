@@ -402,15 +402,27 @@ void MapMaking::Random()
                 }
             }
 
-            for (int i = 0; i < 16; i++)
+            int CoinPossibility = 10;
+            for (int i = 1; i < Screen::map_size - 1; i++)
             {
-                for (int j = 0; j < 16; j++)
+                for (int j = 1; j < Screen::map_size - 1; j++)
                 {
-                    std::cout << visitable[i][j] << " ";
+                    if (visitable[i][j] && RandomChoice(CoinPossibility))
+                    {
+                        TileMap[i][j].first = COIN;
+                    }
                 }
-                print("");
             }
-            print("");
+
+            // Generate win
+            int win_i = IntegralRandom<int>(1, 14);
+            int win_j = IntegralRandom<int>(1, 14);
+            while (TileMap[win_i][win_j].first != EMPTY || !visitable[win_i][win_j])
+            {
+                win_i = IntegralRandom<int>(1, 14);
+                win_j = IntegralRandom<int>(1, 14);
+            }
+            TileMap[win_i][win_j].first = WIN;
 
             float wait = 0.1f;
             for (int i = 1; i < Screen::map_size - 1; i++)
