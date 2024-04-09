@@ -8,8 +8,6 @@
 #include <set>
 #include <string>
 
-std::vector<Vector2> trace;
-
 Player::Player(Vector2 position)
 {
     this->name = "";
@@ -32,24 +30,6 @@ Player::~Player()
 
 void Player::Update()
 {
-
-    // if (trace.empty() || position != trace.back())
-    // {
-    //     trace.push_back(position);
-    // }
-    // if (trace.size() > 300)
-    // {
-    //     trace.erase(trace.begin());
-    // }
-    // if (trace.size() > 2)
-    // {
-    //     for (int i = 1; i < trace.size(); i++)
-    //     {
-    //         Screen::SetDrawColor(Color::white(255));
-    //         SDL_RenderDrawLine(Game::renderer, trace[i - 1].x, trace[i - 1].y, trace[i].x, trace[i].y);
-    //     }
-    // }
-
     Animation();
 
     MoveRightLeft();

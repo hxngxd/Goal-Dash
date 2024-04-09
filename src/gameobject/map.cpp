@@ -11,7 +11,7 @@
 std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 std::vector<Background> Backgrounds;
 int MapTile::nEmptyTiles = 0;
-
+int MapTile::currentMap = 1;
 Vector2 MapTile::SpawnTile;
 Vector2 MapTile::WinTile;
 
@@ -19,7 +19,7 @@ bool MapTile::isMakingMap = false;
 
 Vector2 MapMaking::mouseTile(-1);
 int MapMaking::currentDrawingType = EMPTY;
-bool MapMaking::drawSpawn = false, MapMaking::drawWin = false;
+int numofSpawn = 0, numofWin = 0;
 
 MapTile::MapTile(Vector2 position, Vector2 size)
 {
@@ -64,43 +64,42 @@ void MapTile::CreateBorder()
     }
 }
 
-void MapTile::CreateTiles(int map)
+void MapTile::CreateTiles(bool create_win)
 {
     int mp_size = Screen::map_size;
-    if (map == -1)
-    {
-        for (int i = 1; i < mp_size - 1; i++)
-        {
-            for (int j = 1; j < mp_size - 1; j++)
-            {
-                TileMap[i][j].first = 0;
-            }
-        }
-    }
-    else
-    {
-        std::ifstream in;
-        in.open("map/" + std::to_string(map) + ".map");
-        nEmptyTiles = 0;
+    std::ifstream in;
+    in.open("map/" + std::to_string(currentMap) + ".map");
 
-        // temporary code
-        if (!in.good())
-        {
-            game->Stop();
-            return;
-        }
-
-        for (int i = 1; i < mp_size - 1; i++)
-        {
-            for (int j = 1; j < mp_size - 1; j++)
-            {
-                in >> TileMap[i][j].first;
-                if (TileMap[i][j].first)
-                    nEmptyTiles++;
-            }
-        }
+    int k = 0;
+    while (!in.good())
+    {
         in.close();
+        currentMap++;
+        in.open("map/" + std::to_string(currentMap) + ".map");
+        if (++k == 100)
+        {
+            currentMap = 1;
+            in.open("map/" + std::to_string(currentMap) + ".map");
+            break;
+        }
     }
+
+    nEmptyTiles = 0;
+    for (int i = 1; i < mp_size - 1; i++)
+    {
+        for (int j = 1; j < mp_size - 1; j++)
+        {
+            in >> TileMap[i][j].first;
+            if (TileMap[i][j].first)
+                nEmptyTiles++;
+        }
+    }
+    in.close();
+
+    if (UIs["map"])
+        UIs["map"]->label = "Map: " + std::to_string(currentMap);
+
+    currentMap++;
 
     float wait = 0.1;
     for (int i = 1; i < mp_size - 1; i++)
@@ -115,14 +114,17 @@ void MapTile::CreateTiles(int map)
             else if (TileMap[i][j].first == WIN)
             {
                 WinTile = Vector2(i, j);
-                continue;
+                if (!create_win)
+                    continue;
             }
             CreateATile(i, j, wait);
         }
     }
 
     CreateATile(SpawnTile.x, SpawnTile.y, wait);
-    TileMap[WinTile.x][WinTile.y].first = 0;
+    if (!create_win)
+        TileMap[WinTile.x][WinTile.y].first = 0;
+    numofSpawn = numofWin = 1;
 }
 
 void MapTile::CreateATile(int i, int j, float &wait, bool animation)
@@ -227,7 +229,6 @@ void MapTile::Update()
             case WALL:
                 Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
                 SDL_RenderDrawRect(Game::renderer, &rect);
-                // Animate(TileMap[i][j].second, "wall");
                 break;
             case COIN:
                 Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
@@ -284,23 +285,24 @@ void MapTile::Update()
             {
                 if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first == EMPTY)
                 {
-                    if (type == SPAWN && !MapMaking::drawSpawn)
+                    if (type == SPAWN && !numofSpawn)
                     {
                         TileMap[my][mx].first = type;
                         CreateATile(my, mx, wait, 0);
-                        MapMaking::drawSpawn = true;
+                        numofSpawn++;
                     }
-                    else if (type == WIN && !MapMaking::drawWin)
+                    else if (type == WIN && !numofWin)
                     {
                         TileMap[my][mx].first = type;
                         CreateATile(my, mx, wait, 0);
-                        MapMaking::drawWin = true;
+                        numofWin++;
                     }
                     else if (type != SPAWN && type != WIN)
                     {
                         TileMap[my][mx].first = type;
                         CreateATile(my, mx, wait, 0);
                     }
+                    MapTile::nEmptyTiles++;
                 }
             }
             else
@@ -308,26 +310,32 @@ void MapTile::Update()
                 if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first != EMPTY)
                 {
                     if (TileMap[my][mx].first == SPAWN)
-                        MapMaking::drawSpawn = false;
+                        numofSpawn--;
                     else if (TileMap[my][mx].first == WIN)
-                        MapMaking::drawWin = false;
+                        numofWin--;
                     DeleteATile(my, mx, wait, 0);
+                    MapTile::nEmptyTiles--;
                 }
             }
         }
     }
 }
 
-std::vector<std::string> btns = {"clear", "save", "random", "erase", "wall", "coin", "spawn", "win"};
+std::vector<std::string> btns = {"clear", "save", "random", "prev", "next", "erase", "wall", "coin", "spawn", "win"};
 void MapMaking::Random()
 {
+    print("generating map...");
     for (auto &btn : btns)
         ((Button *)UIs[btn])->enabled = false;
+
+    numofSpawn = numofWin = 0;
+
+    if (UIs["map"])
+        UIs["map"]->label = "Map: 0";
 
     MapTile::DeleteTiles();
     LinkedFunction *lf = new LinkedFunction(
         []() {
-            MapMaking::drawSpawn = MapMaking::drawWin = false;
             std::vector<std::vector<bool>> visitable(Screen::map_size, std::vector<bool>(Screen::map_size, false));
 
             // Generate walls
@@ -379,6 +387,7 @@ void MapMaking::Random()
             }
             TileMap[spawn_i][spawn_j].first = SPAWN;
             DownVertical(spawn_i, spawn_j, visitable);
+            MapTile::nEmptyTiles++;
 
             while (TileMap[spawn_i][spawn_j].first != WALL && spawn_i < Screen::map_size - 1)
                 visitable[spawn_i++][spawn_j] = true;
@@ -421,9 +430,10 @@ void MapMaking::Random()
             {
                 for (int j = 1; j < Screen::map_size - 1; j++)
                 {
-                    if (visitable[i][j] && RandomChoice(CoinPossibility))
+                    if (visitable[i][j] && TileMap[i][j].first == EMPTY && RandomChoice(CoinPossibility))
                     {
                         TileMap[i][j].first = COIN;
+                        MapTile::nEmptyTiles++;
                     }
                 }
             }
@@ -437,6 +447,9 @@ void MapMaking::Random()
                 win_j = IntegralRandom<int>(1, 14);
             }
             TileMap[win_i][win_j].first = WIN;
+            MapTile::nEmptyTiles++;
+
+            numofSpawn = numofWin = 1;
 
             float wait = 0.1f;
             for (int i = 1; i < Screen::map_size - 1; i++)
@@ -451,6 +464,7 @@ void MapMaking::Random()
                 []() {
                     for (auto &btn : btns)
                         ((Button *)UIs[btn])->enabled = true;
+                    print("done");
                     return 1;
                 },
                 MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 250);
@@ -593,30 +607,133 @@ bool MapMaking::Validation(int ei, int ej)
     return true;
 }
 
+void MapMaking::Save()
+{
+    if (!MapTile::nEmptyTiles)
+    {
+        print("nothing to save");
+        return;
+    }
+
+    if (numofSpawn * numofWin != 1)
+    {
+        print("failed to save map");
+        return;
+    }
+
+    int map = 1;
+    std::ifstream in;
+    in.open("map/" + std::to_string(map) + ".map");
+
+    while (in.good())
+    {
+        in.close();
+        map++;
+        in.open("map/" + std::to_string(map) + ".map");
+    }
+    in.close();
+
+    std::ofstream out;
+    std::string filename = "map/" + std::to_string(map) + ".map";
+    out.open(filename);
+
+    if (!out.good())
+    {
+        print("failed to save map");
+        return;
+    }
+
+    for (int i = 1; i < Screen::map_size - 1; i++)
+    {
+        for (int j = 1; j < Screen::map_size - 1; j++)
+        {
+            out << TileMap[i][j].first << " ";
+        }
+        if (i != Screen::map_size - 2)
+            out << "\n";
+    }
+    out.close();
+
+    if (UIs["map"])
+        UIs["map"]->label = "Map: " + std::to_string(map);
+
+    MapTile::currentMap = map;
+
+    print("saved to", filename);
+}
+
+void MapMaking::ChangeMap()
+{
+    print("changing map...");
+    for (auto &btn : btns)
+        ((Button *)UIs[btn])->enabled = false;
+
+    MapTile::DeleteTiles();
+    LinkedFunction *lf = new LinkedFunction(
+        []() {
+            MapTile::CreateTiles(true);
+            MapTile::currentMap--;
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    for (auto &btn : btns)
+                        ((Button *)UIs[btn])->enabled = true;
+                    print("done");
+                    return 1;
+                },
+                MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 250);
+            lf->Execute();
+
+            return 1;
+        },
+        MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 750);
+    lf->Execute();
+}
+
 void MapHUD()
 {
     Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
     Button *clear = new Button(
         "clear", "Clear", Vector2(Screen::tile_size * 2, 0),
         []() {
+            if (UIs["map"])
+                UIs["map"]->label = "Map: 0";
+            MapTile::currentMap = 0;
+            print("clearing map...");
             for (auto &btn : btns)
                 ((Button *)UIs[btn])->enabled = false;
             MapTile::DeleteTiles();
             LinkedFunction *lf = new LinkedFunction(
                 []() {
-                    MapMaking::drawSpawn = MapMaking::drawWin = false;
                     for (auto &btn : btns)
                         ((Button *)UIs[btn])->enabled = true;
+                    numofSpawn = numofWin = MapTile::nEmptyTiles = 0;
+                    print("done");
                     return 1;
                 },
                 MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 250);
             lf->Execute();
         },
         25);
-    Button *save = new Button(
-        "save", "Save", Vector2(Screen::tile_size * 2, 0), []() {}, 25);
+    Button *save = new Button("save", "Save", Vector2(Screen::tile_size * 2, 0), MapMaking::Save, 25);
     Button *random = new Button("random", "Random", Vector2(Screen::tile_size * 2, 0), MapMaking::Random, 25);
-    hcv1->AddComponents({"clear", "save", "random"});
+    Button *prevmap = new Button(
+        "prev", "<", Vector2(Screen::tile_size, 0),
+        []() {
+            if (MapTile::currentMap <= 1)
+                return;
+            MapTile::currentMap--;
+            MapMaking::ChangeMap();
+        },
+        25);
+    Button *nextmap = new Button(
+        "next", ">", Vector2(Screen::tile_size, 0),
+        []() {
+            MapTile::currentMap++;
+            MapMaking::ChangeMap();
+        },
+        25);
+    Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
+    hcv1->AddComponents({"clear", "save", "random", "prev", "map", "next"});
 
     Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                               Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);

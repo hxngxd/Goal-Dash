@@ -111,6 +111,7 @@ bool Game::LoadConfig()
     Game::Properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
     Game::Properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
     Game::Properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
+    MapTile::currentMap = Game::Properties["starting_map"].i;
 
     //----------------------------------------
 

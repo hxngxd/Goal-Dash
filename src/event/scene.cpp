@@ -25,7 +25,7 @@ Scene::Scene()
             []() {
                 UI::DeleteUIs();
                 PlayerHUD();
-                Game::scene = new Scene(++Game::Properties["map"].i);
+                Game::scene = new Scene(true);
                 return 1;
             },
             250);
@@ -40,7 +40,9 @@ Scene::Scene()
                 UI::DeleteUIs();
                 MapHUD();
                 MapTile::isMakingMap = true;
-                Game::scene = new Scene(-1);
+                MapTile::currentMap = 1;
+                Game::scene = new Scene(false);
+                MapTile::currentMap--;
                 return 1;
             },
             250);
@@ -63,17 +65,16 @@ Scene::Scene()
     print("scene created");
 }
 
-Scene::Scene(int map)
+Scene::Scene(bool create_player)
 {
     print("creating new scene...");
     print("creating tiles...");
-    MapTile::CreateTiles(map);
-    if (UIs["map"])
-        UIs["map"]->label = "Map: " + std::to_string(map);
+    MapTile::CreateTiles(!create_player);
 
-    if (map == -1)
+    if (!create_player)
+    {
         return;
-
+    }
     LinkedFunction *lf = new LinkedFunction(
         std::bind([]() {
             print("tiles created");
@@ -149,7 +150,7 @@ void Scene::DeleteScene()
             },
             (MapTile::nEmptyTiles + 4) * Game::Properties["map_animation_delay"].f);
         lf->NextFunction([]() {
-            Game::scene = new Scene(++Game::Properties["map"].i);
+            Game::scene = new Scene(true);
             return 1;
         });
         lf->Execute();

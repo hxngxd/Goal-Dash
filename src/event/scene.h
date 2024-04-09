@@ -4,6 +4,6 @@ class Scene
 {
   public:
     Scene();
-    Scene(int map);
+    Scene(bool create_player);
     void DeleteScene();
 };

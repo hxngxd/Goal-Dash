@@ -43,11 +43,12 @@ class MapTile : public GameObject
     static Vector2 WinTile;
     static bool isMakingMap;
     static int nEmptyTiles;
+    static int currentMap;
 
     MapTile(Vector2 position, Vector2 size);
 
     static void CreateBorder();
-    static void CreateTiles(int map);
+    static void CreateTiles(bool create_win);
     static void CreateATile(int i, int j, float &wait, bool animation = true);
     static void DeleteTiles();
     static void DeleteATile(int i, int j, float &wait, bool animation = true);
@@ -58,7 +59,6 @@ class MapMaking
 {
   public:
     static Vector2 mouseTile;
-    static bool drawSpawn, drawWin;
     static int currentDrawingType;
     static void Random();
     static bool Validation(int ei, int ej);
@@ -66,6 +66,8 @@ class MapMaking
     static void Trajectory(int i, int j, float u, float v, bool isRight, std::vector<std::vector<bool>> &visitable);
     static void Horizontal(int i, int j, bool isRight, std::vector<std::vector<bool>> &visitable);
     static void DownVertical(int i, int j, std::vector<std::vector<bool>> &visitable);
+    static void Save();
+    static void ChangeMap();
 };
 
 extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
