@@ -5,6 +5,7 @@
 #include "../game.h"
 #include "gameobject.h"
 #include <fstream>
+#include <queue>
 #include <set>
 
 std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
@@ -344,6 +345,16 @@ void MapMaking::Random()
                 valid = Validation(ei, ej);
             }
 
+            for (int j = 1; j < Screen::map_size - 1; j++)
+            {
+                int r1 = Screen::map_size - 2;
+                int r2 = r1 - 1;
+                if (TileMap[r1][j].first != WALL)
+                    visitable[r1][j] = true;
+                if (TileMap[r2][j].first != WALL)
+                    visitable[r2][j] = true;
+            }
+
             // Generate spawn
             int spawn_i = IntegralRandom<int>(1, 14);
             int spawn_j = IntegralRandom<int>(1, 14);
@@ -353,10 +364,10 @@ void MapMaking::Random()
                 spawn_j = IntegralRandom<int>(1, 14);
             }
             TileMap[spawn_i][spawn_j].first = SPAWN;
+            DownVertical(spawn_i, spawn_j, visitable);
+
             while (TileMap[spawn_i][spawn_j].first != WALL && spawn_i < Screen::map_size - 1)
-            {
                 visitable[spawn_i++][spawn_j] = true;
-            }
             spawn_i--;
 
             // Generate coins
@@ -400,6 +411,7 @@ void MapMaking::Random()
                 print("");
             }
             print("");
+
             float wait = 0.1f;
             for (int i = 1; i < Screen::map_size - 1; i++)
             {
@@ -470,59 +482,51 @@ void MapMaking::Trajectory(int i, int j, float u, float v, bool isRight, std::ve
         int &current_type = TileMap[current.y][current.x].first;
         if (current_type == WALL)
         {
+            Vector2 tmp_p = current * Screen::tile_size;
             if (up && !touched)
             {
                 touched = true;
                 pt = p;
-                Vector2 tmp_p = current * Screen::tile_size;
                 bool a = tmp_p.y + Screen::tile_size * 0.5f <= pt.y && pt.y <= tmp_p.y + Screen::tile_size;
                 float tmp_dy = tmp_p.y + Screen::tile_size - pt.y;
                 bool b = tmp_p.x + tmp_dy <= pt.x && pt.x <= tmp_p.x + Screen::tile_size - tmp_dy;
                 if (!a || !b)
-                    break;
+                    return;
             }
             if (!up)
-                break;
+                return;
         }
-        else if (current_type == EMPTY)
+        else
             visitable[current.y][current.x] = true;
     }
 }
 
 void MapMaking::Horizontal(int i, int j, bool isRight, std::vector<std::vector<bool>> &visitable)
 {
-    int low = 0;
-    int high = Screen::map_size - 1;
-
-    for (; isRight ? j <= high : j >= low; isRight ? j++ : j--)
+    while (TileMap[i][j].first != WALL && (isRight ? j < Screen::map_size : j >= 0))
     {
-        int &current_type = TileMap[i][j].first;
-        if (current_type == WALL)
+        visitable[i][j] = true;
+        if (TileMap[i + 1][j].first != WALL)
         {
+            DownVertical(i + 1, j, visitable);
             break;
         }
-        else if (current_type == EMPTY)
-        {
-            visitable[i][j] = true;
-            if (TileMap[i + 1][j].first == EMPTY)
-            {
-                DownVertical(i + 1, j, visitable);
-                break;
-            }
-        }
+        if (isRight)
+            j++;
+        else
+            j--;
     }
 }
 
 void MapMaking::DownVertical(int i, int j, std::vector<std::vector<bool>> &visitable)
 {
-    for (; i < Screen::map_size; i++)
+    while (TileMap[i][j].first != WALL && i < Screen::map_size)
     {
-        int &current_type = TileMap[i][j].first;
-        if (current_type == WALL)
-            break;
-        else if (current_type == EMPTY)
-            visitable[i][j] = true;
+        visitable[i][j] = true;
+        i++;
     }
+    Horizontal(i - 1, j, 0, visitable);
+    Horizontal(i - 1, j, 1, visitable);
 }
 
 void MapMaking::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit)
