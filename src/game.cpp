@@ -233,8 +233,6 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSprite("wall", "img/wall.png", 1, Vector2(160)))
         return 0;
-    if (!LoadSprite("damage", "img/damage.png", 1, Vector2(1024)))
-        return 0;
     if (!LoadSprite("healthbar", "img/healthbar.png", 5, Vector2(48, 7)))
         return 0;
 

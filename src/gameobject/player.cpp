@@ -23,7 +23,6 @@ Player::Player(Vector2 position)
     this->current_state = this->previous_state = IDLE;
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
-    memset(isDamaged, 0, sizeof(isDamaged));
 }
 
 Player::~Player()
@@ -95,14 +94,6 @@ void Player::Animation()
     Vector2 hbPos = centerPos - (hbSize / 2);
     hbPos.y -= size.y * 7 / 10;
     DrawSprite("healthbar", hbPos, hbSize, scale, (int)(4.0f - (float)Game::player_health / 25.0f));
-
-    if (!Game::Properties["immortal"].b)
-    {
-        if (isDamaged[1] || isDamaged[2])
-            Damaged(true);
-        else
-            Damaged(false);
-    }
 }
 
 void Player::MoveRightLeft()
@@ -239,7 +230,6 @@ void Player::Collision()
     Q.push(playerCenterTile);
 
     collide_down.first = collide_up.first = false;
-    isDamaged[0] = false;
 
     while (!Q.empty())
     {
@@ -254,7 +244,6 @@ void Player::Collision()
 
     collide_down.second = collide_down.first;
     collide_up.second = collide_up.first;
-    isDamaged[1] = isDamaged[0];
 }
 
 void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit,
@@ -270,7 +259,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
     if (InRange(nextTile, Vector2(), Vector2(15)) && visit.find(nextTile) == visit.end() && h <= maxDist)
     {
         int type = TileMap[nextTile.y][nextTile.x].first;
-        if (type & (WALL | DAMAGE))
+        if (type & WALL)
         {
             Vector2 d = nextCenter - playerCenter;
             float cos = d.x / h;
@@ -305,13 +294,6 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     Screen::SetDrawColor(Color::white(Game::Properties["ray_opacity"].i));
                 else
                     Screen::SetDrawColor(Color::red(Game::Properties["ray_opacity"].i));
-            }
-
-            if (!Game::Properties["immortal"].b && type & DAMAGE)
-            {
-                if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
-                                      Vector2(Screen::tile_size), 3))
-                    isDamaged[0] = true;
             }
         }
         else if (type & COIN)
@@ -442,11 +424,11 @@ void Player::Jump()
                 Game::player_health -= velocity.d / 2.5;
                 UIs["health"]->label = "Health: " + std::to_string(Game::player_health);
 
-                isDamaged[2] = true;
+                Damaged(true);
                 LinkedFunction *lf = new LinkedFunction(std::bind(
                                                             [](Player *player) {
                                                                 if (player)
-                                                                    player->isDamaged[2] = false;
+                                                                    player->Damaged(false);
                                                                 return 1;
                                                             },
                                                             this),

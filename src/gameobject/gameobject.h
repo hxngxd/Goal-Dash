@@ -63,6 +63,9 @@ class MapMaking
     static void Random();
     static bool Validation(int ei, int ej);
     static void EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit);
+    static void Trajectory(int i, int j, float u, float v, bool isRight, std::vector<std::vector<bool>> &visitable);
+    static void Horizontal(int i, int j, bool isRight, std::vector<std::vector<bool>> &visitable);
+    static void DownVertical(int i, int j, std::vector<std::vector<bool>> &visitable);
 };
 
 extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
@@ -94,7 +97,6 @@ class Player : public GameObject
 
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
-    bool isDamaged[3];
 };
 
 void MapHUD();

@@ -187,6 +187,7 @@ void MapTile::DeleteATile(int i, int j, float &wait, bool animation)
 
 void MapTile::Update()
 {
+    int spawn_i, spawn_j;
     for (int i = 0; i < Screen::map_size; i++)
     {
         for (int j = 0; j < Screen::map_size; j++)
@@ -206,6 +207,8 @@ void MapTile::Update()
                 Animate(TileMap[i][j].second, "win");
                 break;
             case SPAWN:
+                spawn_i = i;
+                spawn_j = j;
                 Animate(TileMap[i][j].second, "spawn");
                 break;
             case WALL:
@@ -217,11 +220,6 @@ void MapTile::Update()
                 Screen::SetDrawColor(Color::yellow(Game::Properties["ray_opacity"].i));
                 SDL_RenderDrawRect(Game::renderer, &rect);
                 Animate(TileMap[i][j].second, "coin");
-                break;
-            case DAMAGE:
-                Screen::SetDrawColor(Color::red(Game::Properties["ray_opacity"].i));
-                SDL_RenderDrawRect(Game::renderer, &rect);
-                // Animate(TileMap[i][j].second, "damage");
                 break;
             default:
                 break;
@@ -251,9 +249,6 @@ void MapTile::Update()
             case COIN:
                 Screen::SetDrawColor(Color::yellow(64));
                 break;
-            case DAMAGE:
-                Screen::SetDrawColor(Color::red(64));
-                break;
             case EMPTY:
                 Screen::SetDrawColor(Color::black(128));
                 break;
@@ -266,69 +261,6 @@ void MapTile::Update()
         {
             MapMaking::mouseTile = Vector2(-1);
         }
-    }
-
-    bool isRight = false;
-    bool touched = false;
-    Vector2 touched_pos(-1), touched_tile(-1);
-
-    Vector2 v0(Game::Properties["player_move_speed"].f, Game::Properties["player_jump_speed"].f);
-    float g = Game::Properties["gravity"].f;
-
-    Vector2 p0 = mousePosition;
-    Vector2 p, pt;
-
-    float A = g / (2.0f * v0.x * v0.x);
-    float B = v0.y / v0.x;
-    float R = (2.0f * v0.x * v0.y) / g;
-    float C = p0.x - (isRight ? 0 : R);
-    float D;
-    float h = (v0.y * v0.y) / (2.0f * g);
-
-    float low = Screen::tile_size;
-    float high = Game::Properties["resolution"].i - Screen::tile_size;
-
-    Screen::SetDrawColor(Color::green(255));
-    for (p.x = p0.x; isRight ? p.x <= high : p.x >= low; isRight ? p.x++ : p.x--)
-    {
-        if (!touched)
-        {
-            p.y = A * (p.x - C) * (p.x - C) - B * (p.x - C) + p0.y;
-            D = 2.0f * A * (p.x - C) - B;
-        }
-        else
-        {
-            float dx = R / 2.0f - abs(pt.x - p0.x);
-            float dy = h - abs(p0.y - pt.y);
-            float C1 = C + (dx * (isRight ? -1 : 1));
-            p.y = A * (p.x - C1) * (p.x - C1) - B * (p.x - C1) + p0.y + dy;
-            float eps = 3.0f / v0.x;
-            D = 2.0f * A * (p.x - C1) - B + eps;
-        }
-
-        bool up = (isRight == (D < 0));
-
-        Vector2 current = Int(Vector2(p.x, p.y) / Screen::tile_size);
-        if (!InRange(current.y, 0, Screen::map_size - 1))
-            break;
-        int &current_type = TileMap[current.y][current.x].first;
-        if (current_type == WALL)
-        {
-            if (up && !touched)
-            {
-                touched = true;
-                pt = p;
-                Vector2 tmp_p = current * Screen::tile_size;
-                bool a = tmp_p.y + Screen::tile_size * 0.5f <= pt.y && pt.y <= tmp_p.y + Screen::tile_size;
-                float tmp_dy = tmp_p.y + Screen::tile_size - pt.y;
-                bool b = tmp_p.x + tmp_dy <= pt.x && pt.x <= tmp_p.x + Screen::tile_size - tmp_dy;
-                if (!a || !b)
-                    break;
-            }
-            if (!up)
-                break;
-        }
-        SDL_RenderDrawPoint(Game::renderer, p.x, p.y);
     }
 
     if (mouseLeft)
@@ -423,11 +355,41 @@ void MapMaking::Random()
             TileMap[spawn_i][spawn_j].first = SPAWN;
             while (TileMap[spawn_i][spawn_j].first != WALL && spawn_i < Screen::map_size - 1)
             {
-                visitable[spawn_i][spawn_j] = true;
-                spawn_i++;
+                visitable[spawn_i++][spawn_j] = true;
             }
+            spawn_i--;
 
             // Generate coins
+            for (float u = 1.0f; u <= 16.0f; u *= 2.0f)
+            {
+                for (float v = 1.0f; v <= 16.0f; v *= 2.0f)
+                {
+                    Trajectory(spawn_i, spawn_j, u, v, 0, visitable);
+                    Trajectory(spawn_i, spawn_j, u, v, 1, visitable);
+                }
+            }
+            Horizontal(spawn_i, spawn_j, 0, visitable);
+            Horizontal(spawn_i, spawn_j, 1, visitable);
+
+            for (int i = Screen::map_size - 2; i >= 1; i--)
+            {
+                for (int j = 1; j < Screen::map_size - 1; j++)
+                {
+                    if (visitable[i][j] && TileMap[i + 1][j].first == WALL)
+                    {
+                        for (float u = 1.0f; u <= 16.0f; u *= 2.0f)
+                        {
+                            for (float v = 1.0f; v <= 16.0f; v *= 2.0f)
+                            {
+                                Trajectory(i, j, u, v, 0, visitable);
+                                Trajectory(i, j, u, v, 1, visitable);
+                            }
+                        }
+                        Horizontal(i, j, 0, visitable);
+                        Horizontal(i, j, 1, visitable);
+                    }
+                }
+            }
 
             for (int i = 0; i < 16; i++)
             {
@@ -437,7 +399,7 @@ void MapMaking::Random()
                 }
                 print("");
             }
-
+            print("");
             float wait = 0.1f;
             for (int i = 1; i < Screen::map_size - 1; i++)
             {
@@ -459,6 +421,108 @@ void MapMaking::Random()
         },
         MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 750);
     lf->Execute();
+}
+
+void MapMaking::Trajectory(int i, int j, float u, float v, bool isRight, std::vector<std::vector<bool>> &visitable)
+{
+    bool touched = false;
+    Vector2 touched_pos(-1), touched_tile(-1);
+    std::set<Vector2> tiles;
+
+    Vector2 v0(Game::Properties["player_move_speed"].f / u, Game::Properties["player_jump_speed"].f / v);
+    float g = Game::Properties["gravity"].f;
+
+    Vector2 p0 = Vector2(j + 0.5f, i + 0.5f) * Screen::tile_size;
+    Vector2 p, pt;
+
+    float A = g / (2.0f * v0.x * v0.x);
+    float B = v0.y / v0.x;
+    float R = (2.0f * v0.x * v0.y) / g;
+    float C = p0.x - (isRight ? 0 : R);
+    float D;
+    float h = (v0.y * v0.y) / (2.0f * g);
+
+    float low = Screen::tile_size;
+    float high = Game::Properties["resolution"].i - Screen::tile_size;
+
+    for (p.x = p0.x; isRight ? p.x <= high : p.x >= low; isRight ? p.x++ : p.x--)
+    {
+        if (!touched)
+        {
+            p.y = A * (p.x - C) * (p.x - C) - B * (p.x - C) + p0.y;
+            D = 2.0f * A * (p.x - C) - B;
+        }
+        else
+        {
+            float dx = R / 2.0f - abs(pt.x - p0.x);
+            float dy = h - abs(p0.y - pt.y);
+            float C1 = C + (dx * (isRight ? -1 : 1));
+            p.y = A * (p.x - C1) * (p.x - C1) - B * (p.x - C1) + p0.y + dy;
+            float eps = 3.0f / v0.x;
+            D = 2.0f * A * (p.x - C1) - B + eps;
+        }
+
+        bool up = (isRight == (D < 0));
+
+        Vector2 current = Int(Vector2(p.x, p.y) / Screen::tile_size);
+        if (!InRange(current.y, 0, Screen::map_size - 1))
+            break;
+        int &current_type = TileMap[current.y][current.x].first;
+        if (current_type == WALL)
+        {
+            if (up && !touched)
+            {
+                touched = true;
+                pt = p;
+                Vector2 tmp_p = current * Screen::tile_size;
+                bool a = tmp_p.y + Screen::tile_size * 0.5f <= pt.y && pt.y <= tmp_p.y + Screen::tile_size;
+                float tmp_dy = tmp_p.y + Screen::tile_size - pt.y;
+                bool b = tmp_p.x + tmp_dy <= pt.x && pt.x <= tmp_p.x + Screen::tile_size - tmp_dy;
+                if (!a || !b)
+                    break;
+            }
+            if (!up)
+                break;
+        }
+        else if (current_type == EMPTY)
+            visitable[current.y][current.x] = true;
+    }
+}
+
+void MapMaking::Horizontal(int i, int j, bool isRight, std::vector<std::vector<bool>> &visitable)
+{
+    int low = 0;
+    int high = Screen::map_size - 1;
+
+    for (; isRight ? j <= high : j >= low; isRight ? j++ : j--)
+    {
+        int &current_type = TileMap[i][j].first;
+        if (current_type == WALL)
+        {
+            break;
+        }
+        else if (current_type == EMPTY)
+        {
+            visitable[i][j] = true;
+            if (TileMap[i + 1][j].first == EMPTY)
+            {
+                DownVertical(i + 1, j, visitable);
+                break;
+            }
+        }
+    }
+}
+
+void MapMaking::DownVertical(int i, int j, std::vector<std::vector<bool>> &visitable)
+{
+    for (; i < Screen::map_size; i++)
+    {
+        int &current_type = TileMap[i][j].first;
+        if (current_type == WALL)
+            break;
+        else if (current_type == EMPTY)
+            visitable[i][j] = true;
+    }
 }
 
 void MapMaking::EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit)

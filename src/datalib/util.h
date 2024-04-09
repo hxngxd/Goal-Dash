@@ -191,8 +191,7 @@ enum map_types
     SPAWN = 1,
     WIN = 2,
     WALL = 4,
-    COIN = 8,
-    DAMAGE = 16
+    COIN = 8
 };
 
 enum animation_states
