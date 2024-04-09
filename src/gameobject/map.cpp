@@ -307,9 +307,12 @@ void MapTile::Update()
     }
 }
 
+std::vector<std::string> btns = {"clear", "save", "random", "erase", "wall", "coin", "spawn", "win"};
 void MapMaking::Random()
 {
-    ((Button *)UIs["random"])->enabled = false;
+    for (auto &btn : btns)
+        ((Button *)UIs[btn])->enabled = false;
+
     MapTile::DeleteTiles();
     LinkedFunction *lf = new LinkedFunction(
         []() {
@@ -435,7 +438,8 @@ void MapMaking::Random()
 
             LinkedFunction *lf = new LinkedFunction(
                 []() {
-                    ((Button *)UIs["random"])->enabled = true;
+                    for (auto &btn : btns)
+                        ((Button *)UIs[btn])->enabled = true;
                     return 1;
                 },
                 MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 250);
@@ -584,8 +588,18 @@ void MapHUD()
     Button *clear = new Button(
         "clear", "Clear", Vector2(Screen::tile_size * 2, 0),
         []() {
+            for (auto &btn : btns)
+                ((Button *)UIs[btn])->enabled = false;
             MapTile::DeleteTiles();
-            MapMaking::drawSpawn = MapMaking::drawWin = false;
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    MapMaking::drawSpawn = MapMaking::drawWin = false;
+                    for (auto &btn : btns)
+                        ((Button *)UIs[btn])->enabled = true;
+                    return 1;
+                },
+                MapTile::nEmptyTiles * Game::Properties["map_animation_delay"].f + 250);
+            lf->Execute();
         },
         25);
     Button *save = new Button(
