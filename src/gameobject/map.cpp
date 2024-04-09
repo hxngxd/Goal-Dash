@@ -302,7 +302,8 @@ void MapTile::Update()
             float dy = h - abs(p0.y - pt.y);
             float C1 = C + (dx * (isRight ? -1 : 1));
             p.y = A * (p.x - C1) * (p.x - C1) - B * (p.x - C1) + p0.y + dy;
-            D = 2.0f * A * (p.x - C1) - B + 0.5f;
+            float eps = 3.0f / v0.x;
+            D = 2.0f * A * (p.x - C1) - B + eps;
         }
 
         bool up = (isRight == (D < 0));
@@ -325,9 +326,7 @@ void MapTile::Update()
                     break;
             }
             if (!up)
-            {
                 break;
-            }
         }
         SDL_RenderDrawPoint(Game::renderer, p.x, p.y);
     }
