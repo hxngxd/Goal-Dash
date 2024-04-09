@@ -67,28 +67,40 @@ void MapTile::CreateBorder()
 void MapTile::CreateTiles(int map)
 {
     int mp_size = Screen::map_size;
-
-    std::ifstream in;
-    in.open("map/" + std::to_string(map) + ".map");
-    nEmptyTiles = 0;
-
-    // temporary code
-    if (!in.good())
+    if (map == -1)
     {
-        game->Stop();
-        return;
-    }
-
-    for (int i = 1; i < mp_size - 1; i++)
-    {
-        for (int j = 1; j < mp_size - 1; j++)
+        for (int i = 1; i < mp_size - 1; i++)
         {
-            in >> TileMap[i][j].first;
-            if (TileMap[i][j].first)
-                nEmptyTiles++;
+            for (int j = 1; j < mp_size - 1; j++)
+            {
+                TileMap[i][j].first = 0;
+            }
         }
     }
-    in.close();
+    else
+    {
+        std::ifstream in;
+        in.open("map/" + std::to_string(map) + ".map");
+        nEmptyTiles = 0;
+
+        // temporary code
+        if (!in.good())
+        {
+            game->Stop();
+            return;
+        }
+
+        for (int i = 1; i < mp_size - 1; i++)
+        {
+            for (int j = 1; j < mp_size - 1; j++)
+            {
+                in >> TileMap[i][j].first;
+                if (TileMap[i][j].first)
+                    nEmptyTiles++;
+            }
+        }
+        in.close();
+    }
 
     float wait = 0.1;
     for (int i = 1; i < mp_size - 1; i++)
@@ -262,46 +274,45 @@ void MapTile::Update()
         {
             MapMaking::mouseTile = Vector2(-1);
         }
-    }
-
-    if (mouseLeft)
-    {
-        int mx = MapMaking::mouseTile.x;
-        int my = MapMaking::mouseTile.y;
-        float wait = 0;
-        int &type = MapMaking::currentDrawingType;
-        if (type)
+        if (mouseLeft && ((Button *)UIs["erase"])->enabled)
         {
-            if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first == EMPTY)
+            int mx = MapMaking::mouseTile.x;
+            int my = MapMaking::mouseTile.y;
+            float wait = 0;
+            int &type = MapMaking::currentDrawingType;
+            if (type)
             {
-                if (type == SPAWN && !MapMaking::drawSpawn)
+                if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first == EMPTY)
                 {
-                    TileMap[my][mx].first = type;
-                    CreateATile(my, mx, wait, 0);
-                    MapMaking::drawSpawn = true;
-                }
-                else if (type == WIN && !MapMaking::drawWin)
-                {
-                    TileMap[my][mx].first = type;
-                    CreateATile(my, mx, wait, 0);
-                    MapMaking::drawWin = true;
-                }
-                else if (type != SPAWN && type != WIN)
-                {
-                    TileMap[my][mx].first = type;
-                    CreateATile(my, mx, wait, 0);
+                    if (type == SPAWN && !MapMaking::drawSpawn)
+                    {
+                        TileMap[my][mx].first = type;
+                        CreateATile(my, mx, wait, 0);
+                        MapMaking::drawSpawn = true;
+                    }
+                    else if (type == WIN && !MapMaking::drawWin)
+                    {
+                        TileMap[my][mx].first = type;
+                        CreateATile(my, mx, wait, 0);
+                        MapMaking::drawWin = true;
+                    }
+                    else if (type != SPAWN && type != WIN)
+                    {
+                        TileMap[my][mx].first = type;
+                        CreateATile(my, mx, wait, 0);
+                    }
                 }
             }
-        }
-        else
-        {
-            if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first != EMPTY)
+            else
             {
-                if (TileMap[my][mx].first == SPAWN)
-                    MapMaking::drawSpawn = false;
-                else if (TileMap[my][mx].first == WIN)
-                    MapMaking::drawWin = false;
-                DeleteATile(my, mx, wait, 0);
+                if (MapMaking::mouseTile != Vector2(-1) && TileMap[my][mx].first != EMPTY)
+                {
+                    if (TileMap[my][mx].first == SPAWN)
+                        MapMaking::drawSpawn = false;
+                    else if (TileMap[my][mx].first == WIN)
+                        MapMaking::drawWin = false;
+                    DeleteATile(my, mx, wait, 0);
+                }
             }
         }
     }
