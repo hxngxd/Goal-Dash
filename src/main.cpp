@@ -13,21 +13,21 @@ int main(int argc, char *argv[])
 
     //----------------------------------------
 
-    if (game->isRunning())
+    if (game->running)
         print("game is running");
 
-    float frameStart, frameTime, frameDelay = 1000.0 / Game::Properties["fps"].f;
+    float frame_start, frame_time, frame_delay = 1000.0 / Game::properties["fps"].f;
 
-    while (game->isRunning())
+    while (game->running)
     {
 
-        frameStart = (float)SDL_GetTicks();
+        frame_start = (float)SDL_GetTicks();
 
         game->Update();
 
-        frameTime = (float)SDL_GetTicks() - frameStart;
-        if (frameTime < frameDelay)
-            SDL_Delay(frameDelay - frameTime);
+        frame_time = (float)SDL_GetTicks() - frame_start;
+        if (frame_time < frame_delay)
+            SDL_Delay(frame_delay - frame_time);
     }
 
     //----------------------------------------

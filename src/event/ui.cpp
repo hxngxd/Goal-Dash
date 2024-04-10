@@ -14,17 +14,25 @@ std::map<std::string, UI *> UIs;
 void PlayerHUD()
 {
     Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    Text *score =
-        new Text("score", "Score: " + std::to_string(Game::player_score), Vector2(Screen::tile_size * 3, 0), 25);
+    Text *score = new Text("score", "Score: " + str(Game::player_score), Vector2(Screen::tile_size * 3, 0), 25);
     Text *time = new Text("time", "Time: 00:00:00.000", Vector2(Screen::tile_size * 5, 0), 25);
     Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
     Text *difficulty = new Text("difficulty", "Difficulty: Easy", Vector2(Screen::tile_size * 5, 0), 25);
     hcv1->AddComponents({"score", "time", "map", "difficulty"});
 
     Canvas *vcv = new Canvas("verticalhub", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
-                             Vector2(Screen::tile_size, Screen::tile_size * 2), 0, 0, 0);
+                             Vector2(Screen::tile_size, Screen::tile_size * 4), 0, 0, 0);
     Button *exitbtn = new Button(
-        "exit", "Exit", Vector2(), []() { game->Stop(); }, 25);
+        "exit", "Exit", Vector2(), []() { game->Stop(); }, 20);
+    Button *homebtn = new Button(
+        "home", "Home", Vector2(),
+        []() {
+            nextMap = false;
+            Game::scene->DeleteScene();
+        },
+        20);
+    Button *settingsbtn = new Button(
+        "settings", "Settings", Vector2(), []() {}, 20);
     Button *mutebtn = new Button(
         "mute", "Mute", Vector2(),
         []() {
@@ -39,13 +47,12 @@ void PlayerHUD()
             msc = !msc;
             snd = !snd;
         },
-        25);
-    vcv->AddComponents({"exit", "mute"});
+        20);
+    vcv->AddComponents({"exit", "home", "settings", "mute"});
 
     Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                               Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    Text *health =
-        new Text("health", "Health: " + std::to_string(Game::player_health), Vector2(Screen::tile_size * 3, 0), 25);
+    Text *health = new Text("health", "Health: " + str(Game::player_health), Vector2(Screen::tile_size * 3, 0), 25);
     hcv2->AddComponents({"health"});
 }
 

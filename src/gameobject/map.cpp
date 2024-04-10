@@ -3,101 +3,124 @@
 #include "../event/input.h"
 #include "../event/ui.h"
 #include "../game.h"
-#include "gameobject.h"
 #include <fstream>
 #include <queue>
 #include <set>
 
-std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
-std::vector<Background> Backgrounds;
-int MapTile::nEmptyTiles = 0;
-int MapTile::currentMap = 1;
-Vector2 MapTile::SpawnTile;
-Vector2 MapTile::WinTile;
+std::vector<std::vector<std::pair<int, Tile *>>> Map::Tiles;
+Vector2 Map::spawn_tile, Map::win_tile;
+bool Map::mode;
+int Map::nempty = 0;
+int Map::current_map;
+std::map<int, int> Map::count_types;
 
-bool MapTile::isMakingMap = false;
+Vector2 MapMaking::current_mouse_tile(-1);
+int MapMaking::current_drawing_type = -1;
 
-Vector2 MapMaking::mouseTile(-1);
-int MapMaking::currentDrawingType = -1;
-int numofSpawn = 0, numofWin = 0;
-
-MapTile::MapTile(Vector2 position, Vector2 size)
+Tile::Tile(Vector2 position, Vector2 size)
 {
     this->position = position;
     this->size = size;
-    this->currentFrame = 0;
+    this->current_frame = 0;
     this->animation_delay = 0;
     this->animation_speed = 10;
     this->scale = 0;
 }
 
-void MapTile::CreateBorder()
+void Map::Border()
 {
-    int ms = Screen::map_size;
-    TileMap.clear();
-    TileMap.resize(ms, std::vector<std::pair<int, MapTile *>>(ms, std::make_pair(0, nullptr)));
+    int &size = Screen::map_size;
+    Tiles.clear();
+    Tiles.resize(size, std::vector<std::pair<int, Tile *>>(size, std::make_pair(0, nullptr)));
 
     float wait = 500;
 
-    for (int i = 0; i < ms; i++)
+    for (int i = 0; i < size; i++)
     {
-        TileMap[0][i].first = WALL;
-        CreateATile(0, i, wait);
+        Tiles[0][i].first = WALL;
+        AddTile(0, i, wait);
     }
 
-    for (int i = 1; i < ms; i++)
+    for (int i = 1; i < size; i++)
     {
-        TileMap[i][ms - 1].first = WALL;
-        CreateATile(i, ms - 1, wait);
+        Tiles[i][size - 1].first = WALL;
+        AddTile(i, size - 1, wait);
     }
 
-    for (int i = ms - 2; i >= 0; i--)
+    for (int i = size - 2; i >= 0; i--)
     {
-        TileMap[ms - 1][i].first = WALL;
-        CreateATile(ms - 1, i, wait);
+        Tiles[size - 1][i].first = WALL;
+        AddTile(size - 1, i, wait);
     }
 
-    for (int i = ms - 2; i > 0; i--)
+    for (int i = size - 2; i > 0; i--)
     {
-        TileMap[i][0].first = WALL;
-        CreateATile(i, 0, wait);
+        Tiles[i][0].first = WALL;
+        AddTile(i, 0, wait);
     }
 }
 
-void MapTile::CreateTiles(bool create_win)
+void Map::LoadMap()
 {
-    int mp_size = Screen::map_size;
     std::ifstream in;
-    in.open("map/" + std::to_string(currentMap) + ".map");
+    in.open("map/" + str(current_map) + ".map");
 
     int k = 0;
     while (!in.good())
     {
         in.close();
-        currentMap++;
-        in.open("map/" + std::to_string(currentMap) + ".map");
-        if (++k == 100)
+        current_map++;
+        if (++k >= 100)
         {
-            currentMap = 1;
-            in.open("map/" + std::to_string(currentMap) + ".map");
+            current_map = 1;
             break;
         }
+        in.open("map/" + str(current_map) + ".map");
     }
 
-    nEmptyTiles = 0;
-    for (int i = 1; i < mp_size - 1; i++)
+    nempty = 0;
+    for (int i = 1; i < Screen::map_size - 1; i++)
     {
-        for (int j = 1; j < mp_size - 1; j++)
+        for (int j = 1; j < Screen::map_size - 1; j++)
         {
-            in >> TileMap[i][j].first;
-            if (TileMap[i][j].first)
-                nEmptyTiles++;
+            in >> Tiles[i][j].first;
+            if (Tiles[i][j].first)
+                nempty++;
         }
     }
     in.close();
+}
+
+void Map::AddTile(int i, int j, float &wait, bool animation)
+{
+    count_types[Tiles[i][j].first]++;
+
+    if (!Tiles[i][j].first)
+        return;
+
+    Tiles[i][j].second = new Tile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size);
+
+    if (animation)
+    {
+        LinkedFunction *lf =
+            new LinkedFunction(std::bind(TransformValue<float>, &Tiles[i][j].second->scale,
+                                         Game::properties["tile_scale"].f, Game::properties["tile_rescale_speed"].f),
+                               wait);
+        lf->Execute();
+    }
+    else
+        Tiles[i][j].second->scale = Game::properties["tile_scale"].f;
+    wait += Game::properties["map_delay"].f;
+}
+
+void Map::AddTiles(bool create_win)
+{
+    int mp_size = Screen::map_size;
+
+    nEmptyTiles = 0;
 
     if (UIs["map"])
-        UIs["map"]->label = "Map: " + std::to_string(currentMap);
+        UIs["map"]->label = "Map: " + str(currentMap);
 
     currentMap++;
 
@@ -125,32 +148,6 @@ void MapTile::CreateTiles(bool create_win)
     if (!create_win)
         TileMap[WinTile.x][WinTile.y].first = 0;
     numofSpawn = numofWin = 1;
-}
-
-void MapTile::CreateATile(int i, int j, float &wait, bool animation)
-{
-    if (!TileMap[i][j].first)
-        return;
-
-    TileMap[i][j].second = new MapTile(Vector2(j * Screen::tile_size, i * Screen::tile_size), Screen::tile_size);
-
-    if (TileMap[i][j].first == COIN)
-        Game::Properties["coin"].i++;
-
-    if (animation)
-    {
-        LinkedFunction *lf =
-            new LinkedFunction(std::bind(TransformValue<float>, &TileMap[i][j].second->scale,
-                                         Game::Properties["tile_scale"].f * (TileMap[i][j].first == COIN ? 0.6f : 1.0f),
-                                         Game::Properties["rescale_speed"].f),
-                               wait);
-        lf->Execute();
-    }
-    else
-    {
-        TileMap[i][j].second->scale = (TileMap[i][j].first == COIN ? 0.6f : 1.0f);
-    }
-    wait += Game::Properties["map_animation_delay"].f;
 }
 
 void MapTile::DeleteTiles()
@@ -626,18 +623,18 @@ void MapMaking::Save()
 
     int map = 1;
     std::ifstream in;
-    in.open("map/" + std::to_string(map) + ".map");
+    in.open("map/" + str(map) + ".map");
 
     while (in.good())
     {
         in.close();
         map++;
-        in.open("map/" + std::to_string(map) + ".map");
+        in.open("map/" + str(map) + ".map");
     }
     in.close();
 
     std::ofstream out;
-    std::string filename = "map/" + std::to_string(map) + ".map";
+    std::string filename = "map/" + str(map) + ".map";
     out.open(filename);
 
     if (!out.good())
@@ -658,7 +655,7 @@ void MapMaking::Save()
     out.close();
 
     if (UIs["map"])
-        UIs["map"]->label = "Map: " + std::to_string(map);
+        UIs["map"]->label = "Map: " + str(map);
 
     MapTile::currentMap = map;
 
@@ -756,77 +753,4 @@ void MapHUD()
         "win", "Win", Vector2(Screen::tile_size * 2, 0),
         []() { MapMaking::currentDrawingType = (MapMaking::currentDrawingType == WIN ? -1 : WIN); }, 25);
     hcv2->AddComponents({"erase", "wall", "coin", "spawn", "win"});
-}
-
-Background::Background(std::string name, float scale)
-{
-    this->opacity = 64;
-    this->toggle = true;
-    this->name = name;
-    this->position = Vector2(0);
-    this->size = Screen::resolution;
-    this->currentFrame = 0;
-    this->maxFrames = Sprites[name]->maxFrames;
-    this->scale = scale;
-}
-
-bool Background::loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale)
-{
-    if (!LoadSprite(name, path, maxFrames, realSize))
-        return 0;
-    print("creating background", name);
-    Backgrounds.push_back(Background(name, scale));
-    print("background", name, "created");
-    SDL_SetTextureBlendMode(Sprites[name]->texture, SDL_BLENDMODE_BLEND);
-    return 1;
-}
-
-void Background::Update()
-{
-    Background &bg0 = Backgrounds[0];
-    Background &bg1 = Backgrounds[1];
-    Background &bg2 = Backgrounds[2];
-
-    bg0.opacity = 150;
-    SetSpriteOpacity(bg0.name, bg0.opacity);
-    DrawSprite(bg0.name, bg0.position, bg0.size, bg0.scale, bg0.maxFrames, 0);
-
-    if (bg2.toggle)
-    {
-        bg2.opacity += 2;
-        if (bg2.opacity >= 248)
-            bg2.toggle = false;
-    }
-    else
-    {
-        bg2.opacity -= 2;
-        if (bg2.opacity <= 8)
-            bg2.toggle = true;
-    }
-
-    SetSpriteOpacity(bg2.name, bg2.opacity);
-    DrawSprite(bg2.name, bg2.position, bg2.size, bg2.scale, bg2.maxFrames, 0);
-
-    bg1.opacity = 256 - bg2.opacity;
-    SetSpriteOpacity(bg1.name, bg1.opacity);
-    DrawSprite(bg1.name, bg1.position, bg1.size, bg1.scale, bg1.maxFrames, 1);
-}
-
-void Background::Move(Vector2 velocity, int index, float ratio)
-{
-    Background &bg = Backgrounds[index];
-
-    if (velocity.x)
-    {
-        float bound = (1 - bg.scale) * bg.size.x * 0.5;
-        bg.position.x += velocity.x * ratio;
-        bg.position.x = Clamp(bg.position.x, bound, -bound);
-    }
-
-    if (velocity.y)
-    {
-        float bound = (1 - bg.scale) * bg.size.y * 0.5;
-        bg.position.y += velocity.y * ratio;
-        bg.position.y = Clamp(bg.position.y, bound, -bound);
-    }
 }

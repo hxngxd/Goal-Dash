@@ -26,10 +26,10 @@ std::string FormatMS(int ms)
     int minute = second / 60;
     second -= minute * 60;
     auto addzero = [](int n, int length) {
-        std::string strn = std::to_string(n);
+        std::string strn = str(n);
         return std::string(length - strn.size(), '0') + strn;
     };
-    return (hour ? std::to_string(hour) : "00") + ":" + addzero(minute, 2) + ":" + addzero(second, 2) + "." +
+    return (hour ? str(hour) : "00") + ":" + addzero(minute, 2) + ":" + addzero(second, 2) + "." +
            addzero((int)fsecond, 3);
 }
 

@@ -16,7 +16,7 @@ class GameObject
     float scale;
     Direction velocity;
 
-    int currentFrame, maxFrames;
+    int current_frame, max_frames;
     float animation_delay;
     float animation_speed;
 };
@@ -35,42 +35,6 @@ class Background : public GameObject
 };
 
 extern std::vector<Background> Backgrounds;
-
-class MapTile : public GameObject
-{
-  public:
-    static Vector2 SpawnTile;
-    static Vector2 WinTile;
-    static bool isMakingMap;
-    static int nEmptyTiles;
-    static int currentMap;
-
-    MapTile(Vector2 position, Vector2 size);
-
-    static void CreateBorder();
-    static void CreateTiles(bool create_win);
-    static void CreateATile(int i, int j, float &wait, bool animation = true);
-    static void DeleteTiles();
-    static void DeleteATile(int i, int j, float &wait, bool animation = true);
-    static void Update();
-};
-
-class MapMaking
-{
-  public:
-    static Vector2 mouseTile;
-    static int currentDrawingType;
-    static void Random();
-    static bool Validation(int ei, int ej);
-    static void EmptyToEmpty(int i, int j, std::vector<std::vector<bool>> &visit);
-    static void Trajectory(int i, int j, float u, float v, bool isRight, std::vector<std::vector<bool>> &visitable);
-    static void Horizontal(int i, int j, bool isRight, std::vector<std::vector<bool>> &visitable);
-    static void DownVertical(int i, int j, std::vector<std::vector<bool>> &visitable);
-    static void Save();
-    static void ChangeMap();
-};
-
-extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 
 class Player : public GameObject
 {
@@ -100,5 +64,3 @@ class Player : public GameObject
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
 };
-
-void MapHUD();

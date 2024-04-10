@@ -12,6 +12,13 @@ extern TTF_Font *myFont;
 
 //----------------------------------------
 
+template <typename T> std::string str(T data)
+{
+    return str(data);
+}
+
+//----------------------------------------
+
 template <typename T> bool TransformValue(T *value, T dest, T speed)
 {
     if (!value)

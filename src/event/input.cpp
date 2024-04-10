@@ -3,8 +3,10 @@
 #include "../game.h"
 #include "ui.h"
 
-Vector2 mousePosition = Vector2();
-bool mouseLeft = false;
+Vector2 EventHandler::MousePosition;
+bool EventHandler::isMouseLeft = false;
+std::map<std::string, std::function<void()>> EventHandler::MouseDownActions;
+std::map<std::string, std::function<void()>> EventHandler::MouseUpActions;
 
 void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
 {
@@ -12,21 +14,13 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
     {
         auto key = Game::event.key.keysym.sym;
         if (key == keys.right)
-        {
             player->key_right = true;
-        }
         else if (key == keys.left)
-        {
             player->key_left = true;
-        }
         else if (key == keys.down)
-        {
             player->key_down = true;
-        }
         else if (key == keys.up)
-        {
             player->key_up = true;
-        }
         else if (key == keys.space)
         {
             if (player->collide_down.second && !player->collide_up.second && !Game::Properties["no_gravity"].b)
@@ -45,66 +39,36 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
     {
         auto key = Game::event.key.keysym.sym;
         if (key == keys.right)
-        {
             player->key_right = false;
-        }
         else if (key == keys.left)
-        {
             player->key_left = false;
-        }
         else if (key == keys.down)
-        {
             player->key_down = false;
-        }
         else if (key == keys.up)
-        {
             player->key_up = false;
-        }
-        else if (key == keys.space)
-        {
-        }
     }
 }
 
 void EventHandler::MouseInputHandler()
 {
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    MousePosition = Vector2(x, y);
+
     if (Game::event.type == SDL_MOUSEBUTTONDOWN)
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
-            mouseLeft = true;
-            for (auto &ui : UIs)
-            {
-                if (!ui.second)
-                    continue;
-                if (ui.second->type != BUTTON)
-                    continue;
-                Button *btn = (Button *)ui.second;
-                if (btn->button_mouse_hovering && btn->enabled)
-                    btn->button_mouse_click = true;
-            }
+            for (auto &action : MouseDownActions)
+                action.second();
         }
     }
     else if (Game::event.type == SDL_MOUSEBUTTONUP)
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
-            mouseLeft = false;
-            for (auto &ui : UIs)
-            {
-                if (!ui.second)
-                    continue;
-                if (ui.second->type != BUTTON)
-                    continue;
-                Button *btn = (Button *)ui.second;
-                if (btn->button_mouse_click && btn->button_mouse_hovering &&
-                    (SDL_GetTicks() - btn->lastButtonClick >= 500) && btn->enabled)
-                {
-                    btn->onClick();
-                    btn->lastButtonClick = SDL_GetTicks();
-                }
-                btn->button_mouse_click = false;
-            }
+            for (auto &action : MouseUpActions)
+                action.second();
         }
     }
 }
@@ -114,11 +78,10 @@ void EventHandler::Update()
     while (SDL_PollEvent(&Game::event) != 0)
     {
         if (Game::event.type == SDL_QUIT)
-            game->Stop();
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        mousePosition = Vector2(x, y);
+            game->running = false;
+
         EventHandler::MouseInputHandler();
+
         if (Game::player)
             EventHandler::PlayerInputHandler(Game::player,
                                              Game::Properties["keyboard_layout"].b ? right_keys : left_keys);

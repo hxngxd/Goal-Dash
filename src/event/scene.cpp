@@ -5,6 +5,8 @@
 #include "../gameobject/gameobject.h"
 #include "ui.h"
 
+bool nextMap = true;
+
 Scene::Scene()
 {
     print("creating new scene...");
@@ -161,7 +163,10 @@ void Scene::DeleteScene()
             },
             (MapTile::nEmptyTiles + 4) * Game::Properties["map_animation_delay"].f);
         lf->NextFunction([]() {
-            Game::scene = new Scene(true);
+            if (nextMap)
+                Game::scene = new Scene(true);
+            else
+                Game::scene = new Scene();
             return 1;
         });
         lf->Execute();

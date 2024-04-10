@@ -289,7 +289,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
 
                 print("player score", Game::player_score);
                 if (UIs["score"])
-                    UIs["score"]->label = "Score: " + std::to_string(Game::player_score);
+                    UIs["score"]->label = "Score: " + str(Game::player_score);
 
                 if (Game::Properties["sound"].b)
                     PlaySound("coin", CHANNEL_COIN, 0);
@@ -346,7 +346,10 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 LinkedFunction *lf = new LinkedFunction(
                     []() {
                         if (Game::scene)
+                        {
+                            nextMap = true;
                             Game::scene->DeleteScene();
+                        }
                         return 1;
                     },
                     250);
@@ -402,7 +405,7 @@ void Player::Jump()
                     PlaySound("fall", CHANNEL_JUMP_FALL, 0);
 
                 Game::player_health -= velocity.d / 2.5;
-                UIs["health"]->label = "Health: " + std::to_string(Game::player_health);
+                UIs["health"]->label = "Health: " + str(Game::player_health);
 
                 Damaged(true);
                 LinkedFunction *lf = new LinkedFunction(std::bind(

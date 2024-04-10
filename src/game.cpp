@@ -7,21 +7,18 @@
 #include "event/ui.h"
 #include "func/func.h"
 
-Vector2 Screen::resolution;
-int Screen::map_size = 16;
-int Screen::tile_size;
-
+bool Game::running = false;
+std::map<std::string, PropertiesType> Game::properties;
 SDL_Event Game::event;
 SDL_Window *Game::window = nullptr;
 SDL_Renderer *Game::renderer = nullptr;
-Scene *Game::scene = nullptr;
 Player *Game::player = nullptr;
-int Game::player_score = 0;
-bool Game::player_won = false;
-int Game::player_time[3] = {0, 0, 0};
-int Game::player_health = 100;
+Scene *Game::scene = nullptr;
+int Game::time[3] = {0, 0, 0};
 
-std::map<std::string, PropertiesType> Game::Properties;
+Vector2 Screen::resolution;
+int Screen::map_size;
+int Screen::tile_size;
 
 void Game::Update()
 {
@@ -29,28 +26,26 @@ void Game::Update()
 
     Screen::Clear(Color::black());
 
-    if (Game::Properties["point_grid"].b)
+    if (properties["point_grid"].b)
         Screen::PointGrid(Color::white());
 
-    if (Game::Properties["background"].b)
+    if (properties["background_enable"].b)
         Background::Update();
 
     //----------------------------------------
 
-    MapTile::Update();
+    Map::Update();
 
     EventHandler::Update();
 
     UI::Update();
 
-    LinkedFunction::Update();
-
     if (player)
     {
         player->Update();
-        if (UIs["time"])
-            UIs["time"]->label = "Time: " + FormatMS(SDL_GetTicks() - player_time[0]);
     }
+
+    LinkedFunction::Update();
 
     //----------------------------------------
 
@@ -91,17 +86,17 @@ void Game::Start()
 
     //----------------------------------------
 
-    if (Game::Properties["music"].b)
+    if (properties["music"].b)
     {
         print("playing background music...");
         PlayMusic("bg_music", -1);
-        Mix_VolumeMusic(Game::Properties["music_volume"].i);
+        Mix_VolumeMusic(properties["volume"].i);
     }
 
     //----------------------------------------
 
     print("loading font...");
-    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), 24);
+    myFont = TTF_OpenFont("myfont.ttf", 24);
     if (!myFont)
     {
         print("failed to load font");
@@ -275,13 +270,13 @@ void Game::Quit()
 {
     //----------------------------------------
 
-    print("deleting player...");
     if (player)
     {
+        print("deleting player...");
         delete player;
         player = nullptr;
+        print("player deleted");
     }
-    print("player deleted");
 
     //----------------------------------------
 
@@ -290,10 +285,10 @@ void Game::Quit()
     {
         for (int j = 0; j < Screen::map_size; j++)
         {
-            if (!TileMap[i][j].second)
+            if (!Map::Tiles[i][j].second)
                 continue;
-            delete TileMap[i][j].second;
-            TileMap[i][j].second = nullptr;
+            delete Map::Tiles[i][j].second;
+            Map::Tiles[i][j].second = nullptr;
         }
     }
     print("tiles deleted");
@@ -337,18 +332,14 @@ void Game::Quit()
 
     //----------------------------------------
 
-    print("deleting font...");
     if (myFont)
+    {
+        print("deleting font...");
         TTF_CloseFont(myFont);
-    print("font deleted");
+        print("font deleted");
+    }
 
     //----------------------------------------
-
-    if (scene)
-    {
-        scene->DeleteScene();
-        scene = nullptr;
-    }
 
     UI::DeleteUIs();
 

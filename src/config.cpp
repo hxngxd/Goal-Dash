@@ -59,13 +59,9 @@ bool Game::LoadConfig()
             try
             {
                 if (type == "int")
-                {
                     prop.i = std::stoi(value);
-                }
                 else if (type == "float")
-                {
                     prop.f = std::stof(value);
-                }
                 else if (type == "bool")
                 {
                     if (value == "false" || value == "0")
@@ -76,13 +72,9 @@ bool Game::LoadConfig()
                         throw("type");
                 }
                 else if (type == "string")
-                {
                     prop.s = value;
-                }
                 else
-                {
                     throw("type");
-                }
             }
             catch (std::invalid_argument const &e)
             {
@@ -99,19 +91,37 @@ bool Game::LoadConfig()
                 print("invalid", e);
                 return 0;
             }
-            Properties[key] = prop;
+            properties[key] = prop;
         }
     }
 
     //----------------------------------------
 
-    Screen::resolution = Vector2(Game::Properties["resolution"].i);
+    Screen::map_size = 16;
+
+    Screen::resolution = Vector2(Game::properties["resolution"].i);
+
+    Screen::resolution = Int((Screen::resolution / Screen::map_size)) * Screen::map_size;
+
     Screen::tile_size = Screen::resolution.x / Screen::map_size;
-    Game::Properties["gravity"].f *= Screen::resolution.x / 25100.0f;
-    Game::Properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
-    Game::Properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
-    Game::Properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
-    MapTile::currentMap = Game::Properties["starting_map"].i;
+
+    Game::properties["gravity"].f *= Screen::resolution.x / 25100.0f;
+
+    Game::properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
+
+    Game::properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
+
+    Game::properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
+
+    Game::properties["ray_opacity"].i = Clamp(Game::properties["ray_opacity"].i, 0, 255);
+
+    Map::current_map = Game::properties["map_init"].i;
+
+    Game::properties["tile_rescale_speed"].f = Clamp(Game::properties["tile_rescale_speed"].f, 0.01f, 0.1f);
+
+    Game::properties["tile_scale"].f = Clamp(Game::properties["tile_scale"].f, 0.1f, 1.0f);
+
+    Game::properties["volume"].i = Clamp(Game::properties["volume"].i, 0, 128);
 
     //----------------------------------------
 
