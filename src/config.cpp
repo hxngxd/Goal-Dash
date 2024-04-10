@@ -115,8 +115,6 @@ bool Game::LoadConfig()
 
     Game::properties["ray_opacity"].i = Clamp(Game::properties["ray_opacity"].i, 0, 255);
 
-    Map::current_map = Game::properties["map_init"].i;
-
     Game::properties["tile_rescale_speed"].f = Clamp(Game::properties["tile_rescale_speed"].f, 0.01f, 0.1f);
 
     Game::properties["tile_scale"].f = Clamp(Game::properties["tile_scale"].f, 0.1f, 1.0f);

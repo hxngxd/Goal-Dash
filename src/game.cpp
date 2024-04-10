@@ -39,16 +39,22 @@ void Game::Update()
     if (Map::mode)
         MapMaking::Update();
 
+    print("DB1");
     EventHandler::Update();
+    print("DB2");
 
+    print("DB7");
     UI::Update();
+    print("DB8");
 
     if (player)
     {
         player->Update();
     }
 
+    print("DB3");
     LinkedFunction::Update();
+    print("DB4");
 
     //----------------------------------------
 

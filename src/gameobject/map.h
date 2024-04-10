@@ -47,4 +47,6 @@ class MapMaking
     static void ChangeMap();
 
     static void Update();
+
+    static void ToggleBtns(bool toggle);
 };

@@ -51,9 +51,12 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
 
 void EventHandler::MouseInputHandler()
 {
+    print("DB10");
     int x, y;
     SDL_GetMouseState(&x, &y);
     MousePosition = Vector2(x, y);
+
+    print("DB11");
 
     if (Game::event.type == SDL_MOUSEBUTTONDOWN)
     {
@@ -73,6 +76,7 @@ void EventHandler::MouseInputHandler()
                 action.second();
         }
     }
+    print("DB12");
 }
 
 void EventHandler::Update()

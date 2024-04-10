@@ -63,20 +63,21 @@ void Map::Border()
 
 void Map::LoadMap()
 {
+    print("loading map...");
     std::ifstream in;
     in.open("map/" + str(current_map) + ".map");
-
     int k = 0;
     while (!in.good())
     {
         in.close();
         current_map++;
+        in.open("map/" + str(current_map) + ".map");
         if (++k >= 100)
         {
             current_map = 1;
+            in.open("map/" + str(current_map) + ".map");
             break;
         }
-        in.open("map/" + str(current_map) + ".map");
     }
 
     nempty = 0;
@@ -90,6 +91,7 @@ void Map::LoadMap()
         }
     }
     in.close();
+    print("done");
 }
 
 void Map::AddTile(int i, int j, float &wait, bool animation)
@@ -116,6 +118,7 @@ void Map::AddTile(int i, int j, float &wait, bool animation)
 
 void Map::AddTiles()
 {
+    print("creating tiles...");
     float wait = 0.1;
     for (int i = 1; i < Screen::map_size - 1; i++)
     {
@@ -139,6 +142,8 @@ void Map::AddTiles()
     AddTile(spawn_tile.y, spawn_tile.x, wait);
     if (!mode)
         Tiles[win_tile.y][win_tile.x].first = 0;
+
+    print("done");
 }
 
 void Map::RemoveTile(int i, int j, float &wait, bool animation)
@@ -314,7 +319,6 @@ void MapMaking::Update()
     }
 }
 
-std::vector<std::string> btns = {"clear", "save", "random", "prev", "next", "erase", "wall", "coin", "spawn", "win"};
 void MapMaking::Random()
 {
     print("generating map...");
@@ -441,8 +445,7 @@ void MapMaking::Random()
             LinkedFunction *lf = new LinkedFunction(
                 []() {
                     allow_drawing = true;
-                    for (auto &btn : btns)
-                        ((Button *)UI::UIs[btn])->enabled = true;
+                    ToggleBtns(true);
                     print("done");
                     return 1;
                 },
@@ -451,7 +454,7 @@ void MapMaking::Random()
 
             return 1;
         },
-        Map::nempty * Game::properties["map_delay"].f + 750);
+        Map::nempty * Game::properties["map_delay"].f + 500);
 
     Clear(lf);
 }
@@ -649,8 +652,7 @@ void MapMaking::ChangeMap()
             LinkedFunction *lf = new LinkedFunction(
                 []() {
                     allow_drawing = true;
-                    for (auto &btn : btns)
-                        ((Button *)UI::UIs[btn])->enabled = true;
+                    ToggleBtns(true);
                     print("done");
                     return 1;
                 },
@@ -659,76 +661,27 @@ void MapMaking::ChangeMap()
 
             return 1;
         },
-        Map::nempty * Game::properties["map_delay"].f + 750);
+        Map::nempty * Game::properties["map_delay"].f + 500);
     Clear(lf);
 }
 
 void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
-    allow_drawing = false;
-    for (auto &btn : btns)
-        ((Button *)UI::UIs[btn])->enabled = false;
+    if (Map::mode)
+    {
+        allow_drawing = false;
+        ToggleBtns(false);
+    }
     Map::RemoveTiles();
-    post_func->Execute();
+    if (post_func)
+        post_func->Execute();
 }
 
-void MapHUD()
+void MapMaking::ToggleBtns(bool toggle)
 {
-    // Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    // Button *clear = new Button(
-    //     "clear", "Clear", Vector2(Screen::tile_size * 2, 0),
-    //     []() {
-    //         Map::current_map = 0;
-    //         LinkedFunction *lf = new LinkedFunction(
-    //             []() {
-    //                 MapMaking::allow_drawing = true;
-    //                 for (auto &btn : btns)
-    //                     ((Button *)UI::UIs[btn])->enabled = true;
-    //                 print("done");
-    //                 return 1;
-    //             },
-    //             Map::nempty * Game::properties["map_delay"].f + 250);
-    //         MapMaking::Clear(lf);
-    //     },
-    //     25);
-    // Button *save = new Button("save", "Save", Vector2(Screen::tile_size * 2, 0), MapMaking::Save, 25);
-    // Button *random = new Button("random", "Random", Vector2(Screen::tile_size * 2, 0), MapMaking::Random, 25);
-    // Button *prevmap = new Button(
-    //     "prev", "<", Vector2(Screen::tile_size, 0),
-    //     []() {
-    //         if (Map::current_map <= 1)
-    //             return;
-    //         Map::current_map--;
-    //         MapMaking::ChangeMap();
-    //     },
-    //     25);
-    // Button *nextmap = new Button(
-    //     "next", ">", Vector2(Screen::tile_size, 0),
-    //     []() {
-    //         Map::current_map++;
-    //         MapMaking::ChangeMap();
-    //     },
-    //     25);
-    // Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
-    // hcv1->AddComponents({"clear", "save", "random", "prev", "map", "next"});
-
-    // Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
-    //                           Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    // Button *erase = new Button(
-    //     "erase", "Erase", Vector2(Screen::tile_size * 2, 0),
-    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == EMPTY ? -1 : EMPTY); }, 25);
-    // Button *drawWall = new Button(
-    //     "wall", "Wall", Vector2(Screen::tile_size * 2, 0),
-    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == WALL ? -1 : WALL); }, 25);
-    // Button *drawCoin = new Button(
-    //     "coin", "Coin", Vector2(Screen::tile_size * 2, 0),
-    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == COIN ? -1 : COIN); }, 25);
-    // Button *drawSpawn = new Button(
-    //     "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0),
-    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == SPAWN ? -1 : SPAWN); }, 25);
-    // Button *drawWin = new Button(
-    //     "win", "Win", Vector2(Screen::tile_size * 2, 0),
-    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == WIN ? -1 : WIN); }, 25);
-    // hcv2->AddComponents({"erase", "wall", "coin", "spawn", "win"});
+    std::vector<std::string> btns = {"clear", "save", "random", "prev",  "next",
+                                     "erase", "wall", "coin",   "spawn", "win"};
+    for (auto &btn : btns)
+        ((Button *)UI::UIs[btn])->enabled = toggle;
 }

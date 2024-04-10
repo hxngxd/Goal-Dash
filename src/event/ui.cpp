@@ -35,18 +35,6 @@ void PlayerHUD()
     //     "settings", "Settings", Vector2(), []() {}, 20);
     // Button *mutebtn = new Button(
     //     "mute", "Mute", Vector2(),
-    //     []() {
-    //         bool &msc = Game::Properties["music"].b;
-    //         bool &snd = Game::Properties["sound"].b;
-    //         if (msc)
-    //             Mix_PauseMusic();
-    //         else
-    //             Mix_ResumeMusic();
-    //         if (snd)
-    //             StopAllSound();
-    //         msc = !msc;
-    //         snd = !snd;
-    //     },
     //     20);
     // vcv->AddComponents({"exit", "home", "settings", "mute"});
 
@@ -61,30 +49,43 @@ void PlayerHUD()
 void UI::Start()
 {
     EventHandler::MouseDownActions.insert(std::make_pair("UIButtonMouseDown", []() {
+        print("DB12");
         for (auto &ui : UIs)
         {
-            if (!ui.second || ui.second->type != BUTTON)
+            if (!ui.second)
+                continue;
+            if (ui.second->type != BUTTON)
                 continue;
             Button *btn = (Button *)ui.second;
             if (btn->button_mouse_hovering && btn->enabled)
                 btn->button_mouse_click = true;
         }
+        print("DB13");
     }));
 
     EventHandler::MouseUpActions.insert(std::make_pair("UIButtonMouseUp", []() {
+        print("DB14");
         for (auto &ui : UIs)
         {
-            if (!ui.second || ui.second->type != BUTTON)
+            if (!ui.second)
+                continue;
+            if (ui.second->type != BUTTON)
                 continue;
             Button *btn = (Button *)ui.second;
             if (btn->button_mouse_click && btn->button_mouse_hovering &&
                 (SDL_GetTicks() - btn->lastButtonClick >= 250) && btn->enabled)
             {
+                print("DB16");
                 btn->onClick();
-                btn->lastButtonClick = SDL_GetTicks();
+                print("DB17");
+                if (btn)
+                    btn->lastButtonClick = SDL_GetTicks();
             }
-            btn->button_mouse_click = false;
+            if (btn)
+                btn->button_mouse_click = false;
+            print("DB22");
         }
+        print("DB15");
     }));
 }
 

@@ -6,4 +6,5 @@ class Scene
     static void Welcome();
     static void Play();
     static void MapMaking();
+    static void Common();
 };

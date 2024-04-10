@@ -14,7 +14,7 @@ extern TTF_Font *myFont;
 
 template <typename T> std::string str(T data)
 {
-    return str(data);
+    return std::to_string(data);
 }
 
 //----------------------------------------
