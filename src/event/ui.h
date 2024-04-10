@@ -62,14 +62,13 @@ class Canvas : public UI
     int spacing;
     int margin;
     bool vertical;
-    bool fixed_size;
 
     Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing = 0,
-           int margin = 0, bool vertical = true, bool fixed_size = true);
+           int margin = 0, bool vertical = true);
 
     std::vector<std::pair<std::string, int>> Components;
 
-    void AddComponent(std::string name, int blocks);
+    void AddComponent(std::string name, int blocks = 1);
     void AddComponents(const std::vector<std::pair<std::string, int>> &names);
 
     void RemoveComponent(std::string name);

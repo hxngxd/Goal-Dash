@@ -269,7 +269,7 @@ int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
 //----------------------------------------
 
 Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing = 0,
-               int margin = 0, bool vertical = true, bool fixed_size = true)
+               int margin = 0, bool vertical = true)
     : UI(CANVAS, name, position, size, "", 0)
 {
     print("creating", name, "canvas");
@@ -277,7 +277,6 @@ Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, i
     this->spacing = spacing;
     this->margin = margin;
     this->vertical = vertical;
-    this->fixed_size = fixed_size;
     print(name, "canvas created");
 }
 
@@ -309,6 +308,7 @@ void Canvas::RemoveComponent(std::string name)
 void Canvas::CalculateComponentsPosition()
 {
     int numOfComponents = Components.size();
+
     if (!numOfComponents)
         return;
 
@@ -316,86 +316,43 @@ void Canvas::CalculateComponentsPosition()
     {
         UI *&ui = UIs[Components[0].first];
         ui->position = position + Vector2(margin);
-        if (fixed_size)
-            ui->size = size - Vector2(2 * margin);
-        else
-        {
-            if (vertical_alignment)
-            {
-                ui->size.x = size.x - 2 * margin;
-                size.y = ui->size.y + 2 * margin;
-            }
-            else
-            {
-                ui->size.y = size.y - 2 * margin;
-                size.x = ui->size.x + 2 * margin;
-            }
-        }
-        ui->font_size = std::min(ui->original_font_size, CalculateFontSize(ui->size, ui->label));
+
+        ui->size = size - Vector2(2 * margin);
+
+        ui->font_size = std::min(ui->original_font_size, Text::CalculateFontSize(ui->size, ui->label));
         return;
     }
 
-    int numOfSpacing = numOfComponents - 1;
+    int numOfBlocks = 0;
+    for (auto &com : Components)
+        numOfBlocks += com.second;
+
+    int numOfSpacings = numOfBlocks - 1;
+
+    int blockSize = ceil(((vertical ? size.y : size.x) - 2 * margin - numOfSpacings * spacing) / numOfBlocks);
+
     Vector2 currentPosition = position + Vector2(margin);
 
-    if (fixed_size)
+    for (auto &com : Components)
     {
-        Vector2 ComponentSize = Vector2();
-        if (vertical_alignment)
-        {
-            ComponentSize =
-                Vector2(size.x - 2 * margin, ceil((size.y - 2 * margin - numOfSpacing * spacing) / numOfComponents));
-        }
-        else
-        {
-            ComponentSize =
-                Vector2(ceil((size.x - 2 * margin - numOfSpacing * spacing) / numOfComponents), size.y - 2 * margin);
-        }
+        UI *&ui = UI::UIs[com.first];
+        if (!ui)
+            continue;
 
-        for (auto &com : Components)
+        ui->position = currentPosition;
+        if (vertical)
         {
-            UI *&ui = UIs[com];
-            if (!ui)
-                continue;
-            ui->size = ComponentSize;
-            ui->position = currentPosition;
-            if (vertical_alignment)
-                currentPosition.y += ComponentSize.y + spacing;
-            else
-                currentPosition.x += ComponentSize.x + spacing;
-            ui->font_size = std::min(ui->original_font_size, CalculateFontSize(ui->size, ui->label));
+            ui->size.x = size.x - 2 * margin;
+            ui->size.y = spacing * (com.second - 1) + blockSize * com.second;
+            currentPosition += ui->size.y + spacing;
         }
-    }
-    else
-    {
-        if (vertical_alignment)
-            size.y = 2 * margin;
         else
-            size.x = 2 * margin;
-        for (auto &com : Components)
         {
-            UI *&ui = UIs[com];
-            if (!ui)
-                continue;
-            ui->position = currentPosition;
-            if (vertical_alignment)
-            {
-                currentPosition.y += ui->size.y + spacing;
-                size.y += ui->size.y + spacing;
-                ui->size.x = size.x - 2 * margin;
-            }
-            else
-            {
-                currentPosition.x += ui->size.x + spacing;
-                size.x += ui->size.x + spacing;
-                ui->size.y = size.y - 2 * margin;
-            }
-            ui->font_size = std::min(ui->original_font_size, CalculateFontSize(ui->size, ui->label));
+            ui->size.y = size.y - 2 * margin;
+            ui->size.x = spacing * (com.second - 1) + blockSize * com.second;
+            currentPosition += ui->size.x + spacing;
         }
-        if (vertical_alignment)
-            size.y -= spacing;
-        else
-            size.x -= spacing;
+        ui->font_size = std::min(ui->original_font_size, Text::CalculateFontSize(ui->size, ui->label));
     }
 }
 
