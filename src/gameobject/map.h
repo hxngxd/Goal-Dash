@@ -1,6 +1,8 @@
 #pragma once
 #include "gameobject.h"
 
+class Tile;
+
 class Map
 {
   public:

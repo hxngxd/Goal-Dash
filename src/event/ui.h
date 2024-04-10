@@ -11,22 +11,21 @@
 class UI
 {
   public:
+    static std::map<std::string, UI *> UIs;
+
+    int type;
     std::string name;
     Vector2 position;
     Vector2 size;
     int bg_opacity;
-    bool bg_border;
-    int label_opacity;
+    int border_opacity;
+
     std::string label;
     int original_font_size;
     int font_size;
-    int type;
 
-    UI(int type, std::string name, int bg_opacity = 64);
-    UI(int type, std::string name, std::string label, const Vector2 &size, int bg_opacity = 64,
-       int label_opacity = 255);
+    UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size);
 
-    static void Start();
     static void Update();
 
     static void DeleteUI(std::string name);
@@ -41,9 +40,8 @@ class Button : public UI
     bool hovering_sound, button_mouse_hovering, button_mouse_click;
     int lastButtonClick;
 
-    Button(
-        std::string name, std::string label, const Vector2 &size, std::function<void()> onClick = []() {},
-        int font_size = 150, bool bg_border = true);
+    Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
+           std::function<void()> onClick, int font_size = 150);
 
     void Update();
 };
@@ -51,8 +49,9 @@ class Button : public UI
 class Text : public UI
 {
   public:
-    Text(std::string name, std::string label, const Vector2 &size, int font_size = 150, int bg_opacity = 64,
-         int label_opacity = 255);
+    Text(std::string name, const Vector2 &position, Vector2 &size, std::string label, int font_size = 150);
+
+    static int CalculateFontSize(const Vector2 &bg_size, std::string label);
 
     void Update();
 };
@@ -62,23 +61,19 @@ class Canvas : public UI
   public:
     int spacing;
     int margin;
-    bool vertical_alignment;
+    bool vertical;
     bool fixed_size;
 
     Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing = 0,
-           int margin = 0, bool vertical_alignment = true, bool fixed_size = true);
+           int margin = 0, bool vertical = true, bool fixed_size = true);
 
-    std::vector<std::string> Components;
-    void AddComponent(std::string name);
-    void AddComponents(const std::vector<std::string> &names);
-    void RemoveComponents(std::string name);
-    void RecalculateComponentsPosition();
+    std::vector<std::pair<std::string, int>> Components;
+
+    void AddComponent(std::string name, int blocks);
+    void AddComponents(const std::vector<std::pair<std::string, int>> &names);
+
+    void RemoveComponent(std::string name);
+    void CalculateComponentsPosition();
 
     void Update();
 };
-
-extern std::map<std::string, UI *> UIs;
-
-int CalculateFontSize(const Vector2 &bg_size, std::string label);
-
-void PlayerHUD();

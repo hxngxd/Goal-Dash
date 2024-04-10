@@ -3,7 +3,7 @@
 class Scene
 {
   public:
-    void Welcome();
-    void Start();
-    void MapMaking();
+    static void Welcome();
+    static void Play();
+    static void MapMaking();
 };

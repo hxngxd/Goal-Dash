@@ -4,6 +4,7 @@
 #include "datalib/sprite.h"
 #include "datalib/util.h"
 #include "event/input.h"
+#include "event/scene.h"
 #include "event/ui.h"
 #include "func/func.h"
 
@@ -98,7 +99,7 @@ void Game::Start()
     //----------------------------------------
 
     print("loading font...");
-    myFont = TTF_OpenFont("myfont.ttf", 24);
+    myFont = TTF_OpenFont("fonts/myfont.ttf", 24);
     if (!myFont)
     {
         print("failed to load font");
@@ -108,7 +109,7 @@ void Game::Start()
 
     //----------------------------------------
 
-    UI::Start();
+    Scene::Welcome();
 
     //----------------------------------------
 
@@ -278,18 +279,21 @@ void Game::Quit()
 
     //----------------------------------------
 
-    print("deleting tiles....");
-    for (int i = 0; i < Screen::map_size; i++)
+    if (!Map::Tiles.empty())
     {
-        for (int j = 0; j < Screen::map_size; j++)
+        print("deleting tiles....");
+        for (int i = 0; i < Screen::map_size; i++)
         {
-            if (!Map::Tiles[i][j].second)
-                continue;
-            delete Map::Tiles[i][j].second;
-            Map::Tiles[i][j].second = nullptr;
+            for (int j = 0; j < Screen::map_size; j++)
+            {
+                if (!Map::Tiles[i][j].second)
+                    continue;
+                delete Map::Tiles[i][j].second;
+                Map::Tiles[i][j].second = nullptr;
+            }
         }
+        print("tiles deleted");
     }
-    print("tiles deleted");
 
     //----------------------------------------
 

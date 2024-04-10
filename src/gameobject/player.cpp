@@ -38,14 +38,14 @@ void Player::Update()
 
     MoveRightLeft();
 
-    if (Game::properties["no_gravity"].b)
+    if (Game::properties["player_gravity"].b)
         MoveDownUp();
     else
         Jump();
 
     Collision();
 
-    if (Game::properties["draw_ray"].b)
+    if (Game::properties["ray_enable"].b)
         DrawBox();
 }
 
@@ -145,7 +145,7 @@ void Player::MoveRightLeft()
 
     position.x += vx * Game::properties["player_move_speed"].f;
 
-    if (Game::properties["moving_background"].b)
+    if (Game::properties["background_move"].b)
     {
         Background::Move(Vector2(-vx, 0), 0, 0.25);
         Background::Move(Vector2(-vx, 0), 1, 0.5);
@@ -200,7 +200,7 @@ void Player::MoveDownUp()
 
 void Player::Collision()
 {
-    if (!Game::properties["collision"].b)
+    if (!Game::properties["player_collision"].b)
     {
         position.x = Clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
         position.y = Clamp(position.y, 0.0f, Screen::resolution.y - size.y);
@@ -272,7 +272,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     collide_up.first = true;
             }
 
-            if (Game::properties["draw_ray"].b)
+            if (Game::properties["ray_enable"].b)
             {
                 if (type & WALL)
                     Screen::SetDrawColor(Color::white(Game::properties["ray_opacity"].i));
@@ -282,7 +282,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         }
         else if (type & COIN)
         {
-            if (Game::properties["draw_ray"].b)
+            if (Game::properties["ray_enable"].b)
                 Screen::SetDrawColor(Color::yellow(Game::properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
@@ -297,7 +297,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 if (Game::properties["sound"].b)
                     PlaySound("coin", CHANNEL_COIN, 0);
 
-                if (score == Game::properties["coin"].i)
+                if (score == Map::count_types[COIN])
                 {
                     std::pair<int, Tile *> &win_tile = Map::Tiles[Map::win_tile.y][Map::win_tile.x];
                     win_tile.first = WIN;
@@ -310,14 +310,14 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     [](Tile *tile) {
                         Animate(tile, "coin");
                         return TransformValue(&tile->scale, Game::properties["tile_scale"].f,
-                                              Game::properties["rescale_speed"].f) &&
+                                              Game::properties["tile_rescale_speed"].f) &&
                                TransformVector2(&tile->position, Vector2(Screen::tile_size * 2, 0), 0.05f, 5);
                     },
                     flying_coin));
                 lf->NextFunction(std::bind(
                     [](Tile *tile) {
                         Animate(tile, "coin");
-                        return TransformValue<float>(&tile->scale, 0, Game::properties["rescale_speed"].f);
+                        return TransformValue<float>(&tile->scale, 0, Game::properties["tile_rescale_speed"].f);
                     },
                     flying_coin));
                 lf->NextFunction(std::bind(
@@ -335,35 +335,35 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         }
         else if (type & WIN)
         {
-            if (Game::properties["draw_ray"].b)
+            if (Game::properties["ray_enable"].b)
                 Screen::SetDrawColor(Color::green(Game::properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0) &&
-                !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::["tile_scale"].f)
+                !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::properties["tile_scale"].f)
             {
                 print("player won");
                 won = true;
-                LinkedFunction *lf = new LinkedFunction(
-                    []() {
-                        if (Game::scene)
-                        {
-                            nextMap = true;
-                            Game::scene->DeleteScene();
-                        }
-                        return 1;
-                    },
-                    250);
-                lf->Execute();
+                // LinkedFunction *lf = new LinkedFunction(
+                //     []() {
+                //         if (Game::scene)
+                //         {
+                //             nextMap = true;
+                //             Game::scene->DeleteScene();
+                //         }
+                //         return 1;
+                //     },
+                //     250);
+                // lf->Execute();
             }
         }
         else if (type & SPAWN)
         {
-            if (Game::properties["draw_ray"].b)
+            if (Game::properties["ray_enable"].b)
                 Screen::SetDrawColor(Color::cyan(Game::properties["ray_opacity"].i));
         }
 
-        if (Game::properties["draw_ray"].b && type)
+        if (Game::properties["ray_enable"].b && type)
         {
             SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, nextCenter.x, nextCenter.y);
         }
@@ -383,7 +383,7 @@ void Player::Jump()
         velocity.d += Game::properties["gravity"].f;
         position.y += velocity.d;
 
-        if (Game::properties["moving_background"].b)
+        if (Game::properties["background_move"].b)
         {
             Background::Move(Vector2(0, -velocity.d), 0, 0.1);
             Background::Move(Vector2(0, -velocity.d), 1, 0.15);
@@ -400,7 +400,7 @@ void Player::Jump()
 
         if (velocity.d > Screen::resolution.x / 70.0f)
         {
-            if (!Game::properties["immortal"].b)
+            if (!Game::properties["player_immortal"].b)
             {
                 if (Game::properties["sound"].b)
                     PlaySound("fall", CHANNEL_JUMP_FALL, 0);

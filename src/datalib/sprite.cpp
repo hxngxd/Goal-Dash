@@ -33,7 +33,7 @@ void SetSpriteOpacity(std::string name, int opacity)
 }
 
 void DrawSprite(std::string name, const Vector2 &position, const Vector2 &size, float scale, int current_frame,
-                bool flip = false)
+                bool flip)
 {
     Sprite *&sprite = Sprites[name];
     SDL_Rect src;
