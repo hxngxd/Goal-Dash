@@ -103,6 +103,13 @@ Vector2 Int(const Vector2 &v)
     return Vector2((int)v.x, (int)v.y);
 }
 
+void Swap(Vector2 &v)
+{
+    float tmp = v.x;
+    v.x = v.y;
+    v.y = tmp;
+}
+
 bool InRange(const Vector2 &v, const Vector2 &mn, const Vector2 &mx)
 {
     return mn.x <= v.x && v.x <= mx.x && mn.y <= v.y && v.y <= mx.y;

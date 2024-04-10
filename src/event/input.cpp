@@ -23,13 +23,13 @@ void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
             player->key_up = true;
         else if (key == keys.space)
         {
-            if (player->collide_down.second && !player->collide_up.second && !Game::Properties["no_gravity"].b)
+            if (player->collide_down.second && !player->collide_up.second && !Game::properties["no_gravity"].b)
             {
-                player->velocity.d = -Game::Properties["player_jump_speed"].f;
+                player->velocity.d = -Game::properties["player_jump_speed"].f;
                 player->position.y += player->velocity.d;
                 player->previous_state = player->current_state;
                 player->current_state = JUMP;
-                if (Game::Properties["sound"].b)
+                if (Game::properties["sound"].b)
                     PlaySound("jump", CHANNEL_JUMP_FALL, 0);
                 player->collide_down.second = false;
             }
@@ -84,6 +84,6 @@ void EventHandler::Update()
 
         if (Game::player)
             EventHandler::PlayerInputHandler(Game::player,
-                                             Game::Properties["keyboard_layout"].b ? right_keys : left_keys);
+                                             Game::properties["keyboard_layout"].b ? right_keys : left_keys);
     }
 }

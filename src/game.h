@@ -20,7 +20,6 @@ class Game
     static SDL_Window *window;
     static SDL_Renderer *renderer;
     static Player *player;
-    static Scene *scene;
     static int time[3];
 
     void Start();

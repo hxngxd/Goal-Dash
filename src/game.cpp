@@ -13,7 +13,6 @@ SDL_Event Game::event;
 SDL_Window *Game::window = nullptr;
 SDL_Renderer *Game::renderer = nullptr;
 Player *Game::player = nullptr;
-Scene *Game::scene = nullptr;
 int Game::time[3] = {0, 0, 0};
 
 Vector2 Screen::resolution;
@@ -35,6 +34,9 @@ void Game::Update()
     //----------------------------------------
 
     Map::Update();
+
+    if (Map::mode)
+        MapMaking::Update();
 
     EventHandler::Update();
 
@@ -107,10 +109,6 @@ void Game::Start()
     //----------------------------------------
 
     UI::Start();
-
-    //----------------------------------------
-
-    scene = new Scene();
 
     //----------------------------------------
 
@@ -378,9 +376,9 @@ void Screen::PointGrid(SDL_Color color)
 {
     SetDrawColor(color);
     int sqr = resolution.x / map_size;
-    for (int i = sqr; i < resolution.x; i += sqr)
+    for (int i = sqr; i < resolution.y; i += sqr)
     {
-        for (int j = sqr; j < resolution.y; j += sqr)
+        for (int j = sqr; j < resolution.x; j += sqr)
         {
             SDL_RenderDrawPoint(renderer, i, j);
         }

@@ -44,6 +44,10 @@ class Player : public GameObject
     animation_states current_state, previous_state;
     animation_directions direction;
 
+    int hp;
+    int score;
+    bool won;
+
     Player(Vector2 position);
     ~Player();
 

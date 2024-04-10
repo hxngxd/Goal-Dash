@@ -31,6 +31,7 @@ class MapMaking
   public:
     static Vector2 current_mouse_tile;
     static int current_drawing_type;
+    static bool allow_drawing;
 
     static void Random();
     static bool Validation(int ei, int ej);
@@ -39,6 +40,9 @@ class MapMaking
     static void Horizontal(int i, int j, bool isRight, std::vector<std::vector<bool>> &visitable);
     static void DownVertical(int i, int j, std::vector<std::vector<bool>> &visitable);
 
+    static void Clear(LinkedFunction *post_func);
     static void Save();
     static void ChangeMap();
+
+    static void Update();
 };

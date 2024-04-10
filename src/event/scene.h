@@ -3,8 +3,7 @@
 class Scene
 {
   public:
-    Scene();
-    Scene(bool create_player);
-
-    void DeleteScene();
+    void Welcome();
+    void Start();
+    void MapMaking();
 };

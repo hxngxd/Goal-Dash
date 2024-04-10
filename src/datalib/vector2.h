@@ -53,6 +53,8 @@ Vector2 Min(const Vector2 &v1, const Vector2 &v2);
 
 Vector2 Int(const Vector2 &v);
 
+void Swap(Vector2 &v);
+
 bool InRange(const Vector2 &v, const Vector2 &mn, const Vector2 &mx);
 
 struct Vector2Hash
