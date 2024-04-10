@@ -59,6 +59,7 @@ void EventHandler::MouseInputHandler()
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
+            isMouseLeft = true;
             for (auto &action : MouseDownActions)
                 action.second();
         }
@@ -67,6 +68,7 @@ void EventHandler::MouseInputHandler()
     {
         if (Game::event.button.button == SDL_BUTTON_LEFT)
         {
+            isMouseLeft = false;
             for (auto &action : MouseUpActions)
                 action.second();
         }

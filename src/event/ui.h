@@ -26,6 +26,7 @@ class UI
 
     UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size);
 
+    static void Start();
     static void Update();
 
     static void DeleteUI(std::string name);
@@ -49,7 +50,7 @@ class Button : public UI
 class Text : public UI
 {
   public:
-    Text(std::string name, const Vector2 &position, Vector2 &size, std::string label, int font_size = 150);
+    Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size = 150);
 
     static int CalculateFontSize(const Vector2 &bg_size, std::string label);
 

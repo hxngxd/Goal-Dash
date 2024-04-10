@@ -8,23 +8,49 @@
 
 void Scene::Welcome()
 {
+    print("creating welcome scene...");
     print("creating border...");
     Map::Border();
     print("border created...");
 
-    // print("creating welcoming canvas...");
-    // Canvas *cv = new Canvas(
-    //     "welcome", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 5.0f),
-    //     Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.5f), 128, 8, 8, 1, 1);
-    // print("done");
+    print("creating welcoming canvas...");
+    Canvas *cv = new Canvas(
+        "welcome", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 4.0f),
+        Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.0f), 0, 8, 8, 1);
 
-    // print("creating buttons...");
-    // Button *startbtn = new Button(
-    //     "start", "Start", Vector2(), []() {}, 50, 0);
-    // Button *settingsbtn = new Button(
-    //     "settings", "Settings", Vector2(), []() {}, 50, 0);
-    // Button *aboutbtn = new Button(
-    //     "about", "About", Vector2(), []() { SDL_OpenURL("https://github.com/hxngxd"); }, 50, 0);
+    print("creating title...");
+    Text *title = new Text("title", Vector2(), Vector2(), "GOAL DASH", 55);
+
+    print("creating buttons...");
+    Button *start = new Button(
+        "start", Vector2(), Vector2(), "Start", []() {}, 50);
+    Button *map = new Button(
+        "map", Vector2(), Vector2(), "Map Building", []() {}, 50);
+
+    Canvas *cv1 = new Canvas("cv1", Vector2(), Vector2(), 0, 8, 0, 0);
+
+    Button *settings = new Button(
+        "settings", Vector2(), Vector2(), "Settings", []() {}, 50);
+    Button *about = new Button(
+        "about", Vector2(), Vector2(), "About", []() { SDL_OpenURL("https://github.com/hxngxd"); }, 50);
+
+    Button *exit = new Button(
+        "exit", Vector2(), Vector2(), "Exit",
+        []() {
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    game->running = false;
+                    return 1;
+                },
+                100);
+            lf->Execute();
+        },
+        50);
+
+    cv->AddComponents({{"title", 2}, {"start", 1}, {"map", 1}, {"cv1", 1}, {"exit", 1}});
+
+    cv1->AddComponents({{"settings", 1}, {"about", 1}});
+
     // Button *mapbutton = new Button(
     //     "map", "Map Making", Vector2(),
     //     []() {
@@ -42,22 +68,8 @@ void Scene::Welcome()
     //         // lf->Execute();
     //     },
     //     50, 0);
-    // Button *exitbtn = new Button(
-    //     "exit", "Exit", Vector2(),
-    //     []() {
-    //         LinkedFunction *lf = new LinkedFunction(
-    //             []() {
-    //                 game->running = false;
-    //                 return 1;
-    //             },
-    //             250);
-    //         lf->Execute();
-    //     },
-    //     50, 0);
-    // Text *title = new Text("title", "Goal Dash", Vector2(), 150);
-    // cv->AddComponents({"title", "start", "settings", "map", "about", "exit"});
 
-    // print("buttons created");
+    print("done");
 }
 
 void Scene::Play()

@@ -442,7 +442,7 @@ void MapMaking::Random()
                 []() {
                     allow_drawing = true;
                     for (auto &btn : btns)
-                        ((Button *)UIs[btn])->enabled = true;
+                        ((Button *)UI::UIs[btn])->enabled = true;
                     print("done");
                     return 1;
                 },
@@ -650,7 +650,7 @@ void MapMaking::ChangeMap()
                 []() {
                     allow_drawing = true;
                     for (auto &btn : btns)
-                        ((Button *)UIs[btn])->enabled = true;
+                        ((Button *)UI::UIs[btn])->enabled = true;
                     print("done");
                     return 1;
                 },
@@ -668,67 +668,67 @@ void MapMaking::Clear(LinkedFunction *post_func)
     print("clearing map...");
     allow_drawing = false;
     for (auto &btn : btns)
-        ((Button *)UIs[btn])->enabled = false;
+        ((Button *)UI::UIs[btn])->enabled = false;
     Map::RemoveTiles();
     post_func->Execute();
 }
 
 void MapHUD()
 {
-    Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    Button *clear = new Button(
-        "clear", "Clear", Vector2(Screen::tile_size * 2, 0),
-        []() {
-            Map::current_map = 0;
-            LinkedFunction *lf = new LinkedFunction(
-                []() {
-                    MapMaking::allow_drawing = true;
-                    for (auto &btn : btns)
-                        ((Button *)UIs[btn])->enabled = true;
-                    print("done");
-                    return 1;
-                },
-                Map::nempty * Game::properties["map_delay"].f + 250);
-            MapMaking::Clear(lf);
-        },
-        25);
-    Button *save = new Button("save", "Save", Vector2(Screen::tile_size * 2, 0), MapMaking::Save, 25);
-    Button *random = new Button("random", "Random", Vector2(Screen::tile_size * 2, 0), MapMaking::Random, 25);
-    Button *prevmap = new Button(
-        "prev", "<", Vector2(Screen::tile_size, 0),
-        []() {
-            if (Map::current_map <= 1)
-                return;
-            Map::current_map--;
-            MapMaking::ChangeMap();
-        },
-        25);
-    Button *nextmap = new Button(
-        "next", ">", Vector2(Screen::tile_size, 0),
-        []() {
-            Map::current_map++;
-            MapMaking::ChangeMap();
-        },
-        25);
-    Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
-    hcv1->AddComponents({"clear", "save", "random", "prev", "map", "next"});
+    // Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    // Button *clear = new Button(
+    //     "clear", "Clear", Vector2(Screen::tile_size * 2, 0),
+    //     []() {
+    //         Map::current_map = 0;
+    //         LinkedFunction *lf = new LinkedFunction(
+    //             []() {
+    //                 MapMaking::allow_drawing = true;
+    //                 for (auto &btn : btns)
+    //                     ((Button *)UI::UIs[btn])->enabled = true;
+    //                 print("done");
+    //                 return 1;
+    //             },
+    //             Map::nempty * Game::properties["map_delay"].f + 250);
+    //         MapMaking::Clear(lf);
+    //     },
+    //     25);
+    // Button *save = new Button("save", "Save", Vector2(Screen::tile_size * 2, 0), MapMaking::Save, 25);
+    // Button *random = new Button("random", "Random", Vector2(Screen::tile_size * 2, 0), MapMaking::Random, 25);
+    // Button *prevmap = new Button(
+    //     "prev", "<", Vector2(Screen::tile_size, 0),
+    //     []() {
+    //         if (Map::current_map <= 1)
+    //             return;
+    //         Map::current_map--;
+    //         MapMaking::ChangeMap();
+    //     },
+    //     25);
+    // Button *nextmap = new Button(
+    //     "next", ">", Vector2(Screen::tile_size, 0),
+    //     []() {
+    //         Map::current_map++;
+    //         MapMaking::ChangeMap();
+    //     },
+    //     25);
+    // Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
+    // hcv1->AddComponents({"clear", "save", "random", "prev", "map", "next"});
 
-    Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
-                              Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    Button *erase = new Button(
-        "erase", "Erase", Vector2(Screen::tile_size * 2, 0),
-        []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == EMPTY ? -1 : EMPTY); }, 25);
-    Button *drawWall = new Button(
-        "wall", "Wall", Vector2(Screen::tile_size * 2, 0),
-        []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == WALL ? -1 : WALL); }, 25);
-    Button *drawCoin = new Button(
-        "coin", "Coin", Vector2(Screen::tile_size * 2, 0),
-        []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == COIN ? -1 : COIN); }, 25);
-    Button *drawSpawn = new Button(
-        "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0),
-        []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == SPAWN ? -1 : SPAWN); }, 25);
-    Button *drawWin = new Button(
-        "win", "Win", Vector2(Screen::tile_size * 2, 0),
-        []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == WIN ? -1 : WIN); }, 25);
-    hcv2->AddComponents({"erase", "wall", "coin", "spawn", "win"});
+    // Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+    //                           Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
+    // Button *erase = new Button(
+    //     "erase", "Erase", Vector2(Screen::tile_size * 2, 0),
+    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == EMPTY ? -1 : EMPTY); }, 25);
+    // Button *drawWall = new Button(
+    //     "wall", "Wall", Vector2(Screen::tile_size * 2, 0),
+    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == WALL ? -1 : WALL); }, 25);
+    // Button *drawCoin = new Button(
+    //     "coin", "Coin", Vector2(Screen::tile_size * 2, 0),
+    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == COIN ? -1 : COIN); }, 25);
+    // Button *drawSpawn = new Button(
+    //     "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0),
+    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == SPAWN ? -1 : SPAWN); }, 25);
+    // Button *drawWin = new Button(
+    //     "win", "Win", Vector2(Screen::tile_size * 2, 0),
+    //     []() { MapMaking::current_drawing_type = (MapMaking::current_drawing_type == WIN ? -1 : WIN); }, 25);
+    // hcv2->AddComponents({"erase", "wall", "coin", "spawn", "win"});
 }

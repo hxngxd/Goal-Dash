@@ -58,6 +58,36 @@ void PlayerHUD()
 
 //----------------------------------------
 
+void UI::Start()
+{
+    EventHandler::MouseDownActions.insert(std::make_pair("UIButtonMouseDown", []() {
+        for (auto &ui : UIs)
+        {
+            if (!ui.second || ui.second->type != BUTTON)
+                continue;
+            Button *btn = (Button *)ui.second;
+            if (btn->button_mouse_hovering && btn->enabled)
+                btn->button_mouse_click = true;
+        }
+    }));
+
+    EventHandler::MouseUpActions.insert(std::make_pair("UIButtonMouseUp", []() {
+        for (auto &ui : UIs)
+        {
+            if (!ui.second || ui.second->type != BUTTON)
+                continue;
+            Button *btn = (Button *)ui.second;
+            if (btn->button_mouse_click && btn->button_mouse_hovering &&
+                (SDL_GetTicks() - btn->lastButtonClick >= 250) && btn->enabled)
+            {
+                btn->onClick();
+                btn->lastButtonClick = SDL_GetTicks();
+            }
+            btn->button_mouse_click = false;
+        }
+    }));
+}
+
 void UI::Update()
 {
     for (auto &ui : UIs)
@@ -123,7 +153,7 @@ void UI::DeleteUIs()
 //----------------------------------------
 
 Button::Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
-               std::function<void()> onClick, int font_size = 150)
+               std::function<void()> onClick, int font_size)
     : UI(BUTTON, name, position, size, label, font_size)
 {
     print("creating", name, "button");
@@ -210,7 +240,7 @@ void Button::Update()
 
 //----------------------------------------
 
-Text::Text(std::string name, const Vector2 &position, Vector2 &size, std::string label, int font_size = 150)
+Text::Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size)
     : UI(TEXT, name, position, size, label, font_size)
 {
     print("creating", name, "text");
@@ -268,12 +298,13 @@ int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
 
 //----------------------------------------
 
-Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing = 0,
-               int margin = 0, bool vertical = true)
+Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
+               bool vertical)
     : UI(CANVAS, name, position, size, "", 0)
 {
     print("creating", name, "canvas");
     UIs[name] = this;
+    this->bg_opacity = bg_opacity;
     this->spacing = spacing;
     this->margin = margin;
     this->vertical = vertical;
@@ -317,7 +348,7 @@ void Canvas::CalculateComponentsPosition()
         UI *&ui = UIs[Components[0].first];
         ui->position = position + Vector2(margin);
 
-        ui->size = size - Vector2(2 * margin);
+        ui->size = size - Vector2(2.0f * margin);
 
         ui->font_size = std::min(ui->original_font_size, Text::CalculateFontSize(ui->size, ui->label));
         return;
@@ -329,7 +360,7 @@ void Canvas::CalculateComponentsPosition()
 
     int numOfSpacings = numOfBlocks - 1;
 
-    int blockSize = ceil(((vertical ? size.y : size.x) - 2 * margin - numOfSpacings * spacing) / numOfBlocks);
+    float blockSize = ((vertical ? size.y : size.x) - 2.0f * margin - numOfSpacings * spacing) / (float)numOfBlocks;
 
     Vector2 currentPosition = position + Vector2(margin);
 
@@ -342,15 +373,15 @@ void Canvas::CalculateComponentsPosition()
         ui->position = currentPosition;
         if (vertical)
         {
-            ui->size.x = size.x - 2 * margin;
-            ui->size.y = spacing * (com.second - 1) + blockSize * com.second;
-            currentPosition += ui->size.y + spacing;
+            ui->size.x = size.x - 2.0f * margin;
+            ui->size.y = (float)spacing * (com.second - 1) + blockSize * com.second;
+            currentPosition.y += ui->size.y + spacing;
         }
         else
         {
-            ui->size.y = size.y - 2 * margin;
-            ui->size.x = spacing * (com.second - 1) + blockSize * com.second;
-            currentPosition += ui->size.x + spacing;
+            ui->size.y = size.y - 2.0f * margin;
+            ui->size.x = (float)spacing * (com.second - 1) + blockSize * com.second;
+            currentPosition.x += ui->size.x + spacing;
         }
         ui->font_size = std::min(ui->original_font_size, Text::CalculateFontSize(ui->size, ui->label));
     }
