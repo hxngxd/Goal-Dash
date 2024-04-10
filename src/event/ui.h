@@ -43,7 +43,7 @@ class Button : public UI
 
     Button(
         std::string name, std::string label, const Vector2 &size, std::function<void()> onClick = []() {},
-        int font_size = 150);
+        int font_size = 150, bool bg_border = true);
 
     void Update();
 };

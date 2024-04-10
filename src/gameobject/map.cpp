@@ -18,7 +18,7 @@ Vector2 MapTile::WinTile;
 bool MapTile::isMakingMap = false;
 
 Vector2 MapMaking::mouseTile(-1);
-int MapMaking::currentDrawingType = EMPTY;
+int MapMaking::currentDrawingType = -1;
 int numofSpawn = 0, numofWin = 0;
 
 MapTile::MapTile(Vector2 position, Vector2 size)
@@ -213,6 +213,9 @@ void MapTile::Update()
             if (!TileMap[i][j].second->scale)
                 continue;
 
+            if (i == 0 || i == Screen::map_size - 1)
+                continue;
+
             SDL_Rect rect =
                 Rect::Rescale(TileMap[i][j].second->position, TileMap[i][j].second->size, TileMap[i][j].second->scale);
 
@@ -241,7 +244,7 @@ void MapTile::Update()
         }
     }
 
-    if (isMakingMap)
+    if (isMakingMap && MapMaking::currentDrawingType != -1)
     {
         Vector2 currentMouseTile = Int(mousePosition / Screen::tile_size);
         if (InRange(currentMouseTile, Vector2(1), Vector2(Screen::map_size - 2)))
@@ -264,7 +267,7 @@ void MapTile::Update()
                 Screen::SetDrawColor(Color::yellow(64));
                 break;
             case EMPTY:
-                Screen::SetDrawColor(Color::black(128));
+                Screen::SetDrawColor(Color::red(64));
                 break;
             default:
                 break;
@@ -738,15 +741,20 @@ void MapHUD()
     Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                               Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
     Button *erase = new Button(
-        "erase", "Erase", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = EMPTY; }, 25);
+        "erase", "Erase", Vector2(Screen::tile_size * 2, 0),
+        []() { MapMaking::currentDrawingType = (MapMaking::currentDrawingType == EMPTY ? -1 : EMPTY); }, 25);
     Button *drawWall = new Button(
-        "wall", "Wall", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = WALL; }, 25);
+        "wall", "Wall", Vector2(Screen::tile_size * 2, 0),
+        []() { MapMaking::currentDrawingType = (MapMaking::currentDrawingType == WALL ? -1 : WALL); }, 25);
     Button *drawCoin = new Button(
-        "coin", "Coin", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = COIN; }, 25);
+        "coin", "Coin", Vector2(Screen::tile_size * 2, 0),
+        []() { MapMaking::currentDrawingType = (MapMaking::currentDrawingType == COIN ? -1 : COIN); }, 25);
     Button *drawSpawn = new Button(
-        "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = SPAWN; }, 25);
+        "spawn", "Spawn", Vector2(Screen::tile_size * 2, 0),
+        []() { MapMaking::currentDrawingType = (MapMaking::currentDrawingType == SPAWN ? -1 : SPAWN); }, 25);
     Button *drawWin = new Button(
-        "win", "Win", Vector2(Screen::tile_size * 2, 0), []() { MapMaking::currentDrawingType = WIN; }, 25);
+        "win", "Win", Vector2(Screen::tile_size * 2, 0),
+        []() { MapMaking::currentDrawingType = (MapMaking::currentDrawingType == WIN ? -1 : WIN); }, 25);
     hcv2->AddComponents({"erase", "wall", "coin", "spawn", "win"});
 }
 

@@ -19,44 +19,55 @@ Scene::Scene()
     print("done");
 
     print("creating buttons...");
-    Button *startbtn = new Button("start", "Start", Vector2(), []() {
-        Game::scene->DeleteScene();
-        LinkedFunction *lf = new LinkedFunction(
-            []() {
-                UI::DeleteUIs();
-                PlayerHUD();
-                Game::scene = new Scene(true);
-                return 1;
-            },
-            250);
-        lf->Execute();
-    });
-    Button *settingsbtn = new Button("settings", "Settings", Vector2());
-    Button *aboutbtn = new Button("about", "About", Vector2(), []() { SDL_OpenURL("https://github.com/hxngxd"); });
-    Button *mapbutton = new Button("map", "Map Making", Vector2(), []() {
-        Game::scene->DeleteScene();
-        LinkedFunction *lf = new LinkedFunction(
-            []() {
-                UI::DeleteUIs();
-                MapHUD();
-                MapTile::isMakingMap = true;
-                MapTile::currentMap = 1;
-                Game::scene = new Scene(false);
-                MapTile::currentMap--;
-                return 1;
-            },
-            250);
-        lf->Execute();
-    });
-    Button *exitbtn = new Button("exit", "Exit", Vector2(), []() {
-        LinkedFunction *lf = new LinkedFunction(
-            []() {
-                game->Stop();
-                return 1;
-            },
-            250);
-        lf->Execute();
-    });
+    Button *startbtn = new Button(
+        "start", "Start", Vector2(),
+        []() {
+            Game::scene->DeleteScene();
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    UI::DeleteUIs();
+                    PlayerHUD();
+                    Game::scene = new Scene(true);
+                    return 1;
+                },
+                250);
+            lf->Execute();
+        },
+        50, 0);
+    Button *settingsbtn = new Button(
+        "settings", "Settings", Vector2(), []() {}, 50, 0);
+    Button *aboutbtn = new Button(
+        "about", "About", Vector2(), []() { SDL_OpenURL("https://github.com/hxngxd"); }, 50, 0);
+    Button *mapbutton = new Button(
+        "map", "Map Making", Vector2(),
+        []() {
+            Game::scene->DeleteScene();
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    UI::DeleteUIs();
+                    MapHUD();
+                    MapTile::isMakingMap = true;
+                    MapTile::currentMap = 1;
+                    Game::scene = new Scene(false);
+                    MapTile::currentMap--;
+                    return 1;
+                },
+                250);
+            lf->Execute();
+        },
+        50, 0);
+    Button *exitbtn = new Button(
+        "exit", "Exit", Vector2(),
+        []() {
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    game->Stop();
+                    return 1;
+                },
+                250);
+            lf->Execute();
+        },
+        50, 0);
     Text *title = new Text("title", "Goal Dash", Vector2(), 150);
     cv->AddComponents({"title", "start", "settings", "map", "about", "exit"});
 

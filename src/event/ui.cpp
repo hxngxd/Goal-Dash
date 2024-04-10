@@ -75,7 +75,6 @@ UI::UI(int type, std::string name, int bg_opacity)
     this->type = type;
     this->name = name;
     this->bg_opacity = bg_opacity;
-    this->bg_border = true;
 }
 
 UI::UI(int type, std::string name, std::string label, const Vector2 &size, int bg_opacity, int label_opacity)
@@ -87,7 +86,6 @@ UI::UI(int type, std::string name, std::string label, const Vector2 &size, int b
     this->label = label;
     this->bg_opacity = bg_opacity;
     this->label_opacity = label_opacity;
-    this->bg_border = true;
 }
 
 void UI::DeleteUI(std::string name)
@@ -115,7 +113,8 @@ void UI::DeleteUIs()
 
 //----------------------------------------
 
-Button::Button(std::string name, std::string label, const Vector2 &size, std::function<void()> onClick, int font_size)
+Button::Button(std::string name, std::string label, const Vector2 &size, std::function<void()> onClick, int font_size,
+               bool bg_border)
     : UI(BUTTON, name, label, size)
 {
     print("creating", name, "button");
@@ -131,6 +130,7 @@ Button::Button(std::string name, std::string label, const Vector2 &size, std::fu
     this->lastButtonClick = 0;
     this->original_font_size = font_size;
     this->enabled = true;
+    this->bg_border = bg_border;
 
     print(name, "button created");
 }
@@ -193,7 +193,7 @@ void Button::Update()
         SDL_RenderFillRect(Game::renderer, &bgRect);
     }
 
-    Screen::SetDrawColor(button_mouse_click ? Color::blue() : Color::white(bg_border ? 64 : 0));
+    Screen::SetDrawColor(button_mouse_click ? Color::blue() : Color::white(bg_border ? 255 : 64));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
@@ -209,8 +209,8 @@ Text::Text(std::string name, std::string label, const Vector2 &size, int font_si
 {
     print("creating", name, "text");
     UIs[name] = this;
-    this->bg_border = false;
     this->original_font_size = font_size;
+    this->bg_border = true;
     print(name, "text created");
 }
 
