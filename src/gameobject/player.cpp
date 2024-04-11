@@ -9,6 +9,8 @@
 #include <set>
 #include <string>
 
+int Player::total_score = 0;
+
 Player::Player(Vector2 position)
 {
     this->name = "";
@@ -22,7 +24,7 @@ Player::Player(Vector2 position)
     this->current_state = this->previous_state = IDLE;
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
-    this->hp = 0;
+    this->hp = 100;
     this->current_score = 0;
     this->win_score = Map::count_types[COIN];
     this->won = false;
@@ -290,6 +292,9 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                                   0))
             {
                 current_score++;
+                total_score++;
+
+                Text::SetLabel("play-canvas-0-score", "Score: " + str(total_score));
 
                 print("player score", current_score, "/", win_score);
 
@@ -341,15 +346,16 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::properties["tile_scale"].f)
             {
                 print("player won");
-                PlaySound("win", CHANNEL_SPAWN_WIN, 0);
                 won = true;
+                print("deleting player...");
                 LinkedFunction *lf = new LinkedFunction(
                     []() {
-                        print("deleting player...");
                         return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
                     },
                     250);
                 lf->NextFunction([]() {
+                    PlaySound("win", CHANNEL_SPAWN_WIN, 0);
+                    Game::time[1] = SDL_GetTicks();
                     delete Game::player;
                     Game::player = nullptr;
                     Map::current_map++;
@@ -414,6 +420,7 @@ void Player::Jump()
                     PlaySound("fall", CHANNEL_JUMP_FALL, 0);
 
                 hp -= velocity.d / 2.5;
+                Text::SetLabel("play-canvas-1-hp", "Health: " + str(hp));
 
                 Damaged(true);
                 LinkedFunction *lf = new LinkedFunction(std::bind(

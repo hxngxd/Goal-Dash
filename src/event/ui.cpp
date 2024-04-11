@@ -302,6 +302,14 @@ int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
     return perfectFs;
 }
 
+void Text::SetLabel(std::string name, std::string label)
+{
+    if (UIs.find(name) != UIs.end())
+    {
+        UIs[name]->label = label;
+    }
+}
+
 //----------------------------------------
 
 Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
@@ -351,6 +359,9 @@ void Canvas::CalculateComponentsPosition()
 
     if (numOfComponents == 1)
     {
+        if (UI::UIs.find(Components[0].first) == UI::UIs.end())
+            return;
+
         UI *&ui = UIs[Components[0].first];
         ui->position = position + Vector2(margin);
 
@@ -372,6 +383,8 @@ void Canvas::CalculateComponentsPosition()
 
     for (auto &com : Components)
     {
+        if (UI::UIs.find(com.first) == UI::UIs.end())
+            continue;
         UI *&ui = UI::UIs[com.first];
         if (!ui)
             continue;

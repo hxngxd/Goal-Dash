@@ -80,6 +80,8 @@ void Map::LoadMap()
         }
     }
 
+    Text::SetLabel(mode ? "map-canvas-0-map" : "play-canvas-0-map", "Map: " + str(current_map));
+
     nempty = 0;
     for (int i = 1; i < Screen::map_size - 1; i++)
     {
@@ -327,6 +329,8 @@ void MapMaking::Update()
 void MapMaking::Random()
 {
     print("generating map...");
+
+    Text::SetLabel("map-canvas-0-map", "Map: 0");
 
     LinkedFunction *lf = new LinkedFunction(
         []() {
@@ -644,6 +648,8 @@ void MapMaking::Save()
 
     Map::current_map = map;
 
+    Text::SetLabel("map-canvas-0-map", "Map: " + str(map));
+
     print("saved to", filename);
 }
 
@@ -675,6 +681,7 @@ void MapMaking::ChangeMap()
 void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
+    Text::SetLabel("map-canvas-0-map", "Map: 0");
     if (Map::mode)
     {
         allow_drawing = false;
@@ -694,7 +701,7 @@ void MapMaking::ToggleBtns(bool toggle)
     };
     for (auto &btn : btns)
     {
-        if (UI::UIs[btn])
+        if (UI::UIs.find(btn) != UI::UIs.end())
             ((Button *)UI::UIs[btn])->enabled = toggle;
     }
 }

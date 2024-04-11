@@ -58,6 +58,8 @@ class Text : public UI
     static int CalculateFontSize(const Vector2 &bg_size, std::string label);
 
     void Update();
+
+    static void SetLabel(std::string name, std::string label);
 };
 
 class Canvas : public UI

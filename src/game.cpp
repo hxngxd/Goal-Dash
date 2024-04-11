@@ -46,6 +46,7 @@ void Game::Update()
     if (player)
     {
         player->Update();
+        Text::SetLabel("play-canvas-0-time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
     }
 
     LinkedFunction::Update();

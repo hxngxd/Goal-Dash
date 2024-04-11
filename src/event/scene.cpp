@@ -84,7 +84,7 @@ void Scene::Play()
 
     Text *time = new Text("play-canvas-0-time", Vector2(), Vector2(), "Time: 00:00:00.000", 25);
 
-    Text *map = new Text("play-canvas-0-map", Vector2(), Vector2(), "Map: 0", 25);
+    Text *map = new Text("play-canvas-0-map", Vector2(), Vector2(), "Map: " + str(Map::current_map), 25);
 
     Text *dif = new Text("play-canvas-0-dif", Vector2(), Vector2(), "Difficulty: idk", 25);
 
@@ -105,6 +105,9 @@ void Scene::Play()
     });
 
     Common();
+
+    Game::time[0] = SDL_GetTicks();
+    Game::time[1] = Game::time[2] = 0;
 
     SpawnPlayer();
 
@@ -151,7 +154,7 @@ void Scene::MapMaking()
             MapMaking::ChangeMap();
         },
         25);
-    Text *map = new Text("map-canvas-0-map", Vector2(), Vector2(), "Map: 0", 25);
+    Text *map = new Text("map-canvas-0-map", Vector2(), Vector2(), "Map: " + str(Map::current_map), 25);
 
     Button *next = new Button(
         "map-canvas-0-next", Vector2(), Vector2(), ">",
@@ -226,18 +229,35 @@ void Scene::Common()
         "common-canvas-0-home", Vector2(), Vector2(), "Home",
         []() {
             print("going back home...");
-            LinkedFunction *lf = new LinkedFunction(
-                []() {
-                    print("DB1");
-                    UI::RemovingUIs();
-                    print("DB2");
-                    Scene::Welcome();
-                    print("DB3");
-                    print("done");
+            auto goHome = []() {
+                LinkedFunction *lf = new LinkedFunction(
+                    []() {
+                        UI::RemovingUIs();
+                        Scene::Welcome();
+                        print("done");
+                        return 1;
+                    },
+                    Map::GetMapDelay());
+                MapMaking::Clear(lf);
+                return 1;
+            };
+            if (!Map::mode && Game::player)
+            {
+                LinkedFunction *lf = new LinkedFunction(
+                    []() {
+                        return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
+                    },
+                    250);
+                lf->NextFunction([]() {
+                    delete Game::player;
+                    Game::player = nullptr;
                     return 1;
-                },
-                Map::GetMapDelay());
-            MapMaking::Clear(lf);
+                });
+                lf->NextFunction(goHome);
+                lf->Execute();
+            }
+            else
+                goHome();
         },
         25);
 
@@ -275,6 +295,10 @@ void Scene::SpawnPlayer()
             print("creating player...");
             PlaySound("spawn", CHANNEL_SPAWN_WIN, 0);
             Game::player = new Player(Map::spawn_tile * Screen::tile_size);
+            Game::time[2] = SDL_GetTicks();
+            if (Game::time[1])
+                Game::time[0] += Game::time[2] - Game::time[1];
+
             return 1;
         },
         Map::GetMapDelay(100));
@@ -290,56 +314,3 @@ void Scene::SpawnPlayer()
         500);
     lf->Execute();
 }
-
-// Scene::Scene(bool create_player)
-// {
-//     print("creating new scene...");
-//     print("creating tiles...");
-//     MapTile::CreateTiles(!create_player);
-
-//     if (!create_player)
-//     {
-//         return;
-//     }
-//     LinkedFunction *lf = new LinkedFunction(
-//         std::bind([]() {
-//             print("tiles created");
-//             print("creating player...");
-//             PlaySound("spawn", CHANNEL_SPAWN_WIN, 0);
-
-//             Vector2 player_position(MapTile::SpawnTile.y * Screen::tile_size, MapTile::SpawnTile.x *
-//             Screen::tile_size); Game::player = new Player(player_position); if (!Game::player_time[0])
-//                 Game::player_time[0] = SDL_GetTicks();
-//             Game::player_time[1] = SDL_GetTicks();
-//             if (Game::player_time[2])
-//                 Game::player_time[0] += (Game::player_time[1] - Game::player_time[2]);
-//             return 1;
-//         }),
-//         (MapTile::nEmptyTiles + 4) * Game::Properties["map_delay"].f);
-//     lf->NextFunction([]() { return TransformValue(&Game::player->scale, 1.0f,
-//     Game::Properties["tile_rescale_speed"].f);
-//     },
-//                      0);
-//     lf->NextFunction(
-//         []() {
-//             return TransformValue(&TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y].second->scale, 0.0f,
-//                                   Game::Properties["tile_rescale_speed"].f);
-//         },
-//         500);
-//     lf->NextFunction(
-//         []() {
-//             std::pair<int, MapTile *> &spawn_tile = TileMap[MapTile::SpawnTile.x][MapTile::SpawnTile.y];
-//             spawn_tile.first = 0;
-//             delete spawn_tile.second;
-//             spawn_tile.second = nullptr;
-//             print("player created");
-//             return 1;
-//         },
-//         100);
-//     lf->NextFunction([]() {
-//         print("scene created");
-//         Game::player_won = false;
-//         return 1;
-//     });
-//     lf->Execute();
-// }

@@ -46,6 +46,7 @@ class Player : public GameObject
 
     int hp;
     int current_score, win_score;
+    static int total_score;
     bool won;
 
     Player(Vector2 position);
