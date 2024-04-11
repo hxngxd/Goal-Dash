@@ -288,8 +288,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Game::properties["ray_enable"].b)
                 Screen::SetDrawColor(Color::yellow(Game::properties["ray_opacity"].i));
 
-            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
-                                  0))
+            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
+                                  Vector2(Screen::tile_size * 0.6f), 0))
             {
                 current_score++;
                 total_score++;
@@ -312,7 +312,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 LinkedFunction *lf = new LinkedFunction(std::bind(
                     [](Tile *tile) {
                         Animate(tile, "coin");
-                        return TransformValue(&tile->scale, Game::properties["tile_scale"].f,
+                        return TransformValue(&tile->scale, Game::properties["tile_scale"].f * 0.6f,
                                               Game::properties["tile_rescale_speed"].f) &&
                                TransformVector2(&tile->position, Vector2(Screen::tile_size * 2, 0), 0.05f, 5);
                     },

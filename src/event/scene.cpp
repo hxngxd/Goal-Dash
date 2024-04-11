@@ -75,7 +75,6 @@ void Scene::Play()
     UI::RemovingUIs();
     Map::current_map == Game::properties["map_init"].i;
     Map::LoadMap();
-    Map::AddTiles();
 
     Canvas *cv0 =
         new Canvas("play-canvas-0", Vector2(), Vector2(Screen::tile_size * 15, Screen::tile_size), 0, 0, 0, 0);
@@ -110,6 +109,7 @@ void Scene::Play()
     Game::time[1] = Game::time[2] = 0;
 
     SpawnPlayer();
+    Map::AddTiles();
 
     print("done");
 }
@@ -122,7 +122,6 @@ void Scene::MapMaking()
     UI::RemovingUIs();
     Map::current_map = Game::properties["map_init"].i;
     Map::LoadMap();
-    Map::AddTiles();
 
     Canvas *cv0 = new Canvas("map-canvas-0", Vector2(), Vector2(Screen::tile_size * 10, Screen::tile_size), 0, 0, 0, 0);
 
@@ -203,6 +202,8 @@ void Scene::MapMaking()
     });
 
     Common();
+
+    Map::AddTiles();
 
     print("done");
 }
