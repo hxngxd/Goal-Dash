@@ -130,7 +130,8 @@ void Map::AddTiles()
             if (Tiles[i][j].first == SPAWN)
             {
                 spawn_tile = Vector2(j, i);
-                continue;
+                if (!mode)
+                    continue;
             }
             else if (Tiles[i][j].first == WIN)
             {
@@ -142,9 +143,11 @@ void Map::AddTiles()
         }
     }
 
-    AddTile(spawn_tile.y, spawn_tile.x, wait);
     if (!mode)
+    {
+        AddTile(spawn_tile.y, spawn_tile.x, wait);
         Tiles[win_tile.y][win_tile.x].first = 0;
+    }
 
     print("done");
 }

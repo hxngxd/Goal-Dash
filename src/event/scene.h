@@ -8,4 +8,5 @@ class Scene
     static void MapMaking();
     static void Common();
     static void SpawnPlayer();
+    static void Settings();
 };

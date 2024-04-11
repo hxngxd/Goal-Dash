@@ -24,8 +24,10 @@ class UI
     std::string label;
     int original_font_size;
     int font_size;
+    int label_alignment;
 
-    UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size);
+    UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
+       int font_size);
 
     static void Start();
     static void Update();
@@ -45,7 +47,7 @@ class Button : public UI
     int lastButtonClick;
 
     Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
-           std::function<void()> onClick, int font_size = 150);
+           std::function<void()> onClick, int label_alignment, int font_size = 150);
 
     void Update();
 };
@@ -53,7 +55,8 @@ class Button : public UI
 class Text : public UI
 {
   public:
-    Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size = 150);
+    Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
+         int font_size = 150);
 
     static int CalculateFontSize(const Vector2 &bg_size, std::string label);
 

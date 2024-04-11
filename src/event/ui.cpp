@@ -12,41 +12,6 @@ std::vector<std::string> UI::WaitingForRemoval;
 
 //----------------------------------------
 
-void PlayerHUD()
-{
-    // Canvas *hcv1 = new Canvas("horizontalhub1", Vector2(), Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    // Text *score = new Text("score", "Score: " + str(Game::player_score), Vector2(Screen::tile_size * 3, 0), 25);
-    // Text *time = new Text("time", "Time: 00:00:00.000", Vector2(Screen::tile_size * 5, 0), 25);
-    // Text *map = new Text("map", "Map: 0", Vector2(Screen::tile_size * 2, 0), 25);
-    // Text *difficulty = new Text("difficulty", "Difficulty: Easy", Vector2(Screen::tile_size * 5, 0), 25);
-    // hcv1->AddComponents({"score", "time", "map", "difficulty"});
-
-    // Canvas *vcv = new Canvas("verticalhub", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
-    //                          Vector2(Screen::tile_size, Screen::tile_size * 4), 0, 0, 0);
-    // Button *exitbtn = new Button(
-    //     "exit", "Exit", Vector2(), []() { game->Stop(); }, 20);
-    // Button *homebtn = new Button(
-    //     "home", "Home", Vector2(),
-    //     []() {
-    //         nextMap = false;
-    //         Game::scene->DeleteScene();
-    //     },
-    //     20);
-    // Button *settingsbtn = new Button(
-    //     "settings", "Settings", Vector2(), []() {}, 20);
-    // Button *mutebtn = new Button(
-    //     "mute", "Mute", Vector2(),
-    //     20);
-    // vcv->AddComponents({"exit", "home", "settings", "mute"});
-
-    // Canvas *hcv2 = new Canvas("horizontalhub2", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
-    //                           Vector2(0, Screen::tile_size), 0, 0, 0, 0, 0);
-    // Text *health = new Text("health", "Health: " + str(Game::player_health), Vector2(Screen::tile_size * 3, 0), 25);
-    // hcv2->AddComponents({"health"});
-}
-
-//----------------------------------------
-
 void UI::Start()
 {
     EventHandler::MouseDownActions.insert(std::make_pair("UIButtonMouseDown", []() {
@@ -94,7 +59,13 @@ void UI::Update()
                 Canvas *cv = (Canvas *)ui.second;
                 cv->Update();
             }
-            else if (ui.second->type == BUTTON)
+        }
+    }
+    for (auto &ui : UIs)
+    {
+        if (ui.second)
+        {
+            if (ui.second->type == BUTTON)
             {
                 Button *btn = (Button *)ui.second;
                 btn->Update();
@@ -108,7 +79,8 @@ void UI::Update()
     }
 }
 
-UI::UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size)
+UI::UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
+       int font_size)
 {
     this->type = type;
     this->name = name;
@@ -118,6 +90,7 @@ UI::UI(int type, std::string name, const Vector2 &position, const Vector2 &size,
     this->border_opacity = 127;
     this->label = label;
     this->font_size = this->original_font_size = font_size;
+    this->label_alignment = label_alignment;
 }
 
 void UI::RemoveUI(std::string name)
@@ -159,8 +132,8 @@ void UI::RemovingUIs()
 //----------------------------------------
 
 Button::Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
-               std::function<void()> onClick, int font_size)
-    : UI(BUTTON, name, position, size, label, font_size)
+               std::function<void()> onClick, int label_alignment, int font_size)
+    : UI(BUTTON, name, position, size, label, label_alignment, font_size)
 {
     print("creating", name, "button");
     UIs[name] = this;
@@ -187,7 +160,19 @@ void Button::Update()
     SDL_Rect labelRect;
     TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
     Vector2 center = Rect::GetCenter(position, size);
-    labelRect.x = center.x - labelRect.w / 2;
+    int indent = Screen::resolution.x / 95.0f;
+    switch (label_alignment)
+    {
+    case 0:
+        labelRect.x = position.x + indent;
+        break;
+    case 1:
+        labelRect.x = center.x - labelRect.w / 2;
+        break;
+    case 2:
+        labelRect.x = position.x + size.x - labelRect.w - indent;
+        break;
+    }
     labelRect.y = center.y - labelRect.h / 2;
 
     SDL_Rect bgRect;
@@ -246,8 +231,9 @@ void Button::Update()
 
 //----------------------------------------
 
-Text::Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int font_size)
-    : UI(TEXT, name, position, size, label, font_size)
+Text::Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
+           int font_size)
+    : UI(TEXT, name, position, size, label, label_alignment, font_size)
 {
     print("creating", name, "text");
     UIs[name] = this;
@@ -264,7 +250,19 @@ void Text::Update()
     SDL_Rect labelRect;
     TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
     Vector2 center = Rect::GetCenter(position, size);
-    labelRect.x = center.x - labelRect.w / 2;
+    int indent = Screen::resolution.x / 95.0f;
+    switch (label_alignment)
+    {
+    case 0:
+        labelRect.x = position.x + indent;
+        break;
+    case 1:
+        labelRect.x = center.x - labelRect.w / 2;
+        break;
+    case 2:
+        labelRect.x = position.x + size.x - labelRect.w - indent;
+        break;
+    }
     labelRect.y = center.y - labelRect.h / 2;
 
     SDL_Rect bgRect;
@@ -279,7 +277,7 @@ void Text::Update()
         SDL_RenderFillRect(Game::renderer, &bgRect);
     }
 
-    Screen::SetDrawColor(Color::white(127));
+    Screen::SetDrawColor(Color::white(64));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
@@ -314,7 +312,7 @@ void Text::SetLabel(std::string name, std::string label)
 
 Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
                bool vertical)
-    : UI(CANVAS, name, position, size, "", 0)
+    : UI(CANVAS, name, position, size, "", 0, 0)
 {
     print("creating", name, "canvas");
     UIs[name] = this;
