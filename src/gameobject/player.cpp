@@ -23,7 +23,8 @@ Player::Player(Vector2 position)
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
     this->hp = 0;
-    this->score = 0;
+    this->current_score = 0;
+    this->win_score = Map::count_types[COIN];
     this->won = false;
 }
 
@@ -288,19 +289,16 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0))
             {
-                score++;
+                current_score++;
 
-                print("player score", score);
-                // if (UIs["score"])
-                //     UIs["score"]->label = "Score: " + str(score);
+                print("player score", current_score, "/", win_score);
 
                 if (Game::properties["sound"].b)
                     PlaySound("coin", CHANNEL_COIN, 0);
 
-                if (score == Map::count_types[COIN])
+                if (current_score == win_score)
                 {
-                    std::pair<int, Tile *> &win_tile = Map::Tiles[Map::win_tile.y][Map::win_tile.x];
-                    win_tile.first = WIN;
+                    Map::Tiles[Map::win_tile.y][Map::win_tile.x].first = WIN;
                     float wait = 500;
                     Map::AddTile(Map::win_tile.y, Map::win_tile.x, wait);
                 }
@@ -343,18 +341,28 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::properties["tile_scale"].f)
             {
                 print("player won");
+                PlaySound("win", CHANNEL_SPAWN_WIN, 0);
                 won = true;
-                // LinkedFunction *lf = new LinkedFunction(
-                //     []() {
-                //         if (Game::scene)
-                //         {
-                //             nextMap = true;
-                //             Game::scene->DeleteScene();
-                //         }
-                //         return 1;
-                //     },
-                //     250);
-                // lf->Execute();
+                LinkedFunction *lf = new LinkedFunction(
+                    []() {
+                        print("deleting player...");
+                        return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
+                    },
+                    250);
+                lf->NextFunction([]() {
+                    delete Game::player;
+                    Game::player = nullptr;
+                    Map::current_map++;
+                    MapMaking::ChangeMap();
+                    return 1;
+                });
+                lf->NextFunction(
+                    []() {
+                        Scene::SpawnPlayer();
+                        return 1;
+                    },
+                    Map::GetMapDelay(750));
+                lf->Execute();
             }
         }
         else if (type & SPAWN)
@@ -406,7 +414,6 @@ void Player::Jump()
                     PlaySound("fall", CHANNEL_JUMP_FALL, 0);
 
                 hp -= velocity.d / 2.5;
-                // UIs["health"]->label = "Health: " + str(hp);
 
                 Damaged(true);
                 LinkedFunction *lf = new LinkedFunction(std::bind(

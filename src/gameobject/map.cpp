@@ -237,6 +237,11 @@ void Map::Update()
     }
 }
 
+Uint32 Map::GetMapDelay(Uint32 extend)
+{
+    return Map::nempty * Game::properties["map_delay"].f + extend;
+}
+
 void MapMaking::Update()
 {
     if (MapMaking::current_drawing_type != -1)
@@ -449,12 +454,12 @@ void MapMaking::Random()
                     print("done");
                     return 1;
                 },
-                Map::nempty * Game::properties["map_delay"].f + 250);
+                Map::GetMapDelay());
             lf->Execute();
 
             return 1;
         },
-        Map::nempty * Game::properties["map_delay"].f + 500);
+        Map::GetMapDelay());
 
     Clear(lf);
 }
@@ -649,19 +654,21 @@ void MapMaking::ChangeMap()
         []() {
             Map::LoadMap();
             Map::AddTiles();
-            LinkedFunction *lf = new LinkedFunction(
-                []() {
-                    allow_drawing = true;
-                    ToggleBtns(true);
-                    print("done");
-                    return 1;
-                },
-                Map::nempty * Game::properties["map_delay"].f + 250);
-            lf->Execute();
-
+            if (Map::mode)
+            {
+                LinkedFunction *lf = new LinkedFunction(
+                    []() {
+                        allow_drawing = true;
+                        ToggleBtns(true);
+                        print("done");
+                        return 1;
+                    },
+                    Map::GetMapDelay());
+                lf->Execute();
+            }
             return 1;
         },
-        Map::nempty * Game::properties["map_delay"].f + 500);
+        Map::GetMapDelay());
     Clear(lf);
 }
 
@@ -680,8 +687,14 @@ void MapMaking::Clear(LinkedFunction *post_func)
 
 void MapMaking::ToggleBtns(bool toggle)
 {
-    std::vector<std::string> btns = {"clear", "save", "random", "prev",  "next",
-                                     "erase", "wall", "coin",   "spawn", "win"};
+    std::vector<std::string> btns = {
+        "map-canvas-0-clear", "map-canvas-0-save",  "map-canvas-0-random",  "map-canvas-0-prev",
+        "map-canvas-0-next",  "map-canvas-1-erase", "map-canvas-1-wall",    "map-canvas-1-coin",
+        "map-canvas-1-spawn", "map-canvas-1-win",   "common-canvas-0-home", "common-canvas-0-settings",
+    };
     for (auto &btn : btns)
-        ((Button *)UI::UIs[btn])->enabled = toggle;
+    {
+        if (UI::UIs[btn])
+            ((Button *)UI::UIs[btn])->enabled = toggle;
+    }
 }

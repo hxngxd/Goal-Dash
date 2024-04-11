@@ -7,4 +7,5 @@ class Scene
     static void Play();
     static void MapMaking();
     static void Common();
+    static void SpawnPlayer();
 };

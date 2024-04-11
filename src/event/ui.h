@@ -12,6 +12,7 @@ class UI
 {
   public:
     static std::map<std::string, UI *> UIs;
+    static std::vector<std::string> WaitingForRemoval;
 
     int type;
     std::string name;
@@ -29,8 +30,10 @@ class UI
     static void Start();
     static void Update();
 
-    static void DeleteUI(std::string name);
-    static void DeleteUIs();
+    static void RemoveUI(std::string name);
+    static void RemoveUIs();
+    static void RemovingUI(std::string name);
+    static void RemovingUIs();
 };
 
 class Button : public UI

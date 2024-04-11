@@ -45,7 +45,7 @@ class Player : public GameObject
     animation_directions direction;
 
     int hp;
-    int score;
+    int current_score, win_score;
     bool won;
 
     Player(Vector2 position);

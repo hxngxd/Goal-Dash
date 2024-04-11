@@ -8,6 +8,7 @@
 //----------------------------------------
 
 std::map<std::string, UI *> UI::UIs;
+std::vector<std::string> UI::WaitingForRemoval;
 
 //----------------------------------------
 
@@ -49,7 +50,6 @@ void PlayerHUD()
 void UI::Start()
 {
     EventHandler::MouseDownActions.insert(std::make_pair("UIButtonMouseDown", []() {
-        print("DB12");
         for (auto &ui : UIs)
         {
             if (!ui.second)
@@ -60,11 +60,9 @@ void UI::Start()
             if (btn->button_mouse_hovering && btn->enabled)
                 btn->button_mouse_click = true;
         }
-        print("DB13");
     }));
 
     EventHandler::MouseUpActions.insert(std::make_pair("UIButtonMouseUp", []() {
-        print("DB14");
         for (auto &ui : UIs)
         {
             if (!ui.second)
@@ -75,17 +73,13 @@ void UI::Start()
             if (btn->button_mouse_click && btn->button_mouse_hovering &&
                 (SDL_GetTicks() - btn->lastButtonClick >= 250) && btn->enabled)
             {
-                print("DB16");
                 btn->onClick();
-                print("DB17");
                 if (btn)
                     btn->lastButtonClick = SDL_GetTicks();
             }
             if (btn)
                 btn->button_mouse_click = false;
-            print("DB22");
         }
-        print("DB15");
     }));
 }
 
@@ -126,7 +120,7 @@ UI::UI(int type, std::string name, const Vector2 &position, const Vector2 &size,
     this->font_size = this->original_font_size = font_size;
 }
 
-void UI::DeleteUI(std::string name)
+void UI::RemoveUI(std::string name)
 {
     if (UIs.find(name) == UIs.end())
         return;
@@ -140,15 +134,26 @@ void UI::DeleteUI(std::string name)
     print("ui", name, "deleted");
 }
 
-void UI::DeleteUIs()
+void UI::RemoveUIs()
 {
-    if (UIs.empty())
+    if (WaitingForRemoval.empty())
         return;
     print("deleting uis...");
-    for (auto &ui : UIs)
-        DeleteUI(ui.first);
+    for (auto &ui : WaitingForRemoval)
+        RemoveUI(ui);
+    WaitingForRemoval.clear();
     print("uis deleted");
-    UIs.clear();
+}
+
+void UI::RemovingUI(std::string name)
+{
+    WaitingForRemoval.push_back(name);
+}
+
+void UI::RemovingUIs()
+{
+    for (auto &ui : UIs)
+        WaitingForRemoval.push_back(ui.first);
 }
 
 //----------------------------------------

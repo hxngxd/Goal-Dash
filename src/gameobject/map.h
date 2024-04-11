@@ -20,6 +20,7 @@ class Map
     static void RemoveTile(int i, int j, float &wait, bool animation = true);
     static void RemoveTiles();
     static void Update();
+    static Uint32 GetMapDelay(Uint32 extend = 500);
 };
 
 class Tile : public GameObject

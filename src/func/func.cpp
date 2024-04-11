@@ -100,7 +100,7 @@ void LinkedFunction::Update()
     if (ids.empty())
         return;
 
-    for (auto id : ids)
+    for (auto &id : ids)
         Remove(id);
 }
 
