@@ -75,6 +75,11 @@ void UI::Update()
                 Text *txt = (Text *)ui.second;
                 txt->Update();
             }
+            else if (ui.second->type == SLIDER)
+            {
+                Slider *sldr = (Slider *)ui.second;
+                sldr->Update();
+            }
         }
     }
 }
@@ -132,8 +137,8 @@ void UI::RemovingUIs()
 //----------------------------------------
 
 Button::Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
-               std::function<void()> onClick, int label_alignment, int font_size)
-    : UI(BUTTON, name, position, size, label, label_alignment, font_size)
+               std::function<void()> onClick, int font_size)
+    : UI(BUTTON, name, position, size, label, 0, font_size)
 {
     print("creating", name, "button");
     UIs[name] = this;
@@ -156,30 +161,6 @@ void Button::Update()
     SDL_Surface *sf = TTF_RenderText_Blended(myFont, label.c_str(), Color::white());
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
-
-    SDL_Rect labelRect;
-    TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
-    Vector2 center = Rect::GetCenter(position, size);
-    int indent = Screen::resolution.x / 95.0f;
-    switch (label_alignment)
-    {
-    case 0:
-        labelRect.x = position.x + indent;
-        break;
-    case 1:
-        labelRect.x = center.x - labelRect.w / 2;
-        break;
-    case 2:
-        labelRect.x = position.x + size.x - labelRect.w - indent;
-        break;
-    }
-    labelRect.y = center.y - labelRect.h / 2;
-
-    SDL_Rect bgRect;
-    bgRect.x = position.x;
-    bgRect.y = position.y;
-    bgRect.w = size.x;
-    bgRect.h = size.y;
 
     button_mouse_hovering = InRange(EventHandler::MousePosition.x, bgRect.x, bgRect.x + bgRect.w) &&
                             InRange(EventHandler::MousePosition.y, bgRect.y, bgRect.y + bgRect.h);
@@ -229,6 +210,22 @@ void Button::Update()
     SDL_DestroyTexture(texture);
 }
 
+void Button::Recalculate()
+{
+    font_size = std::min(original_font_size, Text::CalculateFontSize(size, label));
+
+    TTF_SetFontSize(myFont, font_size);
+    TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
+    Vector2 center = Rect::GetCenter(position, size);
+    labelRect.x = center.x - labelRect.w / 2.0f;
+    labelRect.y = center.y - labelRect.h / 2.0f;
+
+    bgRect.x = position.x;
+    bgRect.y = position.y;
+    bgRect.w = size.x;
+    bgRect.h = size.y;
+}
+
 //----------------------------------------
 
 Text::Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
@@ -247,30 +244,6 @@ void Text::Update()
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
 
-    SDL_Rect labelRect;
-    TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
-    Vector2 center = Rect::GetCenter(position, size);
-    int indent = Screen::resolution.x / 95.0f;
-    switch (label_alignment)
-    {
-    case 0:
-        labelRect.x = position.x + indent;
-        break;
-    case 1:
-        labelRect.x = center.x - labelRect.w / 2;
-        break;
-    case 2:
-        labelRect.x = position.x + size.x - labelRect.w - indent;
-        break;
-    }
-    labelRect.y = center.y - labelRect.h / 2;
-
-    SDL_Rect bgRect;
-    bgRect.x = position.x;
-    bgRect.y = position.y;
-    bgRect.w = size.x;
-    bgRect.h = size.y;
-
     if (bg_opacity)
     {
         Screen::SetDrawColor(Color::gray(16, bg_opacity));
@@ -284,6 +257,34 @@ void Text::Update()
 
     SDL_FreeSurface(sf);
     SDL_DestroyTexture(texture);
+}
+
+void Text::Recalculate()
+{
+    font_size = std::min(original_font_size, Text::CalculateFontSize(size, label));
+
+    TTF_SetFontSize(myFont, font_size);
+    TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
+    Vector2 center = Rect::GetCenter(position, size);
+    int indent = Screen::resolution.x / 95.0f;
+    switch (label_alignment)
+    {
+    case 0:
+        labelRect.x = position.x + indent;
+        break;
+    case 1:
+        labelRect.x = center.x - labelRect.w / 2.0f;
+        break;
+    case 2:
+        labelRect.x = position.x + size.x - labelRect.w - indent;
+        break;
+    }
+    labelRect.y = center.y - labelRect.h / 2.0f;
+
+    bgRect.x = position.x;
+    bgRect.y = position.y;
+    bgRect.w = size.x;
+    bgRect.h = size.y;
 }
 
 int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
@@ -303,9 +304,109 @@ int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
 void Text::SetLabel(std::string name, std::string label)
 {
     if (UIs.find(name) != UIs.end())
-    {
         UIs[name]->label = label;
-    }
+}
+
+//----------------------------------------
+
+Slider::Slider(std::string name, const Vector2 &position, const Vector2 &size, float min_value, float max_value,
+               float current_value, float step, int font_size)
+    : UI(SLIDER, name, position, size, "", 0, font_size)
+{
+    print("creating", name, "slider");
+    UIs[name] = this;
+    this->min_value = min_value;
+    this->max_value = max_value;
+    this->current_value = current_value;
+    this->step = step;
+    print(name, "slider created");
+}
+
+void Slider::Update()
+{
+    TTF_SetFontSize(myFont, font_size);
+    SDL_Surface *min_sf = TTF_RenderText_Blended(myFont, strRound(min_value, 1).c_str(), Color::white());
+    SDL_Texture *min_texture = SDL_CreateTextureFromSurface(Game::renderer, min_sf);
+
+    SDL_Surface *max_sf = TTF_RenderText_Blended(myFont, strRound(max_value, 1).c_str(), Color::white());
+    SDL_Texture *max_texture = SDL_CreateTextureFromSurface(Game::renderer, max_sf);
+
+    SDL_RenderCopy(Game::renderer, min_texture, NULL, &minRect);
+    SDL_RenderCopy(Game::renderer, max_texture, NULL, &maxRect);
+
+    Screen::SetDrawColor(Color::white());
+    SDL_RenderFillRect(Game::renderer, &barRect);
+
+    Screen::SetDrawColor(Color::white(64));
+    SDL_RenderDrawRect(Game::renderer, &bgRect);
+
+    // SDL_Rect btnRect;
+    // btnRect.x = Clamp(EventHandler::MousePosition.x, (float)barRect.x, (float)(barRect.x + barRect.w));
+    // btnRect.y = barRect.y;
+    // btnRect.w = btnRect.h = barRect.h;
+    // DrawSprite("circ", Rect::GetPosition(btnRect), Rect::GetSize(btnRect), 1.0f, 0, 0);
+
+    SDL_FreeSurface(min_sf);
+    SDL_DestroyTexture(min_texture);
+    SDL_FreeSurface(max_sf);
+    SDL_DestroyTexture(max_texture);
+}
+
+void Slider::Recalculate()
+{
+    min_position.x = position.x + size.x / 5.0f;
+    min_position.y = position.y + size.y / 2.0f - 2.5f;
+
+    max_position.x = position.x + size.x * 4.0f / 5.0f;
+    max_position.y = position.y + size.y / 2.0f + 2.5f;
+
+    barRect.x = min_position.x;
+    barRect.y = min_position.y;
+    barRect.w = max_position.x - min_position.x;
+    barRect.h = max_position.y - min_position.y;
+
+    minRect.w = min_position.x - position.x;
+    minRect.h = 50.0f;
+    minRect.x = position.x;
+    minRect.y = position.y + size.y / 2.0f - minRect.h / 2.0f;
+
+    Vector2 minCenter = Rect::GetCenter(Vector2(minRect.x, minRect.y), Vector2(minRect.w, minRect.h));
+
+    maxRect.w = minRect.w;
+    maxRect.h = minRect.h;
+    maxRect.x = max_position.x;
+    maxRect.y = minRect.y;
+
+    Vector2 maxCenter = Rect::GetCenter(Vector2(maxRect.x, maxRect.y), Vector2(maxRect.w, maxRect.h));
+
+    font_size =
+        std::min(original_font_size, Text::CalculateFontSize(Vector2(minRect.w, minRect.h), strRound(min_value, 1)));
+
+    TTF_SetFontSize(myFont, font_size);
+    TTF_SizeText(myFont, strRound(min_value, 1).c_str(), &minRect.w, &minRect.h);
+
+    minRect.x = minCenter.x - minRect.w / 2.0f;
+    minRect.y = minCenter.y - minRect.h / 2.0f;
+
+    font_size =
+        std::min(original_font_size, Text::CalculateFontSize(Vector2(maxRect.w, maxRect.h), strRound(max_value, 1)));
+
+    TTF_SetFontSize(myFont, font_size);
+    TTF_SizeText(myFont, strRound(max_value, 1).c_str(), &maxRect.w, &maxRect.h);
+
+    maxRect.x = maxCenter.x - maxRect.w / 2.0f;
+    maxRect.y = maxCenter.y - maxRect.h / 2.0f;
+
+    bgRect.x = position.x;
+    bgRect.y = position.y;
+    bgRect.w = size.x;
+    bgRect.h = size.y;
+}
+
+void Slider::SetValue(std::string name, float value)
+{
+    if (UIs.find(name) != UIs.end())
+        ((Slider *)UIs[name])->current_value = value;
 }
 
 //----------------------------------------
@@ -365,7 +466,18 @@ void Canvas::CalculateComponentsPosition()
 
         ui->size = size - Vector2(2.0f * margin);
 
-        ui->font_size = std::min(ui->original_font_size, Text::CalculateFontSize(ui->size, ui->label));
+        switch (ui->type)
+        {
+        case BUTTON:
+            ((Button *)ui)->Recalculate();
+            break;
+        case TEXT:
+            ((Text *)ui)->Recalculate();
+            break;
+        case SLIDER:
+            ((Slider *)ui)->Recalculate();
+            break;
+        }
         return;
     }
 
@@ -400,7 +512,18 @@ void Canvas::CalculateComponentsPosition()
             ui->size.x = (float)spacing * (com.second - 1) + blockSize * com.second;
             currentPosition.x += ui->size.x + spacing;
         }
-        ui->font_size = std::min(ui->original_font_size, Text::CalculateFontSize(ui->size, ui->label));
+        switch (ui->type)
+        {
+        case BUTTON:
+            ((Button *)ui)->Recalculate();
+            break;
+        case TEXT:
+            ((Text *)ui)->Recalculate();
+            break;
+        case SLIDER:
+            ((Slider *)ui)->Recalculate();
+            break;
+        }
     }
 }
 

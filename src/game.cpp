@@ -232,6 +232,8 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSprite("healthbar", "img/healthbar.png", 5, Vector2(48, 7)))
         return 0;
+    if (!LoadSprite("circ", "img/circ.png", 5, Vector2(600)))
+        return 0;
 
     //----------------------------------------
 

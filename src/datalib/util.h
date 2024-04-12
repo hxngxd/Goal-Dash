@@ -12,6 +12,10 @@ extern TTF_Font *myFont;
 
 //----------------------------------------
 
+std::string strRound(float value, int n);
+
+//----------------------------------------
+
 template <typename T> std::string str(T data)
 {
     return std::to_string(data);
@@ -220,7 +224,8 @@ enum ui_types
 {
     CANVAS,
     BUTTON,
-    TEXT
+    TEXT,
+    SLIDER,
 };
 
 //----------------------------------------

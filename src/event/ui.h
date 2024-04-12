@@ -25,6 +25,7 @@ class UI
     int original_font_size;
     int font_size;
     int label_alignment;
+    SDL_Rect bgRect;
 
     UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
        int font_size);
@@ -46,23 +47,52 @@ class Button : public UI
     bool hovering_sound, button_mouse_hovering, button_mouse_click;
     int lastButtonClick;
 
+    SDL_Rect labelRect;
+
     Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
-           std::function<void()> onClick, int label_alignment, int font_size = 150);
+           std::function<void()> onClick, int font_size = 150);
 
     void Update();
+    void Recalculate();
 };
 
 class Text : public UI
 {
   public:
+    SDL_Rect labelRect;
+
     Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
          int font_size = 150);
 
     static int CalculateFontSize(const Vector2 &bg_size, std::string label);
 
     void Update();
+    void Recalculate();
 
     static void SetLabel(std::string name, std::string label);
+};
+
+class Slider : public UI
+{
+  public:
+    Vector2 min_position;
+    Vector2 max_position;
+    float min_value;
+    float max_value;
+    float current_value;
+    float step;
+
+    SDL_Rect barRect;
+    SDL_Rect minRect;
+    SDL_Rect maxRect;
+
+    Slider(std::string name, const Vector2 &position, const Vector2 &size, float min_value, float max_value,
+           float current_value, float step, int font_size = 150);
+
+    void Update();
+    void Recalculate();
+
+    static void SetValue(std::string name, float value);
 };
 
 class Canvas : public UI

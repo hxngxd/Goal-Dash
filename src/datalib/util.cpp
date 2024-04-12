@@ -1,9 +1,19 @@
 #include "util.h"
+#include "iomanip"
 #include "msg.h"
 
 //----------------------------------------
 
 TTF_Font *myFont = nullptr;
+
+//----------------------------------------
+
+std::string strRound(float value, int n)
+{
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(n) << value;
+    return out.str();
+}
 
 //----------------------------------------
 
