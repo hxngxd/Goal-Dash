@@ -356,7 +356,7 @@ void Scene::Settings()
     Text *move_speed = new Text("settings-canvas-2-move-speed", Vector2(), Vector2(), "Move Speed", 0, 25);
 
     Slider *move_speed_slider =
-        new Slider("settings-canvas-2-move-speed-slider", Vector2(), Vector2(), 0.5f, 22.5f, 1.0f, 0.25f, 20);
+        new Slider("settings-canvas-2-move-speed-slider", Vector2(), Vector2(), 0.5f, 2.5f, 1.0f, 0.25f, 20);
 
     cv2->AddComponents({
         {"settings-canvas-2-move-speed", 4},

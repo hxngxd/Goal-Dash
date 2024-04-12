@@ -340,16 +340,32 @@ void Slider::Update()
     Screen::SetDrawColor(Color::white(64));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
-    // SDL_Rect btnRect;
-    // btnRect.x = Clamp(EventHandler::MousePosition.x, (float)barRect.x, (float)(barRect.x + barRect.w));
-    // btnRect.y = barRect.y;
-    // btnRect.w = btnRect.h = barRect.h;
-    // DrawSprite("circ", Rect::GetPosition(btnRect), Rect::GetSize(btnRect), 1.0f, 0, 0);
+    SDL_Rect btnRect;
+    btnRect.w = btnRect.h = barRect.h * 5.0f;
+    btnRect.x =
+        Clamp(EventHandler::MousePosition.x, (float)barRect.x, (float)(barRect.x + barRect.w)) - btnRect.w / 2.0f;
+    btnRect.y = barRect.y + barRect.h / 2.0f - btnRect.h / 2.0f;
+    DrawSprite("circ", Rect::GetPosition(btnRect), Rect::GetSize(btnRect), 1.0f, 0, 0);
+
+    current_value = Clamp((max_value - min_value) * (EventHandler::MousePosition.x - min_position.x) /
+                                  (max_position.x - min_position.x) +
+                              min_value,
+                          min_value, max_value);
+    TTF_SetFontSize(myFont, font_size);
+    SDL_Surface *current_sf = TTF_RenderText_Blended(myFont, strRound(current_value, 1).c_str(), Color::white());
+    SDL_Texture *current_texture = SDL_CreateTextureFromSurface(Game::renderer, current_sf);
+    SDL_Rect currentRect;
+    TTF_SizeText(myFont, strRound(current_value, 1).c_str(), &currentRect.w, &currentRect.h);
+    currentRect.y = btnRect.y - currentRect.h - 2.5f;
+    currentRect.x = btnRect.x + btnRect.w / 2.0f - currentRect.w / 2.0f;
+    SDL_RenderCopy(Game::renderer, current_texture, NULL, &currentRect);
 
     SDL_FreeSurface(min_sf);
     SDL_DestroyTexture(min_texture);
     SDL_FreeSurface(max_sf);
     SDL_DestroyTexture(max_texture);
+    SDL_FreeSurface(current_sf);
+    SDL_DestroyTexture(current_texture);
 }
 
 void Slider::Recalculate()
