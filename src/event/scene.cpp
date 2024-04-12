@@ -327,10 +327,13 @@ void Scene::Settings()
 
     Canvas *cv2 = new Canvas("settings-canvas-2", Vector2(), Vector2(), 0, 0, 0, 0);
 
+    Canvas *cv3 = new Canvas("settings-canvas-3", Vector2(), Vector2(), 0, 0, 0, 0);
+
     cv->AddComponents({
         {"settings-canvas-0", 1},
         {"settings-canvas-1", 1},
         {"settings-canvas-2", 1},
+        {"settings-canvas-3", 1},
     });
 
     Text *title = new Text("settings-canvas-0-title", Vector2(), Vector2(), "SETTINGS", 1, 50);
@@ -361,5 +364,15 @@ void Scene::Settings()
     cv2->AddComponents({
         {"settings-canvas-2-move-speed", 4},
         {"settings-canvas-2-move-speed-slider", 2},
+    });
+
+    Text *gravity = new Text("settings-canvas-3-gravity", Vector2(), Vector2(), "Gravity", 0, 25);
+
+    Toggle *gravitytoggle =
+        new Toggle("settings-canvas-3-gravity-toggle", Vector2(), Vector2(), Game::properties["player_gravity"].b);
+
+    cv3->AddComponents({
+        {"settings-canvas-3-gravity", 4},
+        {"settings-canvas-3-gravity-toggle", 2},
     });
 }

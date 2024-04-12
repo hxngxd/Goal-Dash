@@ -226,6 +226,7 @@ enum ui_types
     BUTTON,
     TEXT,
     SLIDER,
+    TOGGLE
 };
 
 //----------------------------------------

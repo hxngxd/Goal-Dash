@@ -27,6 +27,8 @@ class UI
     int label_alignment;
     SDL_Rect bgRect;
 
+    bool mouse_hovering;
+
     UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
        int font_size);
 
@@ -44,7 +46,7 @@ class Button : public UI
   public:
     bool enabled;
     std::function<void()> onClick;
-    bool hovering_sound, button_mouse_hovering, button_mouse_click;
+    bool hovering_sound, mouse_click;
     int lastButtonClick;
 
     SDL_Rect labelRect;
@@ -81,7 +83,7 @@ class Slider : public UI
     float max_value;
     float current_value;
     float step;
-    bool is_focus, button_mouse_hovering;
+    bool is_focus;
 
     SDL_Rect barRect;
     SDL_Rect minRect;
@@ -95,6 +97,20 @@ class Slider : public UI
     void Recalculate();
 
     static void SetValue(std::string name, float value);
+};
+
+class Toggle : public UI
+{
+  public:
+    bool option;
+    bool mouse_click;
+
+    Toggle(std::string name, const Vector2 &position, const Vector2 &size, bool option);
+
+    void Update();
+    void Recalculate();
+
+    static void Switch(std::string name, bool option);
 };
 
 class Canvas : public UI

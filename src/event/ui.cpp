@@ -22,14 +22,20 @@ void UI::Start()
             if (ui.second->type == BUTTON)
             {
                 Button *btn = (Button *)ui.second;
-                if (btn->button_mouse_hovering && btn->enabled)
-                    btn->button_mouse_click = true;
+                if (btn->mouse_hovering && btn->enabled)
+                    btn->mouse_click = true;
             }
             else if (ui.second->type == SLIDER)
             {
                 Slider *sldr = (Slider *)ui.second;
-                if (sldr->button_mouse_hovering)
+                if (sldr->mouse_hovering)
                     sldr->is_focus = true;
+            }
+            else if (ui.second->type == TOGGLE)
+            {
+                Toggle *tg = (Toggle *)ui.second;
+                if (tg->mouse_hovering)
+                    tg->mouse_click = true;
             }
         }
     }));
@@ -42,20 +48,29 @@ void UI::Start()
             if (ui.second->type == BUTTON)
             {
                 Button *btn = (Button *)ui.second;
-                if (btn->button_mouse_click && btn->button_mouse_hovering &&
-                    (SDL_GetTicks() - btn->lastButtonClick >= 250) && btn->enabled)
+                if (btn->mouse_click && btn->mouse_hovering && (SDL_GetTicks() - btn->lastButtonClick >= 250) &&
+                    btn->enabled)
                 {
                     btn->onClick();
-                    if (btn)
-                        btn->lastButtonClick = SDL_GetTicks();
+                    PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
+                    btn->lastButtonClick = SDL_GetTicks();
                 }
-                if (btn)
-                    btn->button_mouse_click = false;
+                btn->mouse_click = false;
             }
             else if (ui.second->type == SLIDER)
             {
                 Slider *sldr = (Slider *)ui.second;
                 sldr->is_focus = false;
+            }
+            else if (ui.second->type == TOGGLE)
+            {
+                Toggle *tg = (Toggle *)ui.second;
+                if (tg->mouse_click && tg->mouse_hovering)
+                {
+                    tg->option = !tg->option;
+                    PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
+                }
+                tg->mouse_click = false;
             }
         }
     }));
@@ -92,6 +107,11 @@ void UI::Update()
             {
                 Slider *sldr = (Slider *)ui.second;
                 sldr->Update();
+            }
+            else if (ui.second->type == TOGGLE)
+            {
+                Toggle *tg = (Toggle *)ui.second;
+                tg->Update();
             }
         }
     }
@@ -155,13 +175,8 @@ Button::Button(std::string name, const Vector2 &position, const Vector2 &size, s
 {
     print("creating", name, "button");
     UIs[name] = this;
-    this->onClick = std::bind(
-        [](std::function<void()> onClick) {
-            onClick();
-            PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
-        },
-        onClick);
-    this->hovering_sound = this->button_mouse_hovering = this->button_mouse_click = false;
+    this->onClick = onClick;
+    this->hovering_sound = this->mouse_hovering = this->mouse_click = false;
     this->lastButtonClick = 0;
     this->enabled = true;
 
@@ -175,11 +190,11 @@ void Button::Update()
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
 
-    button_mouse_hovering = InRange(EventHandler::MousePosition.x, bgRect.x, bgRect.x + bgRect.w) &&
-                            InRange(EventHandler::MousePosition.y, bgRect.y, bgRect.y + bgRect.h);
+    mouse_hovering = InRange(EventHandler::MousePosition.x, bgRect.x, bgRect.x + bgRect.w) &&
+                     InRange(EventHandler::MousePosition.y, bgRect.y, bgRect.y + bgRect.h);
 
     int min_bg_opacity = 0, max_bg_opacity = 144, opacity_step = 16;
-    if (button_mouse_hovering)
+    if (mouse_hovering)
     {
         if (!hovering_sound)
         {
@@ -198,8 +213,8 @@ void Button::Update()
         if (hovering_sound)
             hovering_sound = false;
 
-        if (button_mouse_click)
-            button_mouse_click = false;
+        if (mouse_click)
+            mouse_click = false;
 
         if (bg_opacity > min_bg_opacity)
         {
@@ -210,11 +225,11 @@ void Button::Update()
 
     if (bg_opacity)
     {
-        Screen::SetDrawColor(Color::gray(64, bg_opacity - (button_mouse_click ? 64 : 0)));
+        Screen::SetDrawColor(Color::gray(64, bg_opacity - (mouse_click ? 64 : 0)));
         SDL_RenderFillRect(Game::renderer, &bgRect);
     }
 
-    Screen::SetDrawColor(button_mouse_click ? Color::blue() : Color::white(64));
+    Screen::SetDrawColor(mouse_click ? Color::blue() : Color::white(64));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
@@ -332,7 +347,7 @@ Slider::Slider(std::string name, const Vector2 &position, const Vector2 &size, f
     this->max_value = max_value;
     this->current_value = current_value;
     this->step = step;
-    this->is_focus = this->button_mouse_hovering = false;
+    this->is_focus = this->mouse_hovering = false;
     print(name, "slider created");
 }
 
@@ -357,7 +372,7 @@ void Slider::Update()
     btnRect.w = btnRect.h = barRect.h * 5.0f;
     btnRect.y = barRect.y + barRect.h / 2.0f - btnRect.h / 2.0f;
 
-    button_mouse_hovering =
+    mouse_hovering =
         InRange(EventHandler::MousePosition.x, min_position.x - btnRect.w / 2.0f, max_position.x + btnRect.w / 2.0f) &&
         InRange(EventHandler::MousePosition.y, btnRect.y, btnRect.y + btnRect.h);
 
@@ -455,6 +470,41 @@ void Slider::SetValue(std::string name, float value)
 
 //----------------------------------------
 
+Toggle::Toggle(std::string name, const Vector2 &position, const Vector2 &size, bool option)
+    : UI(TOGGLE, name, position, size, "", 0, 0)
+{
+    print("creating", name, "toggle");
+    UIs[name] = this;
+    this->option = option;
+    this->mouse_click = this->mouse_hovering = false;
+    print(name, "toggle created");
+}
+
+void Toggle::Update()
+{
+    mouse_hovering = InRange(EventHandler::MousePosition.x, bgRect.x, bgRect.x + bgRect.w) &&
+                     InRange(EventHandler::MousePosition.y, bgRect.y, bgRect.y + bgRect.h);
+
+    DrawSprite("toggle", Rect::GetPosition(bgRect), Rect::GetSize(bgRect), 1.0f, !option, !option);
+}
+
+void Toggle::Recalculate()
+{
+    Vector2 center = Rect::GetCenter(position, size);
+    bgRect.w = std::min(size.x / 3.0f, Screen::resolution.x / 12.0f);
+    bgRect.h = (float)bgRect.w * 520.0f / 787.0f;
+    bgRect.x = center.x - bgRect.w / 2.0f;
+    bgRect.y = center.y - bgRect.h / 2.0f;
+}
+
+void Toggle::Switch(std::string name, bool option)
+{
+    if (UIs.find(name) != UIs.end())
+        ((Toggle *)UIs[name])->option = option;
+}
+
+//----------------------------------------
+
 Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
                bool vertical)
     : UI(CANVAS, name, position, size, "", 0, 0)
@@ -500,16 +550,7 @@ void Canvas::CalculateComponentsPosition()
     if (!numOfComponents)
         return;
 
-    if (numOfComponents == 1)
-    {
-        if (UI::UIs.find(Components[0].first) == UI::UIs.end())
-            return;
-
-        UI *&ui = UIs[Components[0].first];
-        ui->position = position + Vector2(margin);
-
-        ui->size = size - Vector2(2.0f * margin);
-
+    auto Recalculate = [](UI *&ui) {
         switch (ui->type)
         {
         case BUTTON:
@@ -521,7 +562,23 @@ void Canvas::CalculateComponentsPosition()
         case SLIDER:
             ((Slider *)ui)->Recalculate();
             break;
+        case TOGGLE:
+            ((Toggle *)ui)->Recalculate();
+            break;
         }
+    };
+
+    if (numOfComponents == 1)
+    {
+        if (UI::UIs.find(Components[0].first) == UI::UIs.end())
+            return;
+
+        UI *&ui = UIs[Components[0].first];
+        ui->position = position + Vector2(margin);
+
+        ui->size = size - Vector2(2.0f * margin);
+
+        Recalculate(ui);
         return;
     }
 
@@ -556,18 +613,7 @@ void Canvas::CalculateComponentsPosition()
             ui->size.x = (float)spacing * (com.second - 1) + blockSize * com.second;
             currentPosition.x += ui->size.x + spacing;
         }
-        switch (ui->type)
-        {
-        case BUTTON:
-            ((Button *)ui)->Recalculate();
-            break;
-        case TEXT:
-            ((Text *)ui)->Recalculate();
-            break;
-        case SLIDER:
-            ((Slider *)ui)->Recalculate();
-            break;
-        }
+        Recalculate(ui);
     }
 }
 

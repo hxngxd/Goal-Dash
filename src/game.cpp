@@ -234,6 +234,8 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSprite("circ", "img/circ.png", 5, Vector2(600)))
         return 0;
+    if (!LoadSprite("toggle", "img/toggle.png", 5, Vector2(787, 520)))
+        return 0;
 
     //----------------------------------------
 
