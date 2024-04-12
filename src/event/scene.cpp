@@ -331,7 +331,7 @@ void Scene::Settings()
 
     cv->AddComponents({
         {"settings-canvas-0", 1},
-        {"settings-canvas-1", 1},
+        // {"settings-canvas-1", 1},
         {"settings-canvas-2", 1},
         {"settings-canvas-3", 1},
     });
@@ -346,15 +346,37 @@ void Scene::Settings()
         {"settings-canvas-0-exit", 1},
     });
 
-    Text *resolution = new Text("settings-canvas-1-resolution", Vector2(), Vector2(), "Resolution", 0, 25);
+    // Text *resolution = new Text("settings-canvas-1-resolution", Vector2(), Vector2(), "Resolution", 0, 25);
 
-    Text *displaysolution = new Text("settings-canvas-1-displayresolution", Vector2(), Vector2(),
-                                     str((int)Screen::resolution.x) + " x " + str((int)Screen::resolution.x), 1, 25);
+    // Text *displaysolution = new Text("settings-canvas-1-displayresolution", Vector2(), Vector2(),
+    //                                  str((int)Screen::resolution.x) + " x " + str((int)Screen::resolution.x), 1, 25);
 
-    cv1->AddComponents({
-        {"settings-canvas-1-resolution", 4},
-        {"settings-canvas-1-displayresolution", 2},
-    });
+    // Button *prev_resolution = new Button(
+    //     "settings-canvas-1-prev", Vector2(), Vector2(), "<",
+    //     []() {
+    //         if (Screen::current_resolution <= 0)
+    //             return;
+    //         Screen::current_resolution--;
+    //         Screen::SetWindowSize();
+    //     },
+    //     25);
+
+    // Button *next_resolution = new Button(
+    //     "settings-canvas-1-next", Vector2(), Vector2(), ">",
+    //     []() {
+    //         if (Screen::current_resolution >= Screen::resolutions.size())
+    //             return;
+    //         Screen::current_resolution++;
+    //         Screen::SetWindowSize();
+    //     },
+    //     25);
+
+    // cv1->AddComponents({
+    //     {"settings-canvas-1-resolution", 4},
+    //     {"settings-canvas-1-prev", 1},
+    //     {"settings-canvas-1-displayresolution", 2},
+    //     {"settings-canvas-1-next", 1},
+    // });
 
     Text *move_speed = new Text("settings-canvas-2-move-speed", Vector2(), Vector2(), "Move Speed", 0, 25);
 

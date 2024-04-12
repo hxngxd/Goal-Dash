@@ -35,6 +35,9 @@ extern Game *game;
 class Screen : public Game
 {
   public:
+    static std::vector<int> resolutions;
+    static int current_resolution;
+
     static Vector2 resolution;
     static int map_size;
     static int tile_size;
@@ -43,4 +46,5 @@ class Screen : public Game
     static void SetDrawColor(SDL_Color color);
     static void PointGrid(SDL_Color color);
     static void Display();
+    static void SetWindowSize();
 };

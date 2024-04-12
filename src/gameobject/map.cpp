@@ -493,7 +493,7 @@ void MapMaking::Trajectory(int i, int j, float u, float v, bool isRight, std::ve
     float h = (v0.y * v0.y) / (2.0f * g);
 
     float low = Screen::tile_size;
-    float high = Game::properties["resolution"].i - Screen::tile_size;
+    float high = Screen::resolution.x - Screen::tile_size;
 
     for (p.x = p0.x; isRight ? p.x <= high : p.x >= low; isRight ? p.x++ : p.x--)
     {

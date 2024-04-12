@@ -482,19 +482,27 @@ Toggle::Toggle(std::string name, const Vector2 &position, const Vector2 &size, b
 
 void Toggle::Update()
 {
-    mouse_hovering = InRange(EventHandler::MousePosition.x, bgRect.x, bgRect.x + bgRect.w) &&
-                     InRange(EventHandler::MousePosition.y, bgRect.y, bgRect.y + bgRect.h);
+    mouse_hovering = InRange(EventHandler::MousePosition.x, switchRect.x, switchRect.x + switchRect.w) &&
+                     InRange(EventHandler::MousePosition.y, switchRect.y, switchRect.y + switchRect.h);
 
-    DrawSprite("toggle", Rect::GetPosition(bgRect), Rect::GetSize(bgRect), 1.0f, !option, !option);
+    DrawSprite("toggle", Rect::GetPosition(switchRect), Rect::GetSize(switchRect), 1.0f, !option, !option);
+
+    Screen::SetDrawColor(Color::white(64));
+    SDL_RenderDrawRect(Game::renderer, &bgRect);
 }
 
 void Toggle::Recalculate()
 {
     Vector2 center = Rect::GetCenter(position, size);
-    bgRect.w = std::min(size.x / 3.0f, Screen::resolution.x / 12.0f);
-    bgRect.h = (float)bgRect.w * 520.0f / 787.0f;
-    bgRect.x = center.x - bgRect.w / 2.0f;
-    bgRect.y = center.y - bgRect.h / 2.0f;
+    switchRect.w = std::min(size.x / 3.0f, Screen::resolution.x / 12.0f);
+    switchRect.h = (float)switchRect.w * 520.0f / 787.0f;
+    switchRect.x = center.x - switchRect.w / 2.0f;
+    switchRect.y = center.y - switchRect.h / 2.0f;
+
+    bgRect.x = position.x;
+    bgRect.y = position.y;
+    bgRect.w = size.x;
+    bgRect.h = size.y;
 }
 
 void Toggle::Switch(std::string name, bool option)

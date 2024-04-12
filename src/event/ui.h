@@ -105,6 +105,8 @@ class Toggle : public UI
     bool option;
     bool mouse_click;
 
+    SDL_Rect switchRect;
+
     Toggle(std::string name, const Vector2 &position, const Vector2 &size, bool option);
 
     void Update();

@@ -99,19 +99,9 @@ bool Game::LoadConfig()
 
     Screen::map_size = 16;
 
-    Screen::resolution = Vector2(Game::properties["resolution"].i);
+    Screen::current_resolution = Game::properties["resolution"].i;
 
-    Screen::resolution = Int((Screen::resolution / Screen::map_size)) * Screen::map_size;
-
-    Screen::tile_size = Screen::resolution.x / Screen::map_size;
-
-    Game::properties["gravity"].f *= Screen::resolution.x / 25100.0f;
-
-    Game::properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
-
-    Game::properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
-
-    Game::properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
+    Screen::SetWindowSize();
 
     Game::properties["ray_opacity"].i = Clamp(Game::properties["ray_opacity"].i, 0, 255);
 

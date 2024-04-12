@@ -19,6 +19,8 @@ int Game::time[3] = {0, 0, 0};
 Vector2 Screen::resolution;
 int Screen::map_size;
 int Screen::tile_size;
+std::vector<int> Screen::resolutions = {320, 480, 640, 800, 960, 1120};
+int Screen::current_resolution;
 
 void Game::Update()
 {
@@ -395,4 +397,23 @@ void Screen::PointGrid(SDL_Color color)
             SDL_RenderDrawPoint(renderer, i, j);
         }
     }
+}
+
+void Screen::SetWindowSize()
+{
+    SDL_SetWindowSize(window, resolutions[current_resolution], resolutions[current_resolution]);
+
+    Screen::resolution = Vector2(Screen::resolutions[Screen::current_resolution]);
+
+    Screen::resolution = Int((Screen::resolution / Screen::map_size)) * Screen::map_size;
+
+    Screen::tile_size = Screen::resolution.x / Screen::map_size;
+
+    Game::properties["gravity"].f *= Screen::resolution.x / 25100.0f;
+
+    Game::properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
+
+    Game::properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
+
+    Game::properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
 }
