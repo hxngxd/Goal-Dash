@@ -354,10 +354,10 @@ Slider::Slider(std::string name, const Vector2 &position, const Vector2 &size, f
 void Slider::Update()
 {
     TTF_SetFontSize(myFont, font_size);
-    SDL_Surface *min_sf = TTF_RenderText_Blended(myFont, strRound(min_value, 1).c_str(), Color::white());
+    SDL_Surface *min_sf = TTF_RenderText_Blended(myFont, strRound(min_value, 2).c_str(), Color::white());
     SDL_Texture *min_texture = SDL_CreateTextureFromSurface(Game::renderer, min_sf);
 
-    SDL_Surface *max_sf = TTF_RenderText_Blended(myFont, strRound(max_value, 1).c_str(), Color::white());
+    SDL_Surface *max_sf = TTF_RenderText_Blended(myFont, strRound(max_value, 2).c_str(), Color::white());
     SDL_Texture *max_texture = SDL_CreateTextureFromSurface(Game::renderer, max_sf);
 
     SDL_RenderCopy(Game::renderer, min_texture, NULL, &minRect);
@@ -393,11 +393,11 @@ void Slider::Update()
 
     if (is_focus)
     {
-        TTF_SetFontSize(myFont, font_size);
-        SDL_Surface *current_sf = TTF_RenderText_Blended(myFont, strRound(current_value, 1).c_str(), Color::white());
+        TTF_SetFontSize(myFont, original_font_size);
+        SDL_Surface *current_sf = TTF_RenderText_Blended(myFont, strRound(current_value, 2).c_str(), Color::white());
         SDL_Texture *current_texture = SDL_CreateTextureFromSurface(Game::renderer, current_sf);
         SDL_Rect currentRect;
-        TTF_SizeText(myFont, strRound(current_value, 1).c_str(), &currentRect.w, &currentRect.h);
+        TTF_SizeText(myFont, strRound(current_value, 2).c_str(), &currentRect.w, &currentRect.h);
         currentRect.y = btnRect.y - currentRect.h - 2.5f;
         currentRect.x = btnRect.x + btnRect.w / 2.0f - currentRect.w / 2.0f;
         SDL_RenderCopy(Game::renderer, current_texture, NULL, &currentRect);
@@ -439,19 +439,19 @@ void Slider::Recalculate()
     Vector2 maxCenter = Rect::GetCenter(Vector2(maxRect.x, maxRect.y), Vector2(maxRect.w, maxRect.h));
 
     font_size =
-        std::min(original_font_size, Text::CalculateFontSize(Vector2(minRect.w, minRect.h), strRound(min_value, 1)));
+        std::min(original_font_size, Text::CalculateFontSize(Vector2(minRect.w, minRect.h), strRound(min_value, 2)));
 
     TTF_SetFontSize(myFont, font_size);
-    TTF_SizeText(myFont, strRound(min_value, 1).c_str(), &minRect.w, &minRect.h);
+    TTF_SizeText(myFont, strRound(min_value, 2).c_str(), &minRect.w, &minRect.h);
 
     minRect.x = minCenter.x - minRect.w / 2.0f;
     minRect.y = minCenter.y - minRect.h / 2.0f;
 
     font_size =
-        std::min(original_font_size, Text::CalculateFontSize(Vector2(maxRect.w, maxRect.h), strRound(max_value, 1)));
+        std::min(original_font_size, Text::CalculateFontSize(Vector2(maxRect.w, maxRect.h), strRound(max_value, 2)));
 
     TTF_SetFontSize(myFont, font_size);
-    TTF_SizeText(myFont, strRound(max_value, 1).c_str(), &maxRect.w, &maxRect.h);
+    TTF_SizeText(myFont, strRound(max_value, 2).c_str(), &maxRect.w, &maxRect.h);
 
     maxRect.x = maxCenter.x - maxRect.w / 2.0f;
     maxRect.y = maxCenter.y - maxRect.h / 2.0f;
@@ -494,7 +494,7 @@ void Toggle::Update()
 void Toggle::Recalculate()
 {
     Vector2 center = Rect::GetCenter(position, size);
-    switchRect.w = std::min(size.x / 3.0f, Screen::resolution.x / 12.0f);
+    switchRect.w = Screen::resolution.x / 18.0f;
     switchRect.h = (float)switchRect.w * 520.0f / 787.0f;
     switchRect.x = center.x - switchRect.w / 2.0f;
     switchRect.y = center.y - switchRect.h / 2.0f;
@@ -526,17 +526,31 @@ Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, i
     print(name, "canvas created");
 }
 
-void Canvas::AddComponent(std::string name, int blocks)
+void Canvas::AddComponent(UI *ui, int blocks)
 {
-    Components.push_back(std::make_pair(name, blocks));
-    CalculateComponentsPosition();
+    std::string new_name = name + "." + ui->name;
+    UIs[new_name] = UIs[ui->name];
+    UIs[ui->name] = nullptr;
+    UIs.erase(ui->name);
+    ui->name = new_name;
+
+    Components.push_back(std::make_pair(ui->name, blocks));
+    Recalculate();
 }
 
-void Canvas::AddComponents(const std::vector<std::pair<std::string, int>> &names)
+void Canvas::AddComponents(const std::vector<std::pair<UI *, int>> &uis)
 {
-    for (auto &name : names)
-        Components.push_back(name);
-    CalculateComponentsPosition();
+    for (auto &ui : uis)
+    {
+        std::string new_name = name + "." + ui.first->name;
+        UIs[new_name] = UIs[ui.first->name];
+        UIs[ui.first->name] = nullptr;
+        UIs.erase(ui.first->name);
+        ui.first->name = new_name;
+
+        Components.push_back(std::make_pair(ui.first->name, ui.second));
+    }
+    Recalculate();
 }
 
 void Canvas::RemoveComponent(std::string name)
@@ -548,10 +562,10 @@ void Canvas::RemoveComponent(std::string name)
             break;
     }
     Components.erase(Components.begin() + i);
-    CalculateComponentsPosition();
+    Recalculate();
 }
 
-void Canvas::CalculateComponentsPosition()
+void Canvas::Recalculate()
 {
     int numOfComponents = Components.size();
 
@@ -572,6 +586,9 @@ void Canvas::CalculateComponentsPosition()
             break;
         case TOGGLE:
             ((Toggle *)ui)->Recalculate();
+            break;
+        case CANVAS:
+            ((Canvas *)ui)->Recalculate();
             break;
         }
     };

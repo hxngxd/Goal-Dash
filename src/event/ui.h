@@ -127,11 +127,11 @@ class Canvas : public UI
 
     std::vector<std::pair<std::string, int>> Components;
 
-    void AddComponent(std::string name, int blocks = 1);
-    void AddComponents(const std::vector<std::pair<std::string, int>> &names);
+    void AddComponent(UI *ui, int blocks = 1);
+    void AddComponents(const std::vector<std::pair<UI *, int>> &uis);
 
     void RemoveComponent(std::string name);
-    void CalculateComponentsPosition();
+    void Recalculate();
 
     void Update();
 };

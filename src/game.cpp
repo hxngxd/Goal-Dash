@@ -409,11 +409,19 @@ void Screen::SetWindowSize()
 
     Screen::tile_size = Screen::resolution.x / Screen::map_size;
 
+    Game::properties["gravity"].f = Clamp(Game::properties["gravity"].f, 0.0f, 10.0f);
+
     Game::properties["gravity"].f *= Screen::resolution.x / 25100.0f;
+
+    Game::properties["player_jump_speed"].f = Clamp(Game::properties["player_jump_speed"].f, 0.5f, 2.5f);
 
     Game::properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
 
+    Game::properties["player_move_speed"].f = Clamp(Game::properties["player_move_speed"].f, 0.5f, 2.5f);
+
     Game::properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
+
+    Game::properties["player_acceleration"].f = Clamp(Game::properties["player_acceleration"].f, 0.25f, 2.0f);
 
     Game::properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
 }

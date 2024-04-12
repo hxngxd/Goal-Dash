@@ -41,15 +41,14 @@ void Player::Update()
 
     MoveRightLeft();
 
-    if (Game::properties["player_gravity"].b)
+    if (Game::properties["gravity"].f == 0.0f)
         MoveDownUp();
     else
         Jump();
 
     Collision();
 
-    if (Game::properties["ray_enable"].b)
-        DrawBox();
+    DrawBox();
 }
 
 void Player::Animation()
@@ -148,12 +147,9 @@ void Player::MoveRightLeft()
 
     position.x += vx * Game::properties["player_move_speed"].f;
 
-    if (Game::properties["background_move"].b)
-    {
-        Background::Move(Vector2(-vx, 0), 0, 0.25);
-        Background::Move(Vector2(-vx, 0), 1, 0.5);
-        Background::Move(Vector2(-vx, 0), 2, 0.75);
-    }
+    Background::Move(Vector2(-vx, 0), 0, 0.25);
+    Background::Move(Vector2(-vx, 0), 1, 0.5);
+    Background::Move(Vector2(-vx, 0), 2, 0.75);
 
     if (velocity.l + velocity.r != 0)
     {
@@ -275,18 +271,14 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     collide_up.first = true;
             }
 
-            if (Game::properties["ray_enable"].b)
-            {
-                if (type & WALL)
-                    Screen::SetDrawColor(Color::white(Game::properties["ray_opacity"].i));
-                else
-                    Screen::SetDrawColor(Color::red(Game::properties["ray_opacity"].i));
-            }
+            if (type & WALL)
+                Screen::SetDrawColor(Color::white(Game::properties["ray_opacity"].i));
+            else
+                Screen::SetDrawColor(Color::red(Game::properties["ray_opacity"].i));
         }
         else if (type & COIN)
         {
-            if (Game::properties["ray_enable"].b)
-                Screen::SetDrawColor(Color::yellow(Game::properties["ray_opacity"].i));
+            Screen::SetDrawColor(Color::yellow(Game::properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
                                   Vector2(Screen::tile_size * 0.6f), 0))
@@ -338,8 +330,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         }
         else if (type & WIN)
         {
-            if (Game::properties["ray_enable"].b)
-                Screen::SetDrawColor(Color::green(Game::properties["ray_opacity"].i));
+            Screen::SetDrawColor(Color::green(Game::properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0) &&
@@ -373,11 +364,10 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         }
         else if (type & SPAWN)
         {
-            if (Game::properties["ray_enable"].b)
-                Screen::SetDrawColor(Color::cyan(Game::properties["ray_opacity"].i));
+            Screen::SetDrawColor(Color::cyan(Game::properties["ray_opacity"].i));
         }
 
-        if (Game::properties["ray_enable"].b && type)
+        if (type)
         {
             SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, nextCenter.x, nextCenter.y);
         }
@@ -397,12 +387,9 @@ void Player::Jump()
         velocity.d += Game::properties["gravity"].f;
         position.y += velocity.d;
 
-        if (Game::properties["background_move"].b)
-        {
-            Background::Move(Vector2(0, -velocity.d), 0, 0.1);
-            Background::Move(Vector2(0, -velocity.d), 1, 0.15);
-            Background::Move(Vector2(0, -velocity.d), 2, 0.2);
-        }
+        Background::Move(Vector2(0, -velocity.d), 0, 0.1);
+        Background::Move(Vector2(0, -velocity.d), 1, 0.15);
+        Background::Move(Vector2(0, -velocity.d), 2, 0.2);
     }
     else
     {
