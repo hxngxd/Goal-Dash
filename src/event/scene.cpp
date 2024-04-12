@@ -19,7 +19,7 @@ void Scene::Welcome()
     Vector2 v;
 
     Canvas *canvas = new Canvas(
-        "welcom", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 4.0f),
+        "welcome", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 4.0f),
         Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.0f), 128, 8, 8, 1);
     canvas->AddComponents({
         {new Text("title", v, v, "GOAL DASH", 1, 55), 2},
@@ -55,225 +55,194 @@ void Scene::Welcome()
 
 void Scene::Play()
 {
-    // print("entering play mode...");
-    // Map::mode = 0;
-    // UI::RemovingUIs();
-    // Map::current_map == Game::properties["map_init"].i;
-    // Map::LoadMap();
+    print("entering play mode...");
+    Map::mode = 0;
+    UI::RemovingUIs();
+    Map::current_map == Game::properties["map_init"].i;
+    Map::LoadMap();
 
-    // Canvas *cv0 =
-    //     new Canvas("play-canvas-0", Vector2(), Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0);
+    Canvas *canvas0 = new Canvas("play0", Vector2(), Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0);
 
-    // Text *score = new Text("play-canvas-0-score", Vector2(), Vector2(), "Score: 0", 1, 25);
+    canvas0->AddComponents({
+        {new Text("score", Vector2(), Vector2(), "Score: 0", 1, 25), 3},
+        {new Text("time", Vector2(), Vector2(), "Time: 00:00:00.000", 1, 25), 4},
+        {new Text("map", Vector2(), Vector2(), "Map: " + str(Map::current_map), 1, 25), 3},
+        {new Text("dif", Vector2(), Vector2(), "Difficulty: idk", 1, 25), 5},
+    });
 
-    // Text *time = new Text("play-canvas-0-time", Vector2(), Vector2(), "Time: 00:00:00.000", 1, 25);
+    Canvas *canvas1 = new Canvas("play1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+                                 Vector2(Screen::tile_size * 3, Screen::tile_size), 255, 0, 0, 0);
 
-    // Text *map = new Text("play-canvas-0-map", Vector2(), Vector2(), "Map: " + str(Map::current_map), 1, 25);
+    canvas1->AddComponents({
+        {new Text("hp", Vector2(), Vector2(), "Health: 100", 1, 25), 3},
+    });
 
-    // Text *dif = new Text("play-canvas-0-dif", Vector2(), Vector2(), "Difficulty: idk", 1, 25);
+    Common();
 
-    // cv0->AddComponents({
-    //     {"play-canvas-0-score", 3},
-    //     {"play-canvas-0-time", 4},
-    //     {"play-canvas-0-map", 3},
-    //     {"play-canvas-0-dif", 5},
-    // });
+    Game::time[0] = SDL_GetTicks();
+    Game::time[1] = Game::time[2] = 0;
 
-    // Canvas *cv1 = new Canvas("play-canvas-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
-    //                          Vector2(Screen::tile_size * 3, Screen::tile_size), 255, 0, 0, 0);
+    SpawnPlayer();
+    Map::AddTiles();
 
-    // Text *hp = new Text("play-canvas-1-hp", Vector2(), Vector2(), "Health: 100", 1, 25);
-
-    // cv1->AddComponents({
-    //     {"play-canvas-1-hp", 3},
-    // });
-
-    // Common();
-
-    // Game::time[0] = SDL_GetTicks();
-    // Game::time[1] = Game::time[2] = 0;
-
-    // SpawnPlayer();
-    // Map::AddTiles();
-
-    // print("done");
+    print("done");
 }
 
 void Scene::MapMaking()
 {
-    // print("entering map building mode...");
-    // Map::mode = 1;
-    // MapMaking::allow_drawing = true;
-    // UI::RemovingUIs();
-    // Map::current_map = Game::properties["map_init"].i;
-    // Map::LoadMap();
+    print("entering map building mode...");
+    Map::mode = 1;
+    MapMaking::allow_drawing = true;
+    UI::RemovingUIs();
+    Map::current_map = Game::properties["map_init"].i;
+    Map::LoadMap();
 
-    // Canvas *cv0 =
-    //     new Canvas("map-canvas-0", Vector2(), Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0);
+    Canvas *canvas0 =
+        new Canvas("mapbulding0", Vector2(), Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0);
 
-    // Button *clear = new Button(
-    //     "map-canvas-0-clear", Vector2(), Vector2(), "Clear",
-    //     []() {
-    //         LinkedFunction *lf = new LinkedFunction(
-    //             []() {
-    //                 MapMaking::allow_drawing = true;
-    //                 MapMaking::ToggleBtns(true);
-    //                 print("done");
-    //                 return 1;
-    //             },
-    //             Map::GetMapDelay());
-    //         MapMaking::Clear(lf);
-    //     },
-    //     25);
+    canvas0->AddComponents({
+        {new Button(
+             "clear", Vector2(), Vector2(), "Clear",
+             []() {
+                 LinkedFunction *lf = new LinkedFunction(
+                     []() {
+                         MapMaking::allow_drawing = true;
+                         MapMaking::ToggleBtns(true);
+                         print("done");
+                         return 1;
+                     },
+                     Map::GetMapDelay());
+                 MapMaking::Clear(lf);
+             },
+             25),
+         2},
+        {new Button("save", Vector2(), Vector2(), "Save", MapMaking::Save, 25), 2},
+        {new Button("random", Vector2(), Vector2(), "Random", MapMaking::Random, 25), 2},
+        {new Button(
+             "prev", Vector2(), Vector2(), "<",
+             []() {
+                 if (Map::current_map <= 1)
+                     return;
+                 Map::current_map--;
+                 MapMaking::ChangeMap();
+             },
+             25),
+         1},
+        {new Text("curmap", Vector2(), Vector2(), "Map: " + str(Map::current_map), 1, 25), 2},
+        {new Button(
+             "next", Vector2(), Vector2(), ">",
+             []() {
+                 Map::current_map++;
+                 MapMaking::ChangeMap();
+             },
+             25),
+         1},
+    });
 
-    // Button *save = new Button("map-canvas-0-save", Vector2(), Vector2(), "Save", MapMaking::Save, 25);
+    Canvas *canvas1 = new Canvas("mapbulding1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+                                 Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0);
 
-    // Button *random = new Button("map-canvas-0-random", Vector2(), Vector2(), "Random", MapMaking::Random, 25);
+    auto change_drawing_type = [](int type) {
+        MapMaking::current_drawing_type = (MapMaking::current_drawing_type == type ? -1 : type);
+    };
 
-    // Button *prev = new Button(
-    //     "map-canvas-0-prev", Vector2(), Vector2(), "<",
-    //     []() {
-    //         if (Map::current_map <= 1)
-    //             return;
-    //         Map::current_map--;
-    //         MapMaking::ChangeMap();
-    //     },
-    //     25);
-    // Text *map = new Text("map-canvas-0-map", Vector2(), Vector2(), "Map: " + str(Map::current_map), 1, 25);
+    canvas1->AddComponents({
+        {new Button("erase", Vector2(), Vector2(), "EMPTY", std::bind(change_drawing_type, EMPTY), 25), 2},
+        {new Button("wall", Vector2(), Vector2(), "WALL", std::bind(change_drawing_type, WALL), 25), 2},
+        {new Button("coin", Vector2(), Vector2(), "COIN", std::bind(change_drawing_type, COIN), 25), 2},
+        {new Button("spawn", Vector2(), Vector2(), "SPAWN", std::bind(change_drawing_type, SPAWN), 25), 2},
+        {new Button("win", Vector2(), Vector2(), "WIN", std::bind(change_drawing_type, WIN), 25), 2},
+    });
 
-    // Button *next = new Button(
-    //     "map-canvas-0-next", Vector2(), Vector2(), ">",
-    //     []() {
-    //         Map::current_map++;
-    //         MapMaking::ChangeMap();
-    //     },
-    //     25);
+    Common();
 
-    // cv0->AddComponents({
-    //     {"map-canvas-0-clear", 2},
-    //     {"map-canvas-0-save", 2},
-    //     {"map-canvas-0-random", 2},
-    //     {"map-canvas-0-prev", 1},
-    //     {"map-canvas-0-map", 2},
-    //     {"map-canvas-0-next", 1},
-    // });
+    Map::AddTiles();
 
-    // Canvas *cv1 = new Canvas("map-canvas-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
-    //                          Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0);
-
-    // auto change_drawing_type = [](int type) {
-    //     MapMaking::current_drawing_type = (MapMaking::current_drawing_type == type ? -1 : type);
-    // };
-
-    // Button *erase =
-    //     new Button("map-canvas-1-erase", Vector2(), Vector2(), "EMPTY", std::bind(change_drawing_type, EMPTY), 25);
-
-    // Button *wall =
-    //     new Button("map-canvas-1-wall", Vector2(), Vector2(), "WALL", std::bind(change_drawing_type, WALL), 25);
-
-    // Button *coin =
-    //     new Button("map-canvas-1-coin", Vector2(), Vector2(), "COIN", std::bind(change_drawing_type, COIN), 25);
-
-    // Button *spawn =
-    //     new Button("map-canvas-1-spawn", Vector2(), Vector2(), "SPAWN", std::bind(change_drawing_type, SPAWN), 25);
-
-    // Button *win = new Button("map-canvas-1-win", Vector2(), Vector2(), "WIN", std::bind(change_drawing_type, WIN),
-    // 25);
-
-    // cv1->AddComponents({
-    //     {"map-canvas-1-erase", 2},
-    //     {"map-canvas-1-wall", 2},
-    //     {"map-canvas-1-coin", 2},
-    //     {"map-canvas-1-spawn", 2},
-    //     {"map-canvas-1-win", 2},
-    // });
-
-    // Common();
-
-    // Map::AddTiles();
-
-    // print("done");
+    print("done");
 }
 
 void Scene::Common()
 {
-    // Canvas *cv0 = new Canvas("common-canvas-0", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
-    //                          Vector2(Screen::tile_size, Screen::tile_size * 4), 255, 0, 0, 1);
 
-    // Button *exit = new Button(
-    //     "common-canvas-0-exit", Vector2(), Vector2(), "Exit",
-    //     []() {
-    //         LinkedFunction *lf = new LinkedFunction(
-    //             []() {
-    //                 game->running = false;
-    //                 return 1;
-    //             },
-    //             100);
-    //         lf->Execute();
-    //     },
-    //     25);
+    Canvas *canvas0 = new Canvas("common", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
+                                 Vector2(Screen::tile_size, Screen::tile_size * 4), 255, 0, 0, 1);
 
-    // Button *home = new Button(
-    //     "common-canvas-0-home", Vector2(), Vector2(), "Home",
-    //     []() {
-    //         print("going back home...");
-    //         auto goHome = []() {
-    //             LinkedFunction *lf = new LinkedFunction(
-    //                 []() {
-    //                     UI::RemovingUIs();
-    //                     Scene::Welcome();
-    //                     print("done");
-    //                     return 1;
-    //                 },
-    //                 Map::GetMapDelay());
-    //             MapMaking::Clear(lf);
-    //             return 1;
-    //         };
-    //         if (!Map::mode && Game::player)
-    //         {
-    //             LinkedFunction *lf = new LinkedFunction(
-    //                 []() {
-    //                     return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
-    //                 },
-    //                 250);
-    //             lf->NextFunction([]() {
-    //                 delete Game::player;
-    //                 Game::player = nullptr;
-    //                 return 1;
-    //             });
-    //             lf->NextFunction(goHome);
-    //             lf->Execute();
-    //         }
-    //         else
-    //             goHome();
-    //     },
-    //     25);
-
-    // Button *settings = new Button(
-    //     "common-canvas-0-settings", Vector2(), Vector2(), "Settings", []() {}, 25);
-
-    // Button *mute = new Button(
-    //     "common-canvas-0-mute", Vector2(), Vector2(), "Mute",
-    //     []() {
-    //         bool &msc = Game::properties["music"].b;
-    //         bool &snd = Game::properties["sound"].b;
-    //         if (msc)
-    //             Mix_PauseMusic();
-    //         else
-    //             Mix_ResumeMusic();
-    //         if (snd)
-    //             StopAllSound();
-    //         msc = !msc;
-    //         snd = !snd;
-    //     },
-    //     25);
-
-    // cv0->AddComponents({
-    //     {"common-canvas-0-exit", 1},
-    //     {"common-canvas-0-home", 1},
-    //     {"common-canvas-0-settings", 1},
-    //     {"common-canvas-0-mute", 1},
-    // });
+    canvas0->AddComponents({
+        {new Button(
+             "exit", Vector2(), Vector2(), "Exit",
+             []() {
+                 LinkedFunction *lf = new LinkedFunction(
+                     []() {
+                         game->running = false;
+                         return 1;
+                     },
+                     100);
+                 lf->Execute();
+             },
+             25),
+         1},
+        {new Button(
+             "home", Vector2(), Vector2(), "Home",
+             []() {
+                 print("going back home...");
+                 auto goHome = []() {
+                     LinkedFunction *lf = new LinkedFunction(
+                         []() {
+                             if (Map::mode)
+                             {
+                                 MapMaking::allow_drawing = false;
+                                 MapMaking::current_drawing_type = -1;
+                             }
+                             UI::RemovingUIs();
+                             Scene::Welcome();
+                             print("done");
+                             return 1;
+                         },
+                         Map::GetMapDelay());
+                     MapMaking::Clear(lf);
+                     return 1;
+                 };
+                 if (!Map::mode && Game::player)
+                 {
+                     LinkedFunction *lf = new LinkedFunction(
+                         []() {
+                             return TransformValue(&Game::player->scale, 0.0f,
+                                                   Game::properties["tile_rescale_speed"].f);
+                         },
+                         250);
+                     lf->NextFunction([]() {
+                         delete Game::player;
+                         Game::player = nullptr;
+                         return 1;
+                     });
+                     lf->NextFunction(goHome);
+                     lf->Execute();
+                 }
+                 else
+                     goHome();
+             },
+             25),
+         1},
+        {new Button(
+             "settings", Vector2(), Vector2(), "Settings", []() {}, 25),
+         1},
+        {new Button(
+             "mute", Vector2(), Vector2(), "Mute",
+             []() {
+                 bool &msc = Game::properties["music"].b;
+                 bool &snd = Game::properties["sound"].b;
+                 if (msc)
+                     Mix_PauseMusic();
+                 else
+                     Mix_ResumeMusic();
+                 if (snd)
+                     StopAllSound();
+                 msc = !msc;
+                 snd = !snd;
+             },
+             25),
+         1},
+    });
 }
 
 void Scene::SpawnPlayer()
