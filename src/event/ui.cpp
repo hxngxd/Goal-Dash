@@ -19,11 +19,18 @@ void UI::Start()
         {
             if (!ui.second)
                 continue;
-            if (ui.second->type != BUTTON)
-                continue;
-            Button *btn = (Button *)ui.second;
-            if (btn->button_mouse_hovering && btn->enabled)
-                btn->button_mouse_click = true;
+            if (ui.second->type == BUTTON)
+            {
+                Button *btn = (Button *)ui.second;
+                if (btn->button_mouse_hovering && btn->enabled)
+                    btn->button_mouse_click = true;
+            }
+            else if (ui.second->type == SLIDER)
+            {
+                Slider *sldr = (Slider *)ui.second;
+                if (sldr->button_mouse_hovering)
+                    sldr->is_focus = true;
+            }
         }
     }));
 
@@ -32,18 +39,24 @@ void UI::Start()
         {
             if (!ui.second)
                 continue;
-            if (ui.second->type != BUTTON)
-                continue;
-            Button *btn = (Button *)ui.second;
-            if (btn->button_mouse_click && btn->button_mouse_hovering &&
-                (SDL_GetTicks() - btn->lastButtonClick >= 250) && btn->enabled)
+            if (ui.second->type == BUTTON)
             {
-                btn->onClick();
+                Button *btn = (Button *)ui.second;
+                if (btn->button_mouse_click && btn->button_mouse_hovering &&
+                    (SDL_GetTicks() - btn->lastButtonClick >= 250) && btn->enabled)
+                {
+                    btn->onClick();
+                    if (btn)
+                        btn->lastButtonClick = SDL_GetTicks();
+                }
                 if (btn)
-                    btn->lastButtonClick = SDL_GetTicks();
+                    btn->button_mouse_click = false;
             }
-            if (btn)
-                btn->button_mouse_click = false;
+            else if (ui.second->type == SLIDER)
+            {
+                Slider *sldr = (Slider *)ui.second;
+                sldr->is_focus = false;
+            }
         }
     }));
 }
@@ -319,6 +332,7 @@ Slider::Slider(std::string name, const Vector2 &position, const Vector2 &size, f
     this->max_value = max_value;
     this->current_value = current_value;
     this->step = step;
+    this->is_focus = this->button_mouse_hovering = false;
     print(name, "slider created");
 }
 
@@ -340,32 +354,46 @@ void Slider::Update()
     Screen::SetDrawColor(Color::white(64));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
-    SDL_Rect btnRect;
     btnRect.w = btnRect.h = barRect.h * 5.0f;
-    btnRect.x =
-        Clamp(EventHandler::MousePosition.x, (float)barRect.x, (float)(barRect.x + barRect.w)) - btnRect.w / 2.0f;
     btnRect.y = barRect.y + barRect.h / 2.0f - btnRect.h / 2.0f;
+
+    button_mouse_hovering =
+        InRange(EventHandler::MousePosition.x, min_position.x - btnRect.w / 2.0f, max_position.x + btnRect.w / 2.0f) &&
+        InRange(EventHandler::MousePosition.y, btnRect.y, btnRect.y + btnRect.h);
+
+    if (is_focus)
+    {
+        btnRect.x = Clamp(EventHandler::MousePosition.x, min_position.x, max_position.x);
+        current_value =
+            Clamp((max_value - min_value) * (btnRect.x - min_position.x) / barRect.w + min_value, min_value, max_value);
+    }
+    else
+    {
+        btnRect.x = Clamp(barRect.w * (current_value - min_value) / (max_value - min_value) + min_position.x,
+                          min_position.x, max_position.x);
+    }
+    btnRect.x -= btnRect.w / 2.0f;
+
     DrawSprite("circ", Rect::GetPosition(btnRect), Rect::GetSize(btnRect), 1.0f, 0, 0);
 
-    current_value = Clamp((max_value - min_value) * (EventHandler::MousePosition.x - min_position.x) /
-                                  (max_position.x - min_position.x) +
-                              min_value,
-                          min_value, max_value);
-    TTF_SetFontSize(myFont, font_size);
-    SDL_Surface *current_sf = TTF_RenderText_Blended(myFont, strRound(current_value, 1).c_str(), Color::white());
-    SDL_Texture *current_texture = SDL_CreateTextureFromSurface(Game::renderer, current_sf);
-    SDL_Rect currentRect;
-    TTF_SizeText(myFont, strRound(current_value, 1).c_str(), &currentRect.w, &currentRect.h);
-    currentRect.y = btnRect.y - currentRect.h - 2.5f;
-    currentRect.x = btnRect.x + btnRect.w / 2.0f - currentRect.w / 2.0f;
-    SDL_RenderCopy(Game::renderer, current_texture, NULL, &currentRect);
+    if (is_focus)
+    {
+        TTF_SetFontSize(myFont, font_size);
+        SDL_Surface *current_sf = TTF_RenderText_Blended(myFont, strRound(current_value, 1).c_str(), Color::white());
+        SDL_Texture *current_texture = SDL_CreateTextureFromSurface(Game::renderer, current_sf);
+        SDL_Rect currentRect;
+        TTF_SizeText(myFont, strRound(current_value, 1).c_str(), &currentRect.w, &currentRect.h);
+        currentRect.y = btnRect.y - currentRect.h - 2.5f;
+        currentRect.x = btnRect.x + btnRect.w / 2.0f - currentRect.w / 2.0f;
+        SDL_RenderCopy(Game::renderer, current_texture, NULL, &currentRect);
+        SDL_FreeSurface(current_sf);
+        SDL_DestroyTexture(current_texture);
+    }
 
     SDL_FreeSurface(min_sf);
     SDL_DestroyTexture(min_texture);
     SDL_FreeSurface(max_sf);
     SDL_DestroyTexture(max_texture);
-    SDL_FreeSurface(current_sf);
-    SDL_DestroyTexture(current_texture);
 }
 
 void Slider::Recalculate()

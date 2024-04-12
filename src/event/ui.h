@@ -81,10 +81,12 @@ class Slider : public UI
     float max_value;
     float current_value;
     float step;
+    bool is_focus, button_mouse_hovering;
 
     SDL_Rect barRect;
     SDL_Rect minRect;
     SDL_Rect maxRect;
+    SDL_Rect btnRect;
 
     Slider(std::string name, const Vector2 &position, const Vector2 &size, float min_value, float max_value,
            float current_value, float step, int font_size = 150);
