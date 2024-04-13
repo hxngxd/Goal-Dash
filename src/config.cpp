@@ -103,6 +103,8 @@ bool Game::LoadConfig()
 
     Screen::SetWindowSize();
 
+    Map::current_map = Game::properties["map_init"].i;
+
     Game::properties["ray_opacity"].i = Clamp(Game::properties["ray_opacity"].i, 0, 255);
 
     Game::properties["tile_rescale_speed"].f = Clamp(Game::properties["tile_rescale_speed"].f, 0.01f, 0.1f);

@@ -44,7 +44,7 @@ class Player : public GameObject
     animation_states current_state, previous_state;
     animation_directions direction;
 
-    int hp;
+    static int hp;
     int current_score, win_score;
     static int total_score;
     bool won;

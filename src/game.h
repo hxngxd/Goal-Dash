@@ -47,4 +47,9 @@ class Screen : public Game
     static void PointGrid(SDL_Color color);
     static void Display();
     static void SetWindowSize();
+
+    static void CalculateGravity();
+    static void CalculateMoveSpeed();
+    static void CalculateJumpSpeed();
+    static void CalculateAcceleration();
 };

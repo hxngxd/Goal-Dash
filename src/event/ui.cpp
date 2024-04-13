@@ -52,7 +52,8 @@ void UI::Start()
                     btn->enabled)
                 {
                     btn->onClick();
-                    PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
+                    if (Game::properties["sound"].b)
+                        PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
                     btn->lastButtonClick = SDL_GetTicks();
                 }
                 btn->mouse_click = false;
@@ -68,7 +69,9 @@ void UI::Start()
                 if (tg->mouse_click && tg->mouse_hovering)
                 {
                     tg->option = !tg->option;
-                    PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
+                    tg->onSwitch(tg->option);
+                    if (Game::properties["sound"].b)
+                        PlaySound("click", CHANNEL_BUTTON_CLICK, 0);
                 }
                 tg->mouse_click = false;
             }
@@ -116,14 +119,14 @@ void UI::Update()
 }
 
 UI::UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
-       int font_size)
+       int font_size, int border_opacity)
 {
     this->type = type;
     this->name = name;
     this->position = position;
     this->size = size;
     this->bg_opacity = 0;
-    this->border_opacity = 127;
+    this->border_opacity = border_opacity;
     this->label = label;
     this->font_size = this->original_font_size = font_size;
     this->label_alignment = label_alignment;
@@ -208,8 +211,8 @@ void UI::Recalculate(UI *ui, bool visible)
 //----------------------------------------
 
 Button::Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
-               std::function<void()> onClick, int font_size)
-    : UI(BUTTON, name, position, size, label, 0, font_size)
+               std::function<void()> onClick, int font_size, int border_opacity)
+    : UI(BUTTON, name, position, size, label, 0, font_size, border_opacity)
 {
     print("creating", name, "button");
     UIs[name] = this;
@@ -236,7 +239,8 @@ void Button::Update()
     {
         if (!hovering_sound)
         {
-            PlaySound("hover", CHANNEL_BUTTON_HOVER, 0);
+            if (Game::properties["sound"].b)
+                PlaySound("hover", CHANNEL_BUTTON_HOVER, 0);
             hovering_sound = true;
         }
 
@@ -267,7 +271,7 @@ void Button::Update()
         SDL_RenderFillRect(Game::renderer, &bgRect);
     }
 
-    Screen::SetDrawColor(mouse_click ? Color::blue() : Color::white(64));
+    Screen::SetDrawColor(mouse_click ? Color::blue() : Color::white(border_opacity));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
@@ -295,8 +299,8 @@ void Button::Recalculate()
 //----------------------------------------
 
 Text::Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
-           int font_size)
-    : UI(TEXT, name, position, size, label, label_alignment, font_size)
+           int font_size, int border_opacity)
+    : UI(TEXT, name, position, size, label, label_alignment, font_size, border_opacity)
 {
     print("creating", name, "text");
     UIs[name] = this;
@@ -312,7 +316,7 @@ void Text::Update()
 
     TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
     Vector2 center = Rect::GetCenter(position, size);
-    int indent = Screen::resolution.x / 50.0f;
+    int indent = Screen::resolution.x / 40.0f;
     switch (label_alignment)
     {
     case 0:
@@ -327,13 +331,7 @@ void Text::Update()
     }
     labelRect.y = center.y - labelRect.h / 2.0f;
 
-    if (bg_opacity)
-    {
-        Screen::SetDrawColor(Color::gray(16, bg_opacity));
-        SDL_RenderFillRect(Game::renderer, &bgRect);
-    }
-
-    Screen::SetDrawColor(Color::white(64));
+    Screen::SetDrawColor(Color::white(border_opacity));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);
@@ -375,16 +373,18 @@ void Text::SetLabel(std::string name, std::string label)
 //----------------------------------------
 
 Slider::Slider(std::string name, const Vector2 &position, const Vector2 &size, float min_value, float max_value,
-               float current_value, float step, int font_size)
-    : UI(SLIDER, name, position, size, "", 0, font_size)
+               float current_value, float step, std::function<void(float &value)> onValueChange, int font_size,
+               int border_opacity)
+    : UI(SLIDER, name, position, size, "", 0, font_size, border_opacity)
 {
     print("creating", name, "slider");
     UIs[name] = this;
     this->min_value = min_value;
     this->max_value = max_value;
-    this->current_value = current_value;
+    this->previous_value = this->current_value = current_value;
     this->step = step;
     this->is_focus = this->mouse_hovering = false;
+    this->onValueChange = onValueChange;
     print(name, "slider created");
 }
 
@@ -403,30 +403,39 @@ void Slider::Update()
     Screen::SetDrawColor(Color::white());
     SDL_RenderFillRect(Game::renderer, &barRect);
 
-    Screen::SetDrawColor(Color::white(64));
+    Screen::SetDrawColor(Color::white(border_opacity));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
-    btnRect.w = btnRect.h = barRect.h * 5.0f;
+    btnRect.w = btnRect.h = barRect.h * 4.0f;
     btnRect.y = barRect.y + barRect.h / 2.0f - btnRect.h / 2.0f;
 
-    mouse_hovering =
-        InRange(EventHandler::MousePosition.x, min_position.x - btnRect.w / 2.0f, max_position.x + btnRect.w / 2.0f) &&
-        InRange(EventHandler::MousePosition.y, btnRect.y, btnRect.y + btnRect.h);
+    mouse_hovering = InRange(EventHandler::MousePosition.x, min_position.x, max_position.x) &&
+                     InRange(EventHandler::MousePosition.y, btnRect.y, btnRect.y + btnRect.h);
 
     if (is_focus)
     {
-        btnRect.x = Clamp(EventHandler::MousePosition.x, min_position.x, max_position.x);
-        current_value =
-            Clamp((max_value - min_value) * (btnRect.x - min_position.x) / barRect.w + min_value, min_value, max_value);
+        btnRect.x =
+            Clamp(EventHandler::MousePosition.x, min_position.x + btnRect.w / 2.0f, max_position.x - btnRect.w / 2.0f);
+        current_value = Clamp((max_value - min_value) * (btnRect.x - (min_position.x + btnRect.w / 2.0f)) /
+                                      (barRect.w - btnRect.w) +
+                                  min_value,
+                              min_value, max_value);
     }
     else
     {
-        btnRect.x = Clamp(barRect.w * (current_value - min_value) / (max_value - min_value) + min_position.x,
-                          min_position.x, max_position.x);
+        btnRect.x = Clamp((barRect.w - btnRect.w) * (current_value - min_value) / (max_value - min_value) +
+                              min_position.x + btnRect.w / 2.0f,
+                          min_position.x + btnRect.w / 2.0f, max_position.x - btnRect.w / 2.0f);
     }
     btnRect.x -= btnRect.w / 2.0f;
 
     DrawSprite("circ", Rect::GetPosition(btnRect), Rect::GetSize(btnRect), 1.0f, 0, 0);
+
+    if (current_value != previous_value)
+    {
+        onValueChange(current_value);
+        previous_value = current_value;
+    }
 
     if (is_focus)
     {
@@ -437,6 +446,8 @@ void Slider::Update()
         TTF_SizeText(myFont, strRound(current_value, 2).c_str(), &currentRect.w, &currentRect.h);
         currentRect.y = btnRect.y - currentRect.h - 2.5f;
         currentRect.x = btnRect.x + btnRect.w / 2.0f - currentRect.w / 2.0f;
+        Screen::SetDrawColor(Color::black());
+        SDL_RenderFillRect(Game::renderer, &currentRect);
         SDL_RenderCopy(Game::renderer, current_texture, NULL, &currentRect);
         SDL_FreeSurface(current_sf);
         SDL_DestroyTexture(current_texture);
@@ -507,13 +518,15 @@ void Slider::SetValue(std::string name, float value)
 
 //----------------------------------------
 
-Toggle::Toggle(std::string name, const Vector2 &position, const Vector2 &size, bool option)
-    : UI(TOGGLE, name, position, size, "", 0, 0)
+Toggle::Toggle(std::string name, const Vector2 &position, const Vector2 &size, bool option,
+               std::function<void(bool &option)> onSwitch, int border_opacity)
+    : UI(TOGGLE, name, position, size, "", 0, 0, border_opacity)
 {
     print("creating", name, "toggle");
     UIs[name] = this;
     this->option = option;
     this->mouse_click = this->mouse_hovering = false;
+    this->onSwitch = onSwitch;
     print(name, "toggle created");
 }
 
@@ -524,7 +537,7 @@ void Toggle::Update()
 
     DrawSprite("toggle", Rect::GetPosition(switchRect), Rect::GetSize(switchRect), 1.0f, !option, !option);
 
-    Screen::SetDrawColor(Color::white(64));
+    Screen::SetDrawColor(Color::white(border_opacity));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 }
 
@@ -551,8 +564,8 @@ void Toggle::Switch(std::string name, bool option)
 //----------------------------------------
 
 Canvas::Canvas(std::string name, const Vector2 &position, const Vector2 &size, int bg_opacity, int spacing, int margin,
-               bool vertical)
-    : UI(CANVAS, name, position, size, "", 0, 0)
+               bool vertical, int border_opacity)
+    : UI(CANVAS, name, position, size, "", 0, 0, border_opacity)
 {
     print("creating", name, "canvas");
     UIs[name] = this;
@@ -665,8 +678,8 @@ void Canvas::Update()
     rect.y = position.y;
     rect.w = size.x;
     rect.h = size.y;
-    Screen::SetDrawColor(Color::black(bg_opacity));
+    Screen::SetDrawColor(Color::gray(16, bg_opacity));
     SDL_RenderFillRect(Game::renderer, &rect);
-    Screen::SetDrawColor(Color::white(32));
+    Screen::SetDrawColor(Color::white(border_opacity));
     SDL_RenderDrawRect(Game::renderer, &rect);
 }

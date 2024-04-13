@@ -10,6 +10,7 @@
 #include <string>
 
 int Player::total_score = 0;
+int Player::hp = 100;
 
 Player::Player(Vector2 position)
 {
@@ -24,7 +25,6 @@ Player::Player(Vector2 position)
     this->current_state = this->previous_state = IDLE;
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
-    this->hp = 100;
     this->current_score = 0;
     this->win_score = Map::count_types[COIN];
     this->won = false;
@@ -123,7 +123,7 @@ void Player::MoveRightLeft()
 
             if (velocity.r > 0)
                 velocity.r -= Game::properties["player_acceleration"].f * 1.5;
-            else if (velocity.l < 0)
+            else if (velocity.r < 0)
                 velocity.r = 0;
         }
         if (key_right)
@@ -177,18 +177,36 @@ void Player::MoveRightLeft()
 void Player::MoveDownUp()
 {
     if (!(key_up ^ key_down))
-        velocity.u = velocity.d = 0;
+    {
+        if (velocity.u < 0)
+            velocity.u += Game::properties["player_acceleration"].f * 1.5;
+        else if (velocity.u > 0)
+            velocity.u = 0;
+
+        if (velocity.d > 0)
+            velocity.d -= Game::properties["player_acceleration"].f * 1.5;
+        else if (velocity.d < 0)
+            velocity.d = 0;
+    }
     else
     {
         if (key_up)
         {
             velocity.u -= Game::properties["player_acceleration"].f;
             velocity.u = velocity.u < -1 ? -1 : velocity.u;
-            velocity.d = 0;
+
+            if (velocity.d > 0)
+                velocity.d -= Game::properties["player_acceleration"].f * 1.5;
+            else if (velocity.d < 0)
+                velocity.d = 0;
         }
         if (key_down)
         {
-            velocity.u = 0;
+            if (velocity.u < 0)
+                velocity.u += Game::properties["player_acceleration"].f * 1.5;
+            else if (velocity.u > 0)
+                velocity.u = 0;
+
             velocity.d += Game::properties["player_acceleration"].f;
             velocity.d = velocity.d > 1 ? 1 : velocity.d;
         }
@@ -346,7 +364,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     },
                     250);
                 lf->NextFunction([]() {
-                    PlaySound("win", CHANNEL_SPAWN_WIN, 0);
+                    if (Game::properties["sound"].b)
+                        PlaySound("win", CHANNEL_SPAWN_WIN, 0);
                     Game::time[1] = SDL_GetTicks();
                     delete Game::player;
                     Game::player = nullptr;
