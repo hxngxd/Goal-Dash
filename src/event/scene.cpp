@@ -511,7 +511,7 @@ void Scene::Settings()
     canvases[12]->AddComponents({
         {new Text("mapdelay", v, v, "Map animation delay", 0, font_size, border_opacity), 1},
         {new Slider(
-             "mapdelayslider", v, v, 0.0f, 100.0f, Game::properties["map_delay"].f, 0.1f,
+             "mapdelayslider", v, v, 0.0f, 50.0f, Game::properties["map_delay"].f, 0.1f,
              [](float &value) { Game::properties["map_delay"].f = value; }, font_size),
          1},
     });
