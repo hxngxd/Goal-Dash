@@ -17,7 +17,7 @@ void UI::Start()
     EventHandler::MouseDownActions.insert(std::make_pair("UIButtonMouseDown", []() {
         for (auto &ui : UIs)
         {
-            if (!ui.second)
+            if (!ui.second || !ui.second->visible)
                 continue;
             if (ui.second->type == BUTTON)
             {
@@ -43,7 +43,7 @@ void UI::Start()
     EventHandler::MouseUpActions.insert(std::make_pair("UIButtonMouseUp", []() {
         for (auto &ui : UIs)
         {
-            if (!ui.second)
+            if (!ui.second || !ui.second->visible)
                 continue;
             if (ui.second->type == BUTTON)
             {
@@ -80,39 +80,37 @@ void UI::Update()
 {
     for (auto &ui : UIs)
     {
-        if (ui.second)
+        if (!ui.second || !ui.second->visible)
+            continue;
+        if (ui.second->type == CANVAS)
         {
-            if (ui.second->type == CANVAS)
-            {
-                Canvas *cv = (Canvas *)ui.second;
-                cv->Update();
-            }
+            Canvas *cv = (Canvas *)ui.second;
+            cv->Update();
         }
     }
     for (auto &ui : UIs)
     {
-        if (ui.second)
+        if (!ui.second || !ui.second->visible)
+            continue;
+        if (ui.second->type == BUTTON)
         {
-            if (ui.second->type == BUTTON)
-            {
-                Button *btn = (Button *)ui.second;
-                btn->Update();
-            }
-            else if (ui.second->type == TEXT)
-            {
-                Text *txt = (Text *)ui.second;
-                txt->Update();
-            }
-            else if (ui.second->type == SLIDER)
-            {
-                Slider *sldr = (Slider *)ui.second;
-                sldr->Update();
-            }
-            else if (ui.second->type == TOGGLE)
-            {
-                Toggle *tg = (Toggle *)ui.second;
-                tg->Update();
-            }
+            Button *btn = (Button *)ui.second;
+            btn->Update();
+        }
+        else if (ui.second->type == TEXT)
+        {
+            Text *txt = (Text *)ui.second;
+            txt->Update();
+        }
+        else if (ui.second->type == SLIDER)
+        {
+            Slider *sldr = (Slider *)ui.second;
+            sldr->Update();
+        }
+        else if (ui.second->type == TOGGLE)
+        {
+            Toggle *tg = (Toggle *)ui.second;
+            tg->Update();
         }
     }
 }
@@ -129,6 +127,7 @@ UI::UI(int type, std::string name, const Vector2 &position, const Vector2 &size,
     this->label = label;
     this->font_size = this->original_font_size = font_size;
     this->label_alignment = label_alignment;
+    this->visible = true;
 }
 
 void UI::RemoveUI(std::string name)
@@ -138,6 +137,12 @@ void UI::RemoveUI(std::string name)
     UI *&ui = UIs[name];
     if (ui)
     {
+        if (ui->type == CANVAS)
+        {
+            Canvas *cv = (Canvas *)ui;
+            for (auto &com : cv->Components)
+                RemoveUI(com.first);
+        }
         delete ui;
         ui = nullptr;
     }
@@ -165,6 +170,39 @@ void UI::RemovingUIs()
 {
     for (auto &ui : UIs)
         WaitingForRemoval.push_back(ui.first);
+}
+
+void UI::SetVisible(std::string name, bool visible)
+{
+    if (UIs.find(name) != UIs.end())
+    {
+        if (UIs[name]->visible != visible)
+            Recalculate(UIs[name], visible);
+    }
+}
+
+void UI::Recalculate(UI *ui, bool visible)
+{
+    if (ui->visible != visible)
+        ui->visible = visible;
+    switch (ui->type)
+    {
+    case BUTTON:
+        ((Button *)ui)->Recalculate();
+        break;
+    case TEXT:
+        ((Text *)ui)->Recalculate();
+        break;
+    case SLIDER:
+        ((Slider *)ui)->Recalculate();
+        break;
+    case TOGGLE:
+        ((Toggle *)ui)->Recalculate();
+        break;
+    case CANVAS:
+        ((Canvas *)ui)->Recalculate();
+        break;
+    }
 }
 
 //----------------------------------------
@@ -294,7 +332,7 @@ void Text::Recalculate()
     TTF_SetFontSize(myFont, font_size);
     TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
     Vector2 center = Rect::GetCenter(position, size);
-    int indent = Screen::resolution.x / 95.0f;
+    int indent = Screen::resolution.x / 50.0f;
     switch (label_alignment)
     {
     case 0:
@@ -572,27 +610,6 @@ void Canvas::Recalculate()
     if (!numOfComponents)
         return;
 
-    auto Recalculate = [](UI *&ui) {
-        switch (ui->type)
-        {
-        case BUTTON:
-            ((Button *)ui)->Recalculate();
-            break;
-        case TEXT:
-            ((Text *)ui)->Recalculate();
-            break;
-        case SLIDER:
-            ((Slider *)ui)->Recalculate();
-            break;
-        case TOGGLE:
-            ((Toggle *)ui)->Recalculate();
-            break;
-        case CANVAS:
-            ((Canvas *)ui)->Recalculate();
-            break;
-        }
-    };
-
     if (numOfComponents == 1)
     {
         if (UI::UIs.find(Components[0].first) == UI::UIs.end())
@@ -603,7 +620,7 @@ void Canvas::Recalculate()
 
         ui->size = size - Vector2(2.0f * margin);
 
-        Recalculate(ui);
+        UI::Recalculate(ui, visible);
         return;
     }
 
@@ -638,7 +655,7 @@ void Canvas::Recalculate()
             ui->size.x = (float)spacing * (com.second - 1) + blockSize * com.second;
             currentPosition.x += ui->size.x + spacing;
         }
-        Recalculate(ui);
+        UI::Recalculate(ui, visible);
     }
 }
 

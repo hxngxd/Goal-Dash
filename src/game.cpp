@@ -38,18 +38,18 @@ void Game::Update()
 
     Map::Update();
 
-    if (Map::mode)
+    if (Map::mode == 1)
         MapMaking::Update();
 
     EventHandler::Update();
-
-    UI::Update();
 
     if (player)
     {
         player->Update();
         Text::SetLabel("play-canvas-0-time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
     }
+
+    UI::Update();
 
     LinkedFunction::Update();
 
@@ -115,6 +115,8 @@ void Game::Start()
 
     UI::Start();
     Scene::Welcome();
+    Scene::Common();
+    Scene::Settings();
 
     //----------------------------------------
 

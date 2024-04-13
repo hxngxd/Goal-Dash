@@ -77,7 +77,8 @@
         "format": "cpp",
         "numbers": "cpp",
         "span": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "queue": "cpp"
     },
     "editor.formatOnSave": true,
     "[cpp]": {

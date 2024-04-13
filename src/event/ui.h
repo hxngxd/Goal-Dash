@@ -20,6 +20,7 @@ class UI
     Vector2 size;
     int bg_opacity;
     int border_opacity;
+    bool visible;
 
     std::string label;
     int original_font_size;
@@ -39,6 +40,9 @@ class UI
     static void RemoveUIs();
     static void RemovingUI(std::string name);
     static void RemovingUIs();
+
+    static void SetVisible(std::string name, bool visible);
+    static void Recalculate(UI *ui, bool visible);
 };
 
 class Button : public UI

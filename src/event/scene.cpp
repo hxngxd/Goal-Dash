@@ -6,20 +6,14 @@
 #include "../gameobject/map.h"
 #include "ui.h"
 
+Vector2 v;
+
 void Scene::Welcome()
 {
     print("creating welcome scene...");
-    if (Map::Tiles.empty())
-    {
-        print("creating border...");
-        Map::Border();
-        print("border created...");
-    }
-
-    Vector2 v;
 
     Canvas *canvas = new Canvas(
-        "welcome", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 4.0f),
+        "Welcome", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 4.0f),
         Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.0f), 128, 8, 8, 1);
     canvas->AddComponents({
         {new Text("title", v, v, "GOAL DASH", 1, 55), 2},
@@ -27,9 +21,16 @@ void Scene::Welcome()
         {new Button("mapbuilding", v, v, "Map Building", MapMaking, 50), 1},
     });
 
-    Canvas *canvas1 = new Canvas("section1", v, v, 0, 8, 0, 0);
+    Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 8, 0, 0);
     canvas1->AddComponents({
-        {new Button("settings", v, v, "Settings", Settings, 50), 1},
+        {new Button(
+             "settings", v, v, "Settings",
+             []() {
+                 UI::SetVisible("Welcome", false);
+                 UI::SetVisible("Settings", true);
+             },
+             50),
+         1},
         {new Button(
              "about", v, v, "About", []() { SDL_OpenURL("https://github.com/hxngxd"); }, 50),
          1},
@@ -51,33 +52,44 @@ void Scene::Welcome()
              50),
          1},
     });
+
+    if (Map::Tiles.empty())
+    {
+        print("creating border...");
+        Map::Border();
+        print("border created...");
+    }
+
+    print("done");
 }
 
 void Scene::Play()
 {
     print("entering play mode...");
     Map::mode = 0;
-    UI::RemovingUIs();
+
+    UI::RemovingUI("Welcome");
+
     Map::current_map == Game::properties["map_init"].i;
     Map::LoadMap();
 
-    Canvas *canvas0 = new Canvas("play0", Vector2(), Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0);
+    Canvas *canvas0 = new Canvas("Play-0", v, Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0);
 
     canvas0->AddComponents({
-        {new Text("score", Vector2(), Vector2(), "Score: 0", 1, 25), 3},
-        {new Text("time", Vector2(), Vector2(), "Time: 00:00:00.000", 1, 25), 4},
-        {new Text("map", Vector2(), Vector2(), "Map: " + str(Map::current_map), 1, 25), 3},
-        {new Text("dif", Vector2(), Vector2(), "Difficulty: idk", 1, 25), 5},
+        {new Text("score", v, v, "Score: 0", 1, 25), 3},
+        {new Text("time", v, v, "Time: 00:00:00.000", 1, 25), 4},
+        {new Text("map", v, v, "Map: " + str(Map::current_map), 1, 25), 3},
+        {new Text("dif", v, v, "Difficulty: idk", 1, 25), 5},
     });
 
-    Canvas *canvas1 = new Canvas("play1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+    Canvas *canvas1 = new Canvas("Play-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                                  Vector2(Screen::tile_size * 3, Screen::tile_size), 255, 0, 0, 0);
 
     canvas1->AddComponents({
-        {new Text("hp", Vector2(), Vector2(), "Health: 100", 1, 25), 3},
+        {new Text("hp", v, v, "Health: 100", 1, 25), 3},
     });
 
-    Common();
+    UI::SetVisible("Common", true);
 
     Game::time[0] = SDL_GetTicks();
     Game::time[1] = Game::time[2] = 0;
@@ -93,16 +105,17 @@ void Scene::MapMaking()
     print("entering map building mode...");
     Map::mode = 1;
     MapMaking::allow_drawing = true;
-    UI::RemovingUIs();
+
+    UI::RemovingUI("Welcome");
+
     Map::current_map = Game::properties["map_init"].i;
     Map::LoadMap();
 
-    Canvas *canvas0 =
-        new Canvas("mapbulding0", Vector2(), Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0);
+    Canvas *canvas0 = new Canvas("MapBuilding-0", v, Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0);
 
     canvas0->AddComponents({
         {new Button(
-             "clear", Vector2(), Vector2(), "Clear",
+             "clear", v, v, "Clear",
              []() {
                  LinkedFunction *lf = new LinkedFunction(
                      []() {
@@ -116,10 +129,10 @@ void Scene::MapMaking()
              },
              25),
          2},
-        {new Button("save", Vector2(), Vector2(), "Save", MapMaking::Save, 25), 2},
-        {new Button("random", Vector2(), Vector2(), "Random", MapMaking::Random, 25), 2},
+        {new Button("save", v, v, "Save", MapMaking::Save, 25), 2},
+        {new Button("random", v, v, "Random", MapMaking::Random, 25), 2},
         {new Button(
-             "prev", Vector2(), Vector2(), "<",
+             "prev", v, v, "<",
              []() {
                  if (Map::current_map <= 1)
                      return;
@@ -128,9 +141,9 @@ void Scene::MapMaking()
              },
              25),
          1},
-        {new Text("curmap", Vector2(), Vector2(), "Map: " + str(Map::current_map), 1, 25), 2},
+        {new Text("curmap", v, v, "Map: " + str(Map::current_map), 1, 25), 2},
         {new Button(
-             "next", Vector2(), Vector2(), ">",
+             "next", v, v, ">",
              []() {
                  Map::current_map++;
                  MapMaking::ChangeMap();
@@ -139,7 +152,7 @@ void Scene::MapMaking()
          1},
     });
 
-    Canvas *canvas1 = new Canvas("mapbulding1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+    Canvas *canvas1 = new Canvas("MapBuilding-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                                  Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0);
 
     auto change_drawing_type = [](int type) {
@@ -147,29 +160,29 @@ void Scene::MapMaking()
     };
 
     canvas1->AddComponents({
-        {new Button("erase", Vector2(), Vector2(), "EMPTY", std::bind(change_drawing_type, EMPTY), 25), 2},
-        {new Button("wall", Vector2(), Vector2(), "WALL", std::bind(change_drawing_type, WALL), 25), 2},
-        {new Button("coin", Vector2(), Vector2(), "COIN", std::bind(change_drawing_type, COIN), 25), 2},
-        {new Button("spawn", Vector2(), Vector2(), "SPAWN", std::bind(change_drawing_type, SPAWN), 25), 2},
-        {new Button("win", Vector2(), Vector2(), "WIN", std::bind(change_drawing_type, WIN), 25), 2},
+        {new Button("erase", v, v, "EMPTY", std::bind(change_drawing_type, EMPTY), 25), 2},
+        {new Button("wall", v, v, "WALL", std::bind(change_drawing_type, WALL), 25), 2},
+        {new Button("coin", v, v, "COIN", std::bind(change_drawing_type, COIN), 25), 2},
+        {new Button("spawn", v, v, "SPAWN", std::bind(change_drawing_type, SPAWN), 25), 2},
+        {new Button("win", v, v, "WIN", std::bind(change_drawing_type, WIN), 25), 2},
     });
 
-    Common();
+    UI::SetVisible("Common", true);
 
     Map::AddTiles();
-
     print("done");
 }
 
 void Scene::Common()
 {
-
-    Canvas *canvas0 = new Canvas("common", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
+    Canvas *canvas0 = new Canvas("Common", Vector2(Screen::tile_size * (Screen::map_size - 1), 0),
                                  Vector2(Screen::tile_size, Screen::tile_size * 4), 255, 0, 0, 1);
+
+    UI::SetVisible("Common", false);
 
     canvas0->AddComponents({
         {new Button(
-             "exit", Vector2(), Vector2(), "Exit",
+             "exit", v, v, "Exit",
              []() {
                  LinkedFunction *lf = new LinkedFunction(
                      []() {
@@ -182,18 +195,27 @@ void Scene::Common()
              25),
          1},
         {new Button(
-             "home", Vector2(), Vector2(), "Home",
+             "home", v, v, "Home",
              []() {
                  print("going back home...");
                  auto goHome = []() {
                      LinkedFunction *lf = new LinkedFunction(
                          []() {
-                             if (Map::mode)
+                             if (Map::mode == 0)
+                             {
+                                 UI::RemovingUI("Play-0");
+                                 UI::RemovingUI("Play-1");
+                             }
+                             else if (Map::mode == 1)
                              {
                                  MapMaking::allow_drawing = false;
                                  MapMaking::current_drawing_type = -1;
+                                 UI::RemovingUI("MapBuilding-0");
+                                 UI::RemovingUI("MapBuilding-1");
                              }
-                             UI::RemovingUIs();
+                             UI::SetVisible("Common", false);
+                             UI::SetVisible("Settings", false);
+                             Map::mode = -1;
                              Scene::Welcome();
                              print("done");
                              return 1;
@@ -202,7 +224,7 @@ void Scene::Common()
                      MapMaking::Clear(lf);
                      return 1;
                  };
-                 if (!Map::mode && Game::player)
+                 if (Map::mode == 0 && Game::player)
                  {
                      LinkedFunction *lf = new LinkedFunction(
                          []() {
@@ -224,10 +246,25 @@ void Scene::Common()
              25),
          1},
         {new Button(
-             "settings", Vector2(), Vector2(), "Settings", []() {}, 25),
+             "settings", v, v, "Settings",
+             []() {
+                 UI::SetVisible("Settings", true);
+                 switch (Map::mode)
+                 {
+                 case 0:
+                     UI::SetVisible("Play-0", false);
+                     UI::SetVisible("Play-1", false);
+                     break;
+                 case 1:
+                     UI::SetVisible("MapBuilding-0", false);
+                     UI::SetVisible("MapBuilding-1", false);
+                     break;
+                 }
+             },
+             25),
          1},
         {new Button(
-             "mute", Vector2(), Vector2(), "Mute",
+             "mute", v, v, "Mute",
              []() {
                  bool &msc = Game::properties["music"].b;
                  bool &snd = Game::properties["sound"].b;
@@ -274,131 +311,116 @@ void Scene::SpawnPlayer()
 
 void Scene::Settings()
 {
-    // UI::RemovingUIs();
+    int font_size = 21;
 
-    // Vector2 v;
+    Canvas *canvas0 = new Canvas("Settings", Vector2(Screen::tile_size),
+                                 Screen::resolution - Vector2(Screen::tile_size * 2), 180, 0, 0, 1);
 
-    // std::string canvas = "settings-canvas";
-    // std::string title = canvas + "-title";
+    UI::SetVisible("Settings", false);
 
-    // std::string move = "-move-speed";
-    // std::string move_slider = move + "-slider";
+    canvas0->AddComponent(new Text("title", v, v, "SETTINGS", 1, 2 * font_size), 2);
 
-    // std::string jump = "-jump-speed";
-    // std::string jump_slider = jump + "-slider";
+    std::vector<Canvas *> canvases = {canvas0};
 
-    // std::string acceleration = "-acceleration";
-    // std::string acceleration_slider = acceleration + "-slider";
+    for (int i = 1; i <= 12; i++)
+    {
+        canvases.push_back(new Canvas("Second-" + str(i), v, v, 0, 0, 0, 0));
+        canvas0->AddComponent(canvases[i]);
+    }
 
-    // std::string gravity = "-gravity";
-    // std::string gravity_slider = gravity + "-slider";
+    canvases[1]->AddComponents({
+        {new Text("movespeed", v, v, "Move speed", 0, font_size), 1},
+        {new Slider("movespeedslider", v, v, 0.5f, 2.5f, 1.0f, 0.1f, font_size), 3},
+    });
 
-    // std::string immortal = "-immortal";
-    // std::string immortal_toggle = immortal + "-toggle";
+    canvases[2]->AddComponents({{new Text("jumpspeed", v, v, "Jump speed", 0, font_size), 1},
+                                {new Slider("jumpspeedslider", v, v, 0.5f, 2.5f, 1.0f, 0.1f, font_size), 3}});
 
-    // std::string collision = "-collision";
-    // std::string collision_toggle = collision + "-toggle";
+    canvases[3]->AddComponents({{new Text("acceleration", v, v, "Acceleration", 0, font_size), 1},
+                                {new Slider("accelerationslider", v, v, 0.25f, 2.0f, 1.0f, 0.1f, font_size), 3}});
 
-    // std::string key = "-keylayout";
-    // std::string key_toggle = key + "-toggle";
+    canvases[4]->AddComponents({
+        {new Text("gravity", v, v, "Gravity", 0, font_size), 1},
+        {new Slider("gravityslider", v, v, 0.0f, 10.0f, 5.0f, 0.1f, font_size), 3},
+    });
 
-    // std::string music = "-music";
-    // std::string music_toggle = music + "-toggle";
+    canvases[5]->AddComponents({
+        {new Text("immortal", v, v, "Immortal", 1, font_size), 2},
+        {new Toggle("immortaltoggle", v, v, false), 1},
 
-    // std::string sound = "-sound";
-    // std::string sound_toggle = sound + "-toggle";
+        {new Text("collision", v, v, "Map collision", 1, font_size), 2},
+        {new Toggle("collisiontoggle", v, v, true), 1},
 
-    // std::string volume = "-volume";
-    // std::string volume_slider = volume + "-slider";
+        {new Text("keyboard", v, v, "Key layout", 1, font_size), 2},
+        {new Toggle("keyboardtoggle", v, v, false), 1},
+    });
 
-    // std::string background = "-background";
-    // std::string background_toggle = background + "-toggle";
+    canvases[6]->AddComponents({
+        {new Text("music", v, v, "Music", 1, font_size), 2},
+        {new Toggle("musictoggle", v, v, false), 1},
+        {new Text("sound", v, v, "SoundFX", 1, font_size), 2},
+        {new Toggle("soundtoggle", v, v, false), 1},
+    });
 
-    // std::string grid = "-grid";
-    // std::string grid_toggle = grid + "-toggle";
+    canvases[7]->AddComponents({
+        {new Text("volume", v, v, "Volume", 0, font_size), 1},
+        {new Slider("volumeslider", v, v, 0.0f, 127.0f, 64.0f, 1.0f, font_size), 3},
+    });
 
-    // std::string ray = "-ray";
-    // std::string ray_slider = ray + "-slider";
+    canvases[8]->AddComponents({
+        {new Text("background", v, v, "Background", 1, font_size), 2},
+        {new Toggle("backgroundtoggle", v, v, true), 1},
+        {new Text("grid", v, v, "Point grid", 1, font_size), 2},
+        {new Toggle("gridtoggle", v, v, true), 1},
+    });
 
-    // std::string mapinit = "-mapinit";
-    // std::string prevmap = mapinit + "-prevmap";
-    // std::string curmap = mapinit + "-curmap";
-    // std::string nextmap = mapinit + "-nextmap";
+    canvases[9]->AddComponents({
+        {new Text("ray", v, v, "Ray opacity", 0, font_size), 1},
+        {new Slider("rayslider", v, v, 0.0f, 255.0f, 180.0f, 0.1f, font_size), 3},
+    });
 
-    // std::string mapdelay = "-mapdelay";
-    // std::string mapdelay_slider = mapdelay + "-slider";
+    canvases[10]->AddComponents({
+        {new Text("mapinit", v, v, "Starting map", 0, font_size), 4},
+        {new Button(
+             "prev", v, v, "<", []() {}, font_size),
+         1},
+        {new Text("curmap", v, v, "Map 1", 1, font_size), 2},
+        {new Button(
+             "next", v, v, ">", []() {}, font_size),
+         1},
+    });
 
-    // std::string save = "-save";
-    // std::string default_ = "-default";
-    // std::string exit = "-exit";
+    canvases[11]->AddComponents({
+        {new Text("mapdelay", v, v, "Map animation delay", 0, font_size), 1},
+        {new Slider("mapdelayslidere", v, v, 0.0f, 100.0f, 15.0f, 0.1f, font_size), 1},
+    });
 
-    // std::vector<Canvas *> canvases;
-
-    // for (int i = 0; i < 11; i++)
-    // {
-    //     canvases.push_back(new Canvas(canvas + "-" + str(i), v, v, 0, 0, 0, 0));
-    // }
-
-    // canvases.
-
-    // std::vector<UI *> settings_uis = {
-    //     new Canvas(canvas, Vector2(Screen::tile_size), Screen::resolution - Vector2(Screen::tile_size * 2), 180, 0,
-    //     8,
-    //                1),
-    //     new Text(title, v, v, "SETTINGS", 1, 50),
-
-    //     new Text(move, v, v, "Move speed", 1, 25),
-    //     new Slider(move_slider, v, v, 0.5f, 2.5f, 1.0f, 0.1f, 20),
-
-    //     new Text(jump, v, v, "Jump speed", 1, 25),
-    //     new Slider(jump_slider, v, v, 0.5f, 2.5f, 1.0f, 0.1f, 20),
-
-    //     new Text(acceleration, v, v, "Acceleration", 1, 25),
-    //     new Slider(acceleration_slider, v, v, 0.25f, 2.0f, 1.0f, 0.1f, 20),
-
-    //     new Text(gravity, v, v, "Gravity", 1, 25),
-    //     new Slider(gravity_slider, v, v, 0.0f, 10.0f, 5.0f, 0.1f, 20),
-
-    //     new Canvas(canvas0, v, v, 0, 0, 0, 0),
-
-    //     new Text(immortal, v, v, "Immortal", 1, 25),
-    //     new Toggle(immortal_toggle, v, v, false),
-
-    //     new Text(collision, v, v, "Map collision", 1, 25),
-    //     new Toggle(collision_toggle, v, v, true),
-
-    //     new Text(key, v, v, "Key layout", 1, 25),
-    //     new Toggle(key_toggle, v, v, false),
-
-    //     new Canvas(canvas1, v, v, 0, 0, 0, 0),
-
-    //     new Text(music, v, v, "Music", 1, 25),
-    //     new Toggle(music_toggle, v, v, false),
-
-    //     new Text(sound, v, v, "SoundFX", 1, 25),
-    //     new Toggle(sound_toggle, v, v, false),
-
-    //     new Text(volume, v, v, "Volume", 1, 25),
-    //     new Slider(volume_slider, v, v, 0.0f, 127.0f, 64.0f, 1.0f, 20),
-
-    //     new Canvas(canvas2, v, v, 0, 0, 0, 0),
-
-    //     new Text(background, v, v, "Background", 0, 25),
-    //     new Toggle(background_toggle, v, v, true),
-
-    //     new Text(grid, v, v, "Point grid", 1, 25),
-    //     new Toggle(grid_toggle, v, v, true),
-
-    //     new Text(ray, v, v, "Ray opacity", 1, 25),
-    //     new Slider(ray_slider, v, v, 0.0f, 255.0f, 180.0f, 0.1f, 20),
-
-    //     new Canvas(lastcanvas, v, v, 0, 0, 0, 0),
-
-    //     new Button(
-    //         save, v, v, "Save", []() {}, 25),
-    //     new Button(
-    //         default_, v, v, "Default Settings", []() {}, 25),
-    //     new Button(
-    //         exit, v, v, "Exit", []() {}, 25),
-    // };
+    canvases[12]->AddComponents({
+        {new Button(
+             "save", v, v, "Save", []() {}, font_size),
+         1},
+        {new Button(
+             "default", v, v, "Default Settings", []() {}, font_size),
+         1},
+        {new Button(
+             "exit", v, v, "Exit",
+             []() {
+                 UI::SetVisible("Settings", false);
+                 switch (Map::mode)
+                 {
+                 case -1:
+                     UI::SetVisible("Welcome", true);
+                 case 0:
+                     UI::SetVisible("Play-0", true);
+                     UI::SetVisible("Play-1", true);
+                     break;
+                 case 1:
+                     UI::SetVisible("MapBuilding-0", true);
+                     UI::SetVisible("MapBuilding-1", true);
+                     break;
+                 }
+             },
+             font_size),
+         1},
+    });
 }

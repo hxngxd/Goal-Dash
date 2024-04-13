@@ -9,7 +9,7 @@
 
 std::vector<std::vector<std::pair<int, Tile *>>> Map::Tiles;
 Vector2 Map::spawn_tile, Map::win_tile;
-bool Map::mode = 0;
+int Map::mode = -1;
 int Map::nempty = 0;
 int Map::current_map;
 std::map<int, int> Map::count_types;
@@ -130,20 +130,20 @@ void Map::AddTiles()
             if (Tiles[i][j].first == SPAWN)
             {
                 spawn_tile = Vector2(j, i);
-                if (!mode)
+                if (mode == 0)
                     continue;
             }
             else if (Tiles[i][j].first == WIN)
             {
                 win_tile = Vector2(j, i);
-                if (!mode)
+                if (mode == 0)
                     continue;
             }
             AddTile(i, j, wait);
         }
     }
 
-    if (!mode)
+    if (mode == 0)
     {
         AddTile(spawn_tile.y, spawn_tile.x, wait);
         Tiles[win_tile.y][win_tile.x].first = 0;
@@ -665,7 +665,7 @@ void MapMaking::ChangeMap()
         []() {
             Map::LoadMap();
             Map::AddTiles();
-            if (Map::mode)
+            if (Map::mode == 1)
             {
                 LinkedFunction *lf = new LinkedFunction(
                     []() {
@@ -687,7 +687,7 @@ void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
     Text::SetLabel("map-canvas-0-map", "Map: 0");
-    if (Map::mode)
+    if (Map::mode == 1)
     {
         allow_drawing = false;
         ToggleBtns(false);

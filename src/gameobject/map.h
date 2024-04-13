@@ -8,7 +8,7 @@ class Map
   public:
     static std::vector<std::vector<std::pair<int, Tile *>>> Tiles;
     static Vector2 spawn_tile, win_tile;
-    static bool mode;
+    static int mode;
     static int nempty;
     static int current_map;
     static std::map<int, int> count_types;

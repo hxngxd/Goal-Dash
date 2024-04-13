@@ -399,7 +399,7 @@ void Player::Jump()
             previous_state = JUMP;
         }
 
-        if (velocity.d > Screen::resolution.x / 70.0f)
+        if (velocity.d > Screen::resolution.x / 65.0f)
         {
             if (!Game::properties["player_immortal"].b)
             {
