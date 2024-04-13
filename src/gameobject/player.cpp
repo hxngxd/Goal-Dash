@@ -28,6 +28,11 @@ Player::Player(Vector2 position)
     this->current_score = 0;
     this->win_score = Map::count_types[COIN];
     this->won = false;
+    if (Game::properties["reset_health"].b)
+    {
+        hp = 100;
+        Text::SetLabel("Play-1.hp", "Health: " + str(hp));
+    }
 }
 
 Player::~Player()

@@ -358,11 +358,20 @@ void MapMaking::Random()
                 {
                     for (int j = 1; j < Screen::map_size - 1; j++)
                     {
-                        float v = perlin.octave2D_01(j, i, 8) * 100.0f;
-                        if (v > 64)
+                        if (Game::properties["wall_possibility"].i)
                         {
-                            Map::Tiles[i][j].first = WALL;
-                            Map::nempty++;
+                            float v = perlin.octave2D_01(j, i, 8) * 100.0f;
+                            if (v > 90 - Game::properties["wall_possibility"].i)
+                            {
+                                Map::Tiles[i][j].first = WALL;
+                                Map::nempty++;
+                            }
+                            else
+                            {
+                                Map::Tiles[i][j].first = EMPTY;
+                                ei = i;
+                                ej = j;
+                            }
                         }
                         else
                         {
@@ -397,11 +406,11 @@ void MapMaking::Random()
             DownVertical(spawn_i, spawn_j, visitable);
             Map::nempty++;
 
+            // visitable check
             while (Map::Tiles[spawn_i][spawn_j].first != WALL && spawn_i < Screen::map_size - 1)
                 visitable[spawn_i++][spawn_j] = true;
             spawn_i--;
 
-            // Generate coins
             for (float u = 1.0f; u <= 16.0f; u *= 2.0f)
             {
                 for (float v = 1.0f; v <= 16.0f; v *= 2.0f)
@@ -433,19 +442,6 @@ void MapMaking::Random()
                 }
             }
 
-            int CoinPossibility = 10;
-            for (int i = 1; i < Screen::map_size - 1; i++)
-            {
-                for (int j = 1; j < Screen::map_size - 1; j++)
-                {
-                    if (visitable[i][j] && Map::Tiles[i][j].first == EMPTY && RandomChoice(CoinPossibility))
-                    {
-                        Map::Tiles[i][j].first = COIN;
-                        Map::nempty++;
-                    }
-                }
-            }
-
             // Generate win
             int win_i = IntegralRandom<int>(1, 14);
             int win_j = IntegralRandom<int>(1, 14);
@@ -456,6 +452,20 @@ void MapMaking::Random()
             }
             Map::Tiles[win_i][win_j].first = WIN;
             Map::nempty++;
+
+            // Generate coin
+            for (int i = 1; i < Screen::map_size - 1; i++)
+            {
+                for (int j = 1; j < Screen::map_size - 1; j++)
+                {
+                    if (visitable[i][j] && Map::Tiles[i][j].first == EMPTY &&
+                        RandomChoice(Game::properties["coin_possibility"].i))
+                    {
+                        Map::Tiles[i][j].first = COIN;
+                        Map::nempty++;
+                    }
+                }
+            }
 
             Map::AddTiles();
 

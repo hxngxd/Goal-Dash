@@ -80,11 +80,6 @@ void Scene::Play()
     Map::current_map = Game::properties["map_init"].i;
     Map::LoadMap();
 
-    Screen::CalculateGravity();
-    Screen::CalculateMoveSpeed();
-    Screen::CalculateJumpSpeed();
-    Screen::CalculateAcceleration();
-
     Canvas *canvas0 =
         new Canvas("Play-0", v, Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0, border_opacity);
 
@@ -231,6 +226,7 @@ void Scene::Common()
              "home", v, v, "Home",
              []() {
                  print("going back home...");
+                 UI::SetVisible("Settings", false);
                  auto goHome = []() {
                      LinkedFunction *lf = new LinkedFunction(
                          []() {
@@ -247,7 +243,6 @@ void Scene::Common()
                                  UI::RemovingUI("MapBuilding-1");
                              }
                              UI::SetVisible("Common", false);
-                             UI::SetVisible("Settings", false);
                              MapMaking::ToggleBtns(true);
                              Map::mode = -1;
                              Scene::Welcome();
@@ -340,7 +335,7 @@ void Scene::Settings()
 
     std::vector<Canvas *> canvases = {canvas0};
 
-    for (int i = 1; i <= 13; i++)
+    for (int i = 1; i <= 16; i++)
     {
         canvases.push_back(new Canvas("Section-" + str(i), v, v, 0, 0, 0, 0, border_opacity));
         canvas0->AddComponent(canvases[i]);
@@ -522,6 +517,33 @@ void Scene::Settings()
     });
 
     canvases[13]->AddComponents({
+        {new Text("time", v, v, "Show time", 1, font_size), 2},
+        {new Toggle("timetoggle", v, v, Game::properties["show_time"].b,
+                    [](bool &option) { Game::properties["show_time"].b = option; }),
+         1},
+        {new Text("resethealth", v, v, "Reset health", 1, font_size), 2},
+        {new Toggle("resethealthtoggle", v, v, Game::properties["reset_health"].b,
+                    [](bool &option) { Game::properties["reset_health"].b = option; }),
+         1},
+    });
+
+    canvases[14]->AddComponents({
+        {new Text("wallpossibility", v, v, "Wall possibility", 0, font_size, border_opacity), 1},
+        {new Slider(
+             "wallpossibilityslider", v, v, 0.0f, 35.0f, Game::properties["wall_possibility"].i, 1.0f,
+             [](float &value) { Game::properties["wall_possibility"].i = (int)value; }, font_size),
+         3},
+    });
+
+    canvases[15]->AddComponents({
+        {new Text("coinpossibility", v, v, "Coin possibility", 0, font_size, border_opacity), 1},
+        {new Slider(
+             "coinpossibilityslider", v, v, 5.0f, 50.0f, Game::properties["coin_possibility"].i, 1.0f,
+             [](float &value) { Game::properties["coin_possibility"].i = (int)value; }, font_size),
+         3},
+    });
+
+    canvases[16]->AddComponents({
         {new Button(
              "save", v, v, "Save", []() {}, font_size, border_opacity),
          2},

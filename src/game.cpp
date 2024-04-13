@@ -46,7 +46,8 @@ void Game::Update()
     if (player)
     {
         player->Update();
-        Text::SetLabel("Play-0.time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
+        Text::SetLabel("Play-0.time",
+                       Game::properties["show_time"].b ? "Time: " + FormatMS(SDL_GetTicks() - time[0]) : "Time: ~_~");
     }
 
     UI::Update();
@@ -117,6 +118,11 @@ void Game::Start()
     Scene::Welcome();
     Scene::Common();
     Scene::Settings();
+
+    Screen::CalculateGravity();
+    Screen::CalculateMoveSpeed();
+    Screen::CalculateJumpSpeed();
+    Screen::CalculateAcceleration();
 
     //----------------------------------------
 
