@@ -80,7 +80,10 @@ void Map::LoadMap()
         }
     }
 
-    Text::SetLabel(mode ? "map-canvas-0-map" : "play-canvas-0-map", "Map: " + str(current_map));
+    if (mode == 1)
+        Text::SetLabel("MapBuilding-0.curmap", "Map: " + str(current_map));
+    else
+        Text::SetLabel("Play-0.map", "Map: " + str(current_map));
 
     nempty = 0;
     for (int i = 1; i < Screen::map_size - 1; i++)
@@ -335,7 +338,7 @@ void MapMaking::Random()
 {
     print("generating map...");
 
-    Text::SetLabel("map-canvas-0-map", "Map: 0");
+    Text::SetLabel("MapBuilding-0.curmap", "Map: 0");
 
     LinkedFunction *lf = new LinkedFunction(
         []() {
@@ -653,7 +656,7 @@ void MapMaking::Save()
 
     Map::current_map = map;
 
-    Text::SetLabel("map-canvas-0-map", "Map: " + str(map));
+    Text::SetLabel("MapBuilding-0.curmap", "Map: " + str(map));
 
     print("saved to", filename);
 }
@@ -665,18 +668,15 @@ void MapMaking::ChangeMap()
         []() {
             Map::LoadMap();
             Map::AddTiles();
-            if (Map::mode == 1)
-            {
-                LinkedFunction *lf = new LinkedFunction(
-                    []() {
-                        allow_drawing = true;
-                        ToggleBtns(true);
-                        print("done");
-                        return 1;
-                    },
-                    Map::GetMapDelay());
-                lf->Execute();
-            }
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    allow_drawing = true;
+                    ToggleBtns(true);
+                    print("done");
+                    return 1;
+                },
+                Map::GetMapDelay());
+            lf->Execute();
             return 1;
         },
         Map::GetMapDelay());
@@ -686,9 +686,9 @@ void MapMaking::ChangeMap()
 void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
-    Text::SetLabel("map-canvas-0-map", "Map: 0");
     if (Map::mode == 1)
     {
+        Text::SetLabel("MapBuilding-0.curmap", "Map: 0");
         allow_drawing = false;
         ToggleBtns(false);
     }
@@ -700,9 +700,9 @@ void MapMaking::Clear(LinkedFunction *post_func)
 void MapMaking::ToggleBtns(bool toggle)
 {
     std::vector<std::string> btns = {
-        "map-canvas-0-clear", "map-canvas-0-save",  "map-canvas-0-random",  "map-canvas-0-prev",
-        "map-canvas-0-next",  "map-canvas-1-erase", "map-canvas-1-wall",    "map-canvas-1-coin",
-        "map-canvas-1-spawn", "map-canvas-1-win",   "common-canvas-0-home", "common-canvas-0-settings",
+        "MapBuilding-0.clear", "MapBuilding-0.save",  "MapBuilding-0.random", "MapBuilding-0.prev",
+        "MapBuilding-0.next",  "MapBuilding-1.erase", "MapBuilding-1.wall",   "MapBuilding-1.coin",
+        "MapBuilding-1.spawn", "MapBuilding-1.win",   "Common.home",          "Common.settings",
     };
     for (auto &btn : btns)
     {

@@ -46,7 +46,7 @@ void Game::Update()
     if (player)
     {
         player->Update();
-        Text::SetLabel("play-canvas-0-time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
+        Text::SetLabel("Play-0.time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
     }
 
     UI::Update();

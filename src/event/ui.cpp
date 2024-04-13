@@ -310,6 +310,23 @@ void Text::Update()
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(Game::renderer, sf);
 
+    TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
+    Vector2 center = Rect::GetCenter(position, size);
+    int indent = Screen::resolution.x / 50.0f;
+    switch (label_alignment)
+    {
+    case 0:
+        labelRect.x = position.x + indent;
+        break;
+    case 1:
+        labelRect.x = center.x - labelRect.w / 2.0f;
+        break;
+    case 2:
+        labelRect.x = position.x + size.x - labelRect.w - indent;
+        break;
+    }
+    labelRect.y = center.y - labelRect.h / 2.0f;
+
     if (bg_opacity)
     {
         Screen::SetDrawColor(Color::gray(16, bg_opacity));
@@ -329,24 +346,6 @@ void Text::Recalculate()
 {
     font_size = std::min(original_font_size, Text::CalculateFontSize(size, label));
 
-    TTF_SetFontSize(myFont, font_size);
-    TTF_SizeText(myFont, label.c_str(), &labelRect.w, &labelRect.h);
-    Vector2 center = Rect::GetCenter(position, size);
-    int indent = Screen::resolution.x / 50.0f;
-    switch (label_alignment)
-    {
-    case 0:
-        labelRect.x = position.x + indent;
-        break;
-    case 1:
-        labelRect.x = center.x - labelRect.w / 2.0f;
-        break;
-    case 2:
-        labelRect.x = position.x + size.x - labelRect.w - indent;
-        break;
-    }
-    labelRect.y = center.y - labelRect.h / 2.0f;
-
     bgRect.x = position.x;
     bgRect.y = position.y;
     bgRect.w = size.x;
@@ -355,7 +354,7 @@ void Text::Recalculate()
 
 int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
 {
-    int perfectFs = 500;
+    int perfectFs = 200;
     SDL_Rect rect;
     rect.w = rect.h = 100000;
     while ((rect.w >= bg_size.x || rect.h >= bg_size.y) && perfectFs >= 10)

@@ -70,6 +70,8 @@ void Scene::Play()
 
     UI::RemovingUI("Welcome");
 
+    MapMaking::ToggleBtns(false);
+
     Map::current_map == Game::properties["map_init"].i;
     Map::LoadMap();
 
@@ -97,6 +99,15 @@ void Scene::Play()
     SpawnPlayer();
     Map::AddTiles();
 
+    LinkedFunction *lf = new LinkedFunction(
+        []() {
+            MapMaking::ToggleBtns(true);
+            print("done");
+            return 1;
+        },
+        Map::GetMapDelay());
+    lf->Execute();
+
     print("done");
 }
 
@@ -105,7 +116,7 @@ void Scene::MapMaking()
     print("entering map building mode...");
     Map::mode = 1;
     MapMaking::allow_drawing = true;
-
+    MapMaking::ToggleBtns(false);
     UI::RemovingUI("Welcome");
 
     Map::current_map = Game::properties["map_init"].i;
@@ -170,6 +181,16 @@ void Scene::MapMaking()
     UI::SetVisible("Common", true);
 
     Map::AddTiles();
+
+    LinkedFunction *lf = new LinkedFunction(
+        []() {
+            MapMaking::ToggleBtns(true);
+            print("done");
+            return 1;
+        },
+        Map::GetMapDelay());
+    lf->Execute();
+
     print("done");
 }
 
@@ -215,6 +236,7 @@ void Scene::Common()
                              }
                              UI::SetVisible("Common", false);
                              UI::SetVisible("Settings", false);
+                             MapMaking::ToggleBtns(true);
                              Map::mode = -1;
                              Scene::Welcome();
                              print("done");

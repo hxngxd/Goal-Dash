@@ -286,7 +286,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 current_score++;
                 total_score++;
 
-                Text::SetLabel("play-canvas-0-score", "Score: " + str(total_score));
+                Text::SetLabel("Play-0.score", "Score: " + str(total_score));
 
                 print("player score", current_score, "/", win_score);
 
@@ -336,6 +336,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                                   0) &&
                 !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::properties["tile_scale"].f)
             {
+                MapMaking::ToggleBtns(false);
                 print("player won");
                 won = true;
                 print("deleting player...");
@@ -407,7 +408,7 @@ void Player::Jump()
                     PlaySound("fall", CHANNEL_JUMP_FALL, 0);
 
                 hp -= velocity.d / 2.5;
-                Text::SetLabel("play-canvas-1-hp", "Health: " + str(hp));
+                Text::SetLabel("Play-1.hp", "Health: " + str(hp));
 
                 Damaged(true);
                 LinkedFunction *lf = new LinkedFunction(std::bind(
