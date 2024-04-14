@@ -119,6 +119,11 @@ bool Game::LoadConfig(bool is_default)
 
     //----------------------------------------
 
+    Screen::tmpMoveSpeed = properties["player_move_speed"].f;
+    Screen::tmpJumpSpeed = properties["player_jump_speed"].f;
+    Screen::tmpAcceleration = properties["player_acceleration"].f;
+    Screen::tmpGravity = properties["gravity"].f;
+
     Screen::map_size = 16;
 
     Screen::SetWindowSize();

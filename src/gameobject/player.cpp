@@ -84,7 +84,8 @@ void Player::Animation()
     Vector2 hbSize = Vector2(size.x * 1.5, size.y / 5);
     Vector2 hbPos = centerPos - (hbSize / 2);
     hbPos.y -= size.y * 7 / 10;
-    DrawSprite("healthbar", hbPos, hbSize, scale, (int)(4.0f - (float)hp / 25.0f));
+    if (Game::properties["show_health"].b)
+        DrawSprite("healthbar", hbPos, hbSize, scale, (int)(4.0f - (float)hp / 25.0f));
 }
 
 void Player::MoveRightLeft()
@@ -439,7 +440,8 @@ void Player::Jump()
                     PlaySound("die", CHANNEL_DIE, 0);
                 }
 
-                Text::SetLabel("Play-1.hp", "Health: " + str(hp));
+                if (Game::properties["show_health"].b)
+                    Text::SetLabel("Play-1.hp", "Health: " + str(hp));
 
                 Damaged(true);
                 LinkedFunction *lf = new LinkedFunction(std::bind(

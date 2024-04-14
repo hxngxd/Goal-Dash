@@ -92,7 +92,9 @@ void Scene::Play()
                                  Vector2(Screen::tile_size * 3, Screen::tile_size), 255, 0, 0, 0, border_opacity);
 
     canvas1->AddComponents({
-        {new Text("hp", v, v, "Health: 100", 1, Screen::font_size, border_opacity), 3},
+        {new Text("hp", v, v, "Health: " + (Game::properties["show_health"].b ? str(100) : "~_~"), 1, Screen::font_size,
+                  border_opacity),
+         3},
     });
 
     UI::SetVisible("Common", true);
@@ -540,11 +542,21 @@ void Scene::Settings()
     canvases[13]->AddComponents({
         {new Text("time", v, v, "Show time", 1, Screen::font_size), 2},
         {new Toggle("timetoggle", v, v, Game::properties["show_time"].b,
-                    [](bool &option) { Game::properties["show_time"].b = option; }),
+                    [](bool &option) {
+                        Game::properties["show_time"].b = option;
+                        Text::SetLabel("Play-0.time", "Time: ~_~");
+                    }),
          1},
         {new Text("resethealth", v, v, "Reset health", 1, Screen::font_size), 2},
         {new Toggle("resethealthtoggle", v, v, Game::properties["reset_health"].b,
                     [](bool &option) { Game::properties["reset_health"].b = option; }),
+         1},
+        {new Text("showhealth", v, v, "Show health", 1, Screen::font_size), 2},
+        {new Toggle("showhealthtoggle", v, v, Game::properties["show_health"].b,
+                    [](bool &option) {
+                        Game::properties["show_health"].b = option;
+                        Text::SetLabel("Play-1.hp", "Health: ~_~");
+                    }),
          1},
     });
 

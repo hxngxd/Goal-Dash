@@ -27,6 +27,7 @@
 <int> {volume=64}
 
 <bool> {show_time=1}
+<bool> {show_health=1}
 <bool> {reset_health=0}
 
 <int> {wall_possibility=26}

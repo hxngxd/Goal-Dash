@@ -48,8 +48,8 @@ void Game::Update()
     if (player)
     {
         player->Update();
-        Text::SetLabel("Play-0.time",
-                       Game::properties["show_time"].b ? "Time: " + FormatMS(SDL_GetTicks() - time[0]) : "Time: ~_~");
+        if (Game::properties["show_time"].b)
+            Text::SetLabel("Play-0.time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
     }
 
     UI::Update();
