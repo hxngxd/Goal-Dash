@@ -229,10 +229,20 @@ enum ui_types
     TOGGLE
 };
 
+enum config_types
+{
+    INT,
+    STR,
+    FLOAT,
+    BOOL,
+};
+
 //----------------------------------------
 
 struct PropertiesType
 {
+    int type;
+
     int i;
     std::string s;
     float f;

@@ -222,12 +222,12 @@ void Player::MoveDownUp()
 
 void Player::Collision()
 {
-    if (!Game::properties["player_collision"].b)
-    {
-        position.x = Clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
-        position.y = Clamp(position.y, 0.0f, Screen::resolution.y - size.y);
-        return;
-    }
+    // if (!Game::properties["player_collision"].b)
+    // {
+    //     position.x = Clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
+    //     position.y = Clamp(position.y, 0.0f, Screen::resolution.y - size.y);
+    //     return;
+    // }
 
     Vector2 playerCenterTile = Int(Rect::GetCenter(position, size) / Screen::tile_size);
     std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> visit;

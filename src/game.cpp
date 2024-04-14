@@ -19,7 +19,8 @@ int Game::time[3] = {0, 0, 0};
 Vector2 Screen::resolution;
 int Screen::map_size;
 int Screen::tile_size;
-std::vector<int> Screen::resolutions = {320, 480, 640, 800, 960, 1120};
+int Screen::font_size;
+std::vector<int> Screen::resolutions = {480, 640, 800, 960, 1120};
 int Screen::current_resolution;
 
 void Game::Update()
@@ -65,7 +66,7 @@ void Game::Start()
     //----------------------------------------
 
     print("loading config file...");
-    if (!LoadConfig())
+    if (!LoadConfig(0))
     {
         print("failed to load config file");
         return;
@@ -405,43 +406,4 @@ void Screen::PointGrid(SDL_Color color)
             SDL_RenderDrawPoint(renderer, i, j);
         }
     }
-}
-
-void Screen::SetWindowSize()
-{
-    SDL_SetWindowSize(window, resolutions[current_resolution], resolutions[current_resolution]);
-
-    Screen::resolution = Vector2(Screen::resolutions[Screen::current_resolution]);
-
-    Screen::resolution = Int((Screen::resolution / Screen::map_size)) * Screen::map_size;
-
-    Screen::tile_size = Screen::resolution.x / Screen::map_size;
-}
-
-void Screen::CalculateGravity()
-{
-    Game::properties["gravity"].f = Clamp(Game::properties["gravity"].f, 0.0f, 10.0f);
-
-    Game::properties["gravity"].f *= Screen::resolution.x / 25100.0f;
-}
-
-void Screen::CalculateMoveSpeed()
-{
-    Game::properties["player_move_speed"].f = Clamp(Game::properties["player_move_speed"].f, 0.5f, 2.5f);
-
-    Game::properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
-}
-
-void Screen::CalculateJumpSpeed()
-{
-    Game::properties["player_jump_speed"].f = Clamp(Game::properties["player_jump_speed"].f, 0.5f, 2.5f);
-
-    Game::properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
-}
-
-void Screen::CalculateAcceleration()
-{
-    Game::properties["player_acceleration"].f = Clamp(Game::properties["player_acceleration"].f, 0.25f, 2.0f);
-
-    Game::properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
 }

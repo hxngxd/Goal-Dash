@@ -1,6 +1,6 @@
 #config
 
-<int> {resolution=4}
+<int> {resolution=3}
 <float> {fps=60.0}
 <string> {font=fonts/Gotu-Regular.ttf}
 
@@ -10,7 +10,6 @@
 <float> {player_jump_speed=1}
 <float> {player_acceleration=1}
 <bool> {player_immortal=0}
-<bool> {player_collision=1}
 <float> {player_collision_dist=1}
 <bool> {keyboard_layout=0}
 

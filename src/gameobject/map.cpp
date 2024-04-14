@@ -650,6 +650,7 @@ void MapMaking::Save()
     if (!out.good())
     {
         print("failed to save map");
+        out.close();
         return;
     }
 

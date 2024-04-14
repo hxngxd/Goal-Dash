@@ -24,9 +24,10 @@ class Game
 
     void Start();
     void Quit();
-    bool LoadConfig();
-    bool InitSDL2();
-    bool LoadMedia();
+    static bool LoadConfig(bool is_default);
+    static void SaveConfig();
+    static bool InitSDL2();
+    static bool LoadMedia();
     void Update();
 };
 
@@ -41,6 +42,7 @@ class Screen : public Game
     static Vector2 resolution;
     static int map_size;
     static int tile_size;
+    static int font_size;
 
     static void Clear(SDL_Color color);
     static void SetDrawColor(SDL_Color color);
@@ -52,4 +54,6 @@ class Screen : public Game
     static void CalculateMoveSpeed();
     static void CalculateJumpSpeed();
     static void CalculateAcceleration();
+
+    static float tmpGravity, tmpMoveSpeed, tmpJumpSpeed, tmpAcceleration;
 };

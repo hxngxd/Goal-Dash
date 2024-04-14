@@ -4,11 +4,18 @@
 #include <fstream>
 #include <regex>
 
-bool Game::LoadConfig()
+float Screen::tmpGravity, Screen::tmpMoveSpeed, Screen::tmpJumpSpeed, Screen::tmpAcceleration;
+
+bool Game::LoadConfig(bool is_default)
 {
     //----------------------------------------
 
-    std::ifstream file(".config");
+    std::ifstream file;
+    if (is_default)
+        file.open("config/.default");
+    else
+        file.open("config/.current");
+
     if (!file.good())
     {
         print("config file not found");
@@ -59,20 +66,35 @@ bool Game::LoadConfig()
             try
             {
                 if (type == "int")
+                {
                     prop.i = std::stoi(value);
+                    prop.type = INT;
+                }
                 else if (type == "float")
+                {
                     prop.f = std::stof(value);
+                    prop.type = FLOAT;
+                }
                 else if (type == "bool")
                 {
                     if (value == "false" || value == "0")
+                    {
                         prop.b = false;
+                        prop.type = BOOL;
+                    }
                     else if (value == "true" || value == "1")
+                    {
                         prop.b = true;
+                        prop.type = BOOL;
+                    }
                     else
                         throw("type");
                 }
                 else if (type == "string")
+                {
                     prop.s = value;
+                    prop.type = STR;
+                }
                 else
                     throw("type");
             }
@@ -99,22 +121,115 @@ bool Game::LoadConfig()
 
     Screen::map_size = 16;
 
-    Screen::current_resolution = Game::properties["resolution"].i;
+    Screen::current_resolution = properties["resolution"].i;
 
     Screen::SetWindowSize();
 
-    Map::current_map = Game::properties["map_init"].i;
+    Map::current_map = properties["map_init"].i;
 
-    Game::properties["ray_opacity"].i = Clamp(Game::properties["ray_opacity"].i, 0, 255);
+    properties["ray_opacity"].i = Clamp(properties["ray_opacity"].i, 0, 255);
 
-    Game::properties["tile_rescale_speed"].f = Clamp(Game::properties["tile_rescale_speed"].f, 0.01f, 0.1f);
+    properties["tile_rescale_speed"].f = Clamp(properties["tile_rescale_speed"].f, 0.01f, 0.1f);
 
-    Game::properties["tile_scale"].f = Clamp(Game::properties["tile_scale"].f, 0.1f, 1.0f);
+    properties["tile_scale"].f = Clamp(properties["tile_scale"].f, 0.1f, 1.0f);
 
-    Game::properties["volume"].i = Clamp(Game::properties["volume"].i, 0, 128);
+    properties["volume"].i = Clamp(properties["volume"].i, 0, 128);
 
     //----------------------------------------
 
     file.close();
     return 1;
+}
+
+void Game::SaveConfig()
+{
+    std::ofstream out;
+    out.open("config/.current");
+    if (!out.good())
+    {
+        print("failed to save config");
+        out.close();
+        return;
+    }
+
+    out << "#config\n\n";
+
+    properties["player_move_speed"].f = Screen::tmpMoveSpeed;
+    properties["player_jump_speed"].f = Screen::tmpJumpSpeed;
+    properties["player_acceleration"].f = Screen::tmpAcceleration;
+    properties["gravity"].f = Screen::tmpGravity;
+
+    for (auto &prop : properties)
+    {
+        out << "<";
+        switch (prop.second.type)
+        {
+        case INT:
+            out << "int> {" << prop.first << "=" << prop.second.i;
+            break;
+        case STR:
+            out << "string> {" << prop.first << "=" << prop.second.s;
+            break;
+        case FLOAT:
+            out << "float> {" << prop.first << "=" << prop.second.f;
+            break;
+        case BOOL:
+            out << "bool> {" << prop.first << "=" << prop.second.b;
+            break;
+        }
+        out << "}\n";
+    }
+
+    out.close();
+
+    Screen::CalculateGravity();
+    Screen::CalculateMoveSpeed();
+    Screen::CalculateJumpSpeed();
+    Screen::CalculateAcceleration();
+
+    print("config saved");
+
+    return;
+}
+
+void Screen::SetWindowSize()
+{
+    SDL_SetWindowSize(window, resolutions[current_resolution], resolutions[current_resolution]);
+
+    Screen::resolution = Vector2(Screen::resolutions[Screen::current_resolution]);
+
+    Screen::resolution = Int((Screen::resolution / Screen::map_size)) * Screen::map_size;
+
+    Screen::tile_size = Screen::resolution.x / Screen::map_size;
+
+    Screen::font_size = Screen::resolution.x / 48.0f;
+}
+
+void Screen::CalculateGravity()
+{
+    tmpGravity = Game::properties["gravity"].f = Clamp(Game::properties["gravity"].f, 0.0f, 10.0f);
+
+    Game::properties["gravity"].f *= Screen::resolution.x / 25100.0f;
+}
+
+void Screen::CalculateMoveSpeed()
+{
+    tmpMoveSpeed = Game::properties["player_move_speed"].f = Clamp(Game::properties["player_move_speed"].f, 0.5f, 2.5f);
+
+    Game::properties["player_move_speed"].f *= Screen::resolution.x / 190.0f;
+}
+
+void Screen::CalculateJumpSpeed()
+{
+    tmpJumpSpeed = Game::properties["player_jump_speed"].f = Clamp(Game::properties["player_jump_speed"].f, 0.5f, 2.5f);
+
+    Game::properties["player_jump_speed"].f *= Screen::resolution.x / 82.0f;
+}
+
+void Screen::CalculateAcceleration()
+{
+    tmpAcceleration = Game::properties["player_acceleration"].f =
+        Clamp(Game::properties["player_acceleration"].f, 0.25f, 2.0f);
+
+    Game::properties["player_acceleration"].f *= Screen::resolution.x / 20000.0f;
 }

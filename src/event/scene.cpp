@@ -8,8 +8,6 @@
 
 Vector2 v;
 
-int font_size = 20;
-
 int border_opacity = 32;
 
 void Scene::Welcome()
@@ -20,9 +18,9 @@ void Scene::Welcome()
         "Welcome", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 4.0f),
         Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.0f), 180, 8, 8, 1, border_opacity);
     canvas->AddComponents({
-        {new Text("title", v, v, "GOAL DASH", 1, 2.5f * font_size, border_opacity), 2},
-        {new Button("start", v, v, "Start", Play, 2.0f * font_size, border_opacity), 1},
-        {new Button("mapbuilding", v, v, "Map Building", MapMaking, 2.0f * font_size, border_opacity), 1},
+        {new Text("title", v, v, "GOAL DASH", 1, 2.5f * Screen::font_size, border_opacity), 2},
+        {new Button("start", v, v, "Start", Play, 2.0f * Screen::font_size, border_opacity), 1},
+        {new Button("mapbuilding", v, v, "Map Building", MapMaking, 2.0f * Screen::font_size, border_opacity), 1},
     });
 
     Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 8, 0, 0);
@@ -33,10 +31,10 @@ void Scene::Welcome()
                  UI::SetVisible("Welcome", false);
                  UI::SetVisible("Settings", true);
              },
-             2.0f * font_size, border_opacity),
+             2.0f * Screen::font_size, border_opacity),
          1},
         {new Button(
-             "about", v, v, "About", []() { SDL_OpenURL("https://github.com/hxngxd"); }, 2.0f * font_size,
+             "about", v, v, "About", []() { SDL_OpenURL("https://github.com/hxngxd"); }, 2.0f * Screen::font_size,
              border_opacity),
          1},
     });
@@ -54,7 +52,7 @@ void Scene::Welcome()
                      100);
                  lf->Execute();
              },
-             2.0f * font_size, border_opacity),
+             2.0f * Screen::font_size, border_opacity),
          1},
     });
 
@@ -84,17 +82,17 @@ void Scene::Play()
         new Canvas("Play-0", v, Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0, border_opacity);
 
     canvas0->AddComponents({
-        {new Text("score", v, v, "Score: 0", 1, font_size, border_opacity), 3},
-        {new Text("time", v, v, "Time: 00:00:00.000", 1, font_size, border_opacity), 4},
-        {new Text("map", v, v, "Map: " + str(Map::current_map), 1, font_size, border_opacity), 3},
-        {new Text("dif", v, v, "Difficulty: idk", 1, font_size, border_opacity), 5},
+        {new Text("score", v, v, "Score: 0", 1, Screen::font_size, border_opacity), 3},
+        {new Text("time", v, v, "Time: 00:00:00.000", 1, Screen::font_size, border_opacity), 4},
+        {new Text("map", v, v, "Map: " + str(Map::current_map), 1, Screen::font_size, border_opacity), 3},
+        {new Text("dif", v, v, "Difficulty: idk", 1, Screen::font_size, border_opacity), 5},
     });
 
     Canvas *canvas1 = new Canvas("Play-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
                                  Vector2(Screen::tile_size * 3, Screen::tile_size), 255, 0, 0, 0, border_opacity);
 
     canvas1->AddComponents({
-        {new Text("hp", v, v, "Health: 100", 1, font_size, border_opacity), 3},
+        {new Text("hp", v, v, "Health: 100", 1, Screen::font_size, border_opacity), 3},
     });
 
     UI::SetVisible("Common", true);
@@ -145,10 +143,10 @@ void Scene::MapMaking()
                      Map::GetMapDelay());
                  MapMaking::Clear(lf);
              },
-             font_size, border_opacity),
+             Screen::font_size, border_opacity),
          2},
-        {new Button("save", v, v, "Save", MapMaking::Save, font_size, border_opacity), 2},
-        {new Button("random", v, v, "Random", MapMaking::Random, font_size, border_opacity), 2},
+        {new Button("save", v, v, "Save", MapMaking::Save, Screen::font_size, border_opacity), 2},
+        {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 2},
         {new Button(
              "prev", v, v, "<",
              []() {
@@ -157,16 +155,16 @@ void Scene::MapMaking()
                  Map::current_map--;
                  MapMaking::ChangeMap();
              },
-             font_size, border_opacity),
+             Screen::font_size, border_opacity),
          1},
-        {new Text("curmap", v, v, "Map: " + str(Map::current_map), 1, font_size, border_opacity), 2},
+        {new Text("curmap", v, v, "Map: " + str(Map::current_map), 1, Screen::font_size, border_opacity), 2},
         {new Button(
              "next", v, v, ">",
              []() {
                  Map::current_map++;
                  MapMaking::ChangeMap();
              },
-             font_size, border_opacity),
+             Screen::font_size, border_opacity),
          1},
     });
 
@@ -178,11 +176,13 @@ void Scene::MapMaking()
     };
 
     canvas1->AddComponents({
-        {new Button("erase", v, v, "EMPTY", std::bind(change_drawing_type, EMPTY), font_size, border_opacity), 2},
-        {new Button("wall", v, v, "WALL", std::bind(change_drawing_type, WALL), font_size, border_opacity), 2},
-        {new Button("coin", v, v, "COIN", std::bind(change_drawing_type, COIN), font_size, border_opacity), 2},
-        {new Button("spawn", v, v, "SPAWN", std::bind(change_drawing_type, SPAWN), font_size, border_opacity), 2},
-        {new Button("win", v, v, "WIN", std::bind(change_drawing_type, WIN), font_size, border_opacity), 2},
+        {new Button("erase", v, v, "EMPTY", std::bind(change_drawing_type, EMPTY), Screen::font_size, border_opacity),
+         2},
+        {new Button("wall", v, v, "WALL", std::bind(change_drawing_type, WALL), Screen::font_size, border_opacity), 2},
+        {new Button("coin", v, v, "COIN", std::bind(change_drawing_type, COIN), Screen::font_size, border_opacity), 2},
+        {new Button("spawn", v, v, "SPAWN", std::bind(change_drawing_type, SPAWN), Screen::font_size, border_opacity),
+         2},
+        {new Button("win", v, v, "WIN", std::bind(change_drawing_type, WIN), Screen::font_size, border_opacity), 2},
     });
 
     UI::SetVisible("Common", true);
@@ -220,7 +220,7 @@ void Scene::Common()
                      100);
                  lf->Execute();
              },
-             font_size, border_opacity),
+             Screen::font_size, border_opacity),
          1},
         {new Button(
              "home", v, v, "Home",
@@ -272,7 +272,7 @@ void Scene::Common()
                  else
                      goHome();
              },
-             font_size, border_opacity),
+             Screen::font_size, border_opacity),
          1},
         {new Button(
              "settings", v, v, "Settings",
@@ -291,7 +291,7 @@ void Scene::Common()
                      break;
                  }
              },
-             font_size, border_opacity),
+             Screen::font_size, border_opacity),
          1},
     });
 }
@@ -331,7 +331,7 @@ void Scene::Settings()
 
     UI::SetVisible("Settings", false);
 
-    canvas0->AddComponent(new Text("title", v, v, "SETTINGS", 1, 2.0f * font_size), 2);
+    canvas0->AddComponent(new Text("title", v, v, "SETTINGS", 1, 2.0f * Screen::font_size), 2);
 
     std::vector<Canvas *> canvases = {canvas0};
 
@@ -342,7 +342,7 @@ void Scene::Settings()
     }
 
     canvases[1]->AddComponents({
-        {new Text("resolution", v, v, "Resolution (restart required)", 0, font_size, border_opacity), 4},
+        {new Text("resolution", v, v, "Resolution (restart required)", 0, Screen::font_size, border_opacity), 4},
         {new Button(
              "prev", v, v, "<",
              []() {
@@ -352,12 +352,12 @@ void Scene::Settings()
                                 str(Screen::resolutions[Game::properties["resolution"].i]) + " x " +
                                     str(Screen::resolutions[Game::properties["resolution"].i]));
              },
-             font_size),
+             Screen::font_size),
          1},
         {new Text("curres", v, v,
                   str(Screen::resolutions[Game::properties["resolution"].i]) + " x " +
                       str(Screen::resolutions[Game::properties["resolution"].i]),
-                  1, font_size),
+                  1, Screen::font_size),
          2},
         {new Button(
              "next", v, v, ">",
@@ -368,74 +368,75 @@ void Scene::Settings()
                                 str(Screen::resolutions[Game::properties["resolution"].i]) + " x " +
                                     str(Screen::resolutions[Game::properties["resolution"].i]));
              },
-             font_size),
+             Screen::font_size),
          1},
     });
 
     canvases[2]->AddComponents({
-        {new Text("movespeed", v, v, "Move speed", 0, font_size, border_opacity), 1},
+        {new Text("movespeed", v, v, "Move speed", 0, Screen::font_size, border_opacity), 1},
         {new Slider(
              "movespeedslider", v, v, 0.5f, 2.5f, Game::properties["player_move_speed"].f, 0.1f,
              [](float &value) {
                  Game::properties["player_move_speed"].f = value;
                  Screen::CalculateMoveSpeed();
              },
-             font_size),
+             Screen::font_size),
          3},
     });
 
-    canvases[3]->AddComponents({{new Text("jumpspeed", v, v, "Jump speed", 0, font_size, border_opacity), 1},
+    canvases[3]->AddComponents({{new Text("jumpspeed", v, v, "Jump speed", 0, Screen::font_size, border_opacity), 1},
                                 {new Slider(
                                      "jumpspeedslider", v, v, 0.5f, 2.5f, Game::properties["player_jump_speed"].f, 0.1f,
                                      [](float &value) {
                                          Game::properties["player_jump_speed"].f = value;
                                          Screen::CalculateJumpSpeed();
                                      },
-                                     font_size),
+                                     Screen::font_size),
                                  3}});
 
     canvases[4]->AddComponents(
-        {{new Text("acceleration", v, v, "Acceleration", 0, font_size, border_opacity), 1},
+        {{new Text("acceleration", v, v, "Acceleration", 0, Screen::font_size, border_opacity), 1},
          {new Slider(
               "accelerationslider", v, v, 0.25f, 2.0f, Game::properties["player_acceleration"].f, 0.1f,
               [](float &value) {
                   Game::properties["player_acceleration"].f = value;
                   Screen::CalculateAcceleration();
               },
-              font_size),
+              Screen::font_size),
           3}});
 
     canvases[5]->AddComponents({
-        {new Text("gravity", v, v, "Gravity", 0, font_size, border_opacity), 1},
+        {new Text("gravity", v, v, "Gravity", 0, Screen::font_size, border_opacity), 1},
         {new Slider(
              "gravityslider", v, v, 0.0f, 10.0f, Game::properties["gravity"].f, 0.1f,
              [](float &value) {
                  Game::properties["gravity"].f = value;
                  Screen::CalculateGravity();
              },
-             font_size),
+             Screen::font_size),
          3},
     });
 
     canvases[6]->AddComponents({
-        {new Text("immortal", v, v, "Immortal", 1, font_size), 2},
+        {new Text("immortal", v, v, "Immortal", 1, Screen::font_size), 2},
         {new Toggle("immortaltoggle", v, v, Game::properties["player_immortal"].b,
                     [](bool &option) { Game::properties["player_immortal"].b = option; }),
          1},
 
-        {new Text("keyboard", v, v, "Key layout", 1, font_size), 2},
+        {new Text("keyboard", v, v, "Key layout", 1, Screen::font_size), 2},
         {new Toggle("keyboardtoggle", v, v, Game::properties["keyboard_layout"].b,
                     [](bool &option) { Game::properties["keyboard_layout"].b = option; }),
          1},
     });
 
     canvases[7]->AddComponents({
-        {new Text("music", v, v, "Music", 1, font_size), 2},
+        {new Text("music", v, v, "Music", 1, Screen::font_size), 2},
         {new Toggle("musictoggle", v, v, Game::properties["music"].b,
                     [](bool &option) {
                         Game::properties["music"].b = option;
                         if (option)
                         {
+                            Mix_VolumeMusic(Game::properties["volume"].i);
                             if (Mix_PausedMusic())
                                 Mix_ResumeMusic();
                             else if (!Mix_PlayingMusic())
@@ -445,7 +446,7 @@ void Scene::Settings()
                             Mix_PauseMusic();
                     }),
          1},
-        {new Text("sound", v, v, "SoundFX", 1, font_size), 2},
+        {new Text("sound", v, v, "SoundFX", 1, Screen::font_size), 2},
         {new Toggle("soundtoggle", v, v, Game::properties["sound"].b,
                     [](bool &option) {
                         Game::properties["sound"].b = option;
@@ -456,38 +457,38 @@ void Scene::Settings()
     });
 
     canvases[8]->AddComponents({
-        {new Text("volume", v, v, "Volume", 0, font_size, border_opacity), 1},
+        {new Text("volume", v, v, "Volume", 0, Screen::font_size, border_opacity), 1},
         {new Slider(
              "volumeslider", v, v, 0.0f, 127.0f, Game::properties["volume"].i, 1.0f,
              [](float &value) {
                  Game::properties["volume"].i = (int)value;
                  Mix_VolumeMusic(value);
              },
-             font_size),
+             Screen::font_size),
          3},
     });
 
     canvases[9]->AddComponents({
-        {new Text("background", v, v, "Background", 1, font_size), 2},
+        {new Text("background", v, v, "Background", 1, Screen::font_size), 2},
         {new Toggle("backgroundtoggle", v, v, Game::properties["background_enable"].b,
                     [](bool &option) { Game::properties["background_enable"].b = option; }),
          1},
-        {new Text("grid", v, v, "Point grid", 1, font_size), 2},
+        {new Text("grid", v, v, "Point grid", 1, Screen::font_size), 2},
         {new Toggle("gridtoggle", v, v, Game::properties["point_grid"].b,
                     [](bool &option) { Game::properties["point_grid"].b = option; }),
          1},
     });
 
     canvases[10]->AddComponents({
-        {new Text("ray", v, v, "Ray opacity", 0, font_size, border_opacity), 1},
+        {new Text("ray", v, v, "Ray opacity", 0, Screen::font_size, border_opacity), 1},
         {new Slider(
              "rayslider", v, v, 0.0f, 255.0f, Game::properties["ray_opacity"].i, 0.1f,
-             [](float &value) { Game::properties["ray_opacity"].i = value; }, font_size),
+             [](float &value) { Game::properties["ray_opacity"].i = value; }, Screen::font_size),
          3},
     });
 
     canvases[11]->AddComponents({
-        {new Text("mapinit", v, v, "Starting map", 0, font_size, border_opacity), 4},
+        {new Text("mapinit", v, v, "Starting map", 0, Screen::font_size, border_opacity), 4},
         {new Button(
              "prev", v, v, "<",
              []() {
@@ -495,57 +496,64 @@ void Scene::Settings()
                      Game::properties["map_init"].i--;
                  Text::SetLabel("Settings.Section-11.curmap", "Map " + str(Game::properties["map_init"].i));
              },
-             font_size),
+             Screen::font_size),
          1},
-        {new Text("curmap", v, v, "Map " + str(Game::properties["map_init"].i), 1, font_size), 2},
+        {new Text("curmap", v, v, "Map " + str(Game::properties["map_init"].i), 1, Screen::font_size), 2},
         {new Button(
              "next", v, v, ">",
              []() {
                  Game::properties["map_init"].i++;
                  Text::SetLabel("Settings.Section-11.curmap", "Map " + str(Game::properties["map_init"].i));
              },
-             font_size),
+             Screen::font_size),
          1},
     });
 
     canvases[12]->AddComponents({
-        {new Text("mapdelay", v, v, "Map animation delay", 0, font_size, border_opacity), 1},
+        {new Text("mapdelay", v, v, "Map animation delay", 0, Screen::font_size, border_opacity), 1},
         {new Slider(
              "mapdelayslider", v, v, 0.0f, 50.0f, Game::properties["map_delay"].f, 0.1f,
-             [](float &value) { Game::properties["map_delay"].f = value; }, font_size),
+             [](float &value) { Game::properties["map_delay"].f = value; }, Screen::font_size),
          1},
     });
 
     canvases[13]->AddComponents({
-        {new Text("time", v, v, "Show time", 1, font_size), 2},
+        {new Text("time", v, v, "Show time", 1, Screen::font_size), 2},
         {new Toggle("timetoggle", v, v, Game::properties["show_time"].b,
                     [](bool &option) { Game::properties["show_time"].b = option; }),
          1},
-        {new Text("resethealth", v, v, "Reset health", 1, font_size), 2},
+        {new Text("resethealth", v, v, "Reset health", 1, Screen::font_size), 2},
         {new Toggle("resethealthtoggle", v, v, Game::properties["reset_health"].b,
                     [](bool &option) { Game::properties["reset_health"].b = option; }),
          1},
     });
 
     canvases[14]->AddComponents({
-        {new Text("wallpossibility", v, v, "Wall possibility", 0, font_size, border_opacity), 1},
+        {new Text("wallpossibility", v, v, "Wall possibility", 0, Screen::font_size, border_opacity), 1},
         {new Slider(
              "wallpossibilityslider", v, v, 0.0f, 35.0f, Game::properties["wall_possibility"].i, 1.0f,
-             [](float &value) { Game::properties["wall_possibility"].i = (int)value; }, font_size),
+             [](float &value) { Game::properties["wall_possibility"].i = (int)value; }, Screen::font_size),
          3},
     });
 
     canvases[15]->AddComponents({
-        {new Text("coinpossibility", v, v, "Coin possibility", 0, font_size, border_opacity), 1},
+        {new Text("coinpossibility", v, v, "Coin possibility", 0, Screen::font_size, border_opacity), 1},
         {new Slider(
              "coinpossibilityslider", v, v, 5.0f, 50.0f, Game::properties["coin_possibility"].i, 1.0f,
-             [](float &value) { Game::properties["coin_possibility"].i = (int)value; }, font_size),
+             [](float &value) { Game::properties["coin_possibility"].i = (int)value; }, Screen::font_size),
          3},
     });
 
     canvases[16]->AddComponents({
+        {new Button("save", v, v, "Save", Game::SaveConfig, Screen::font_size, border_opacity), 2},
         {new Button(
-             "save", v, v, "Save", []() {}, font_size, border_opacity),
+             "default", v, v, "Default settings (also quit game)",
+             []() {
+                 Game::LoadConfig(1);
+                 Game::SaveConfig();
+                 Game::running = false;
+             },
+             Screen::font_size, border_opacity),
          2},
         {new Button(
              "exit", v, v, "Exit",
@@ -566,7 +574,7 @@ void Scene::Settings()
                      break;
                  }
              },
-             font_size, border_opacity),
+             Screen::font_size, border_opacity),
          1},
     });
 }
