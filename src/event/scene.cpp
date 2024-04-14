@@ -452,7 +452,7 @@ void Scene::Settings()
              },
              Screen::font_size),
          1},
-        {new Text("curmusic", v, v, current_music == -1 ? "Off" : str(current_music), 1, Screen::font_size), 1},
+        {new Text("curmusic", v, v, current_music == -1 ? "Off" : str(current_music + 1), 1, Screen::font_size), 1},
         {new Button(
              "nextmusic", v, v, ">",
              []() {

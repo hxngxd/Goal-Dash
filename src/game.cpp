@@ -7,6 +7,7 @@
 #include "event/scene.h"
 #include "event/ui.h"
 #include "func/func.h"
+#include <filesystem>
 
 bool Game::running = false;
 std::map<std::string, PropertiesType> Game::properties;
@@ -95,7 +96,6 @@ void Game::Start()
 
     //----------------------------------------
 
-    current_music = properties["music"].i = Clamp(properties["music"].i, -1, (int)(Musics.size() - 1));
     if (properties["music"].i != -1)
     {
         print("playing background music...");
@@ -280,14 +280,25 @@ bool Game::LoadMedia()
         return 0;
 
     //----------------------------------------
-
-    for (int i = 0; i < 7; i++)
+    for (auto &entry : std::filesystem::directory_iterator("sound/musics"))
     {
-        if (!LoadMusic("sound/bg_music" + str(i) + ".mp3"))
-            return 0;
+        std::string name = entry.path().string();
+        if (name.size() >= 4 && name.substr(name.size() - 4) == ".mp3")
+        {
+            if (!LoadMusic(name))
+                return 0;
+        }
     }
 
+    // for (int i = 0; i < 7; i++)
+    // {
+    //     if (!LoadMusic("sound/bg_music" + str(i) + ".mp3"))
+    //         return 0;
+    // }
+
     //----------------------------------------
+
+    current_music = properties["music"].i = Clamp(properties["music"].i, -1, (int)(Musics.size() - 1));
 
     return 1;
 }

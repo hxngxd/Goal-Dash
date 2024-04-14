@@ -6,9 +6,9 @@
 <float> {fps=60}
 <float> {gravity=9.8}
 <bool> {keyboard_layout=0}
-<float> {map_delay=15}
+<float> {map_delay=0}
 <int> {map_init=1}
-<int> {music=-1}
+<int> {music=4}
 <float> {player_acceleration=1}
 <float> {player_collision_dist=1}
 <bool> {player_immortal=0}
@@ -23,5 +23,5 @@
 <bool> {sound=1}
 <float> {tile_rescale_speed=0.075}
 <float> {tile_scale=1}
-<int> {volume=64}
+<int> {volume=23}
 <int> {wall_possibility=26}
