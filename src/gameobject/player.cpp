@@ -432,6 +432,13 @@ void Player::Jump()
                     PlaySound("fall", CHANNEL_JUMP_FALL, 0);
 
                 hp -= velocity.d / 2.5;
+
+                if (hp <= 0)
+                {
+                    hp = 0;
+                    PlaySound("die", CHANNEL_DIE, 0);
+                }
+
                 Text::SetLabel("Play-1.hp", "Health: " + str(hp));
 
                 Damaged(true);

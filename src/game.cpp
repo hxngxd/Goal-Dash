@@ -95,10 +95,11 @@ void Game::Start()
 
     //----------------------------------------
 
-    if (properties["music"].b)
+    current_music = properties["music"].i = Clamp(properties["music"].i, -1, (int)(Musics.size() - 1));
+    if (properties["music"].i != -1)
     {
         print("playing background music...");
-        PlayMusic("bg_music", -1);
+        PlayMusic(-1);
         Mix_VolumeMusic(properties["volume"].i);
     }
 
@@ -168,7 +169,7 @@ bool Game::InitSDL2()
     //----------------------------------------
 
     print("initializing sdl_mixer...");
-    int format = MIX_INIT_OGG;
+    int format = MIX_INIT_OGG | MIX_INIT_MP3;
     if (Mix_Init(format) & format != format)
     {
         print("sdl_mixer failed");
@@ -275,8 +276,16 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSound("spawn", "sound/spawn.ogg"))
         return 0;
-    if (!LoadMusic("bg_music", "sound/bg_music.ogg"))
+    if (!LoadSound("die", "sound/die.ogg"))
         return 0;
+
+    //----------------------------------------
+
+    for (int i = 0; i < 7; i++)
+    {
+        if (!LoadMusic("sound/bg_music" + str(i) + ".mp3"))
+            return 0;
+    }
 
     //----------------------------------------
 
@@ -341,11 +350,10 @@ void Game::Quit()
 
     for (auto &music : Musics)
     {
-        if (!music.second)
+        if (!music)
             continue;
-        Mix_FreeMusic(music.second);
-        music.second = nullptr;
-        print("deleted", music.first);
+        Mix_FreeMusic(music);
+        music = nullptr;
     }
 
     print("sounds and music deleted");

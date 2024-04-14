@@ -362,7 +362,7 @@ void Scene::Settings()
         {new Button(
              "next", v, v, ">",
              []() {
-                 if (Game::properties["resolution"].i < Screen::resolutions.size() - 1)
+                 if (Game::properties["resolution"].i < (int)(Screen::resolutions.size() - 1))
                      Game::properties["resolution"].i++;
                  Text::SetLabel("Settings.Section-1.curres",
                                 str(Screen::resolutions[Game::properties["resolution"].i]) + " x " +
@@ -430,23 +430,43 @@ void Scene::Settings()
     });
 
     canvases[7]->AddComponents({
-        {new Text("music", v, v, "Music", 1, Screen::font_size), 2},
-        {new Toggle("musictoggle", v, v, Game::properties["music"].b,
-                    [](bool &option) {
-                        Game::properties["music"].b = option;
-                        if (option)
-                        {
-                            Mix_VolumeMusic(Game::properties["volume"].i);
-                            if (Mix_PausedMusic())
-                                Mix_ResumeMusic();
-                            else if (!Mix_PlayingMusic())
-                                PlayMusic("bg_music", -1);
-                        }
-                        else
-                            Mix_PauseMusic();
-                    }),
+        {new Text("music", v, v, "Music", 1, Screen::font_size, border_opacity), 3},
+        {new Button(
+             "prevmusic", v, v, "<",
+             []() {
+                 if (current_music > -1)
+                 {
+                     current_music--;
+                     Game::properties["music"].i = current_music;
+                     if (current_music == -1)
+                     {
+                         Text::SetLabel("Settings.Section-7.curmusic", "Off");
+                         Mix_PauseMusic();
+                     }
+                     else
+                     {
+                         Text::SetLabel("Settings.Section-7.curmusic", str(current_music + 1));
+                         PlayMusic(-1);
+                     }
+                 }
+             },
+             Screen::font_size),
          1},
-        {new Text("sound", v, v, "SoundFX", 1, Screen::font_size), 2},
+        {new Text("curmusic", v, v, current_music == -1 ? "Off" : str(current_music), 1, Screen::font_size), 1},
+        {new Button(
+             "nextmusic", v, v, ">",
+             []() {
+                 if (current_music < (int)(Musics.size() - 1))
+                 {
+                     current_music++;
+                     Game::properties["music"].i = current_music;
+                     Text::SetLabel("Settings.Section-7.curmusic", str(current_music + 1));
+                     PlayMusic(-1);
+                 }
+             },
+             Screen::font_size),
+         1},
+        {new Text("sound", v, v, "SoundFX", 1, Screen::font_size), 3},
         {new Toggle("soundtoggle", v, v, Game::properties["sound"].b,
                     [](bool &option) {
                         Game::properties["sound"].b = option;
@@ -554,7 +574,7 @@ void Scene::Settings()
                  Game::running = false;
              },
              Screen::font_size, border_opacity),
-         2},
+         3},
         {new Button(
              "exit", v, v, "Exit",
              []() {

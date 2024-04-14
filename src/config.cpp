@@ -121,8 +121,6 @@ bool Game::LoadConfig(bool is_default)
 
     Screen::map_size = 16;
 
-    Screen::current_resolution = properties["resolution"].i;
-
     Screen::SetWindowSize();
 
     Map::current_map = properties["map_init"].i;
@@ -194,6 +192,9 @@ void Game::SaveConfig()
 
 void Screen::SetWindowSize()
 {
+    Screen::current_resolution = properties["resolution"].i =
+        Clamp(properties["resolution"].i, 0, (int)(resolutions.size() - 1));
+
     SDL_SetWindowSize(window, resolutions[current_resolution], resolutions[current_resolution]);
 
     Screen::resolution = Vector2(Screen::resolutions[Screen::current_resolution]);
