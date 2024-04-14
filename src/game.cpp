@@ -260,26 +260,15 @@ bool Game::LoadMedia()
 
     //----------------------------------------
 
-    if (!LoadSound("coin", "sound/coin.ogg"))
-        return 0;
-    if (!LoadSound("jump", "sound/jump.ogg"))
-        return 0;
-    if (!LoadSound("run", "sound/run.ogg"))
-        return 0;
-    if (!LoadSound("fall", "sound/fall.ogg"))
-        return 0;
-    if (!LoadSound("click", "sound/click.ogg"))
-        return 0;
-    if (!LoadSound("hover", "sound/hover.ogg"))
-        return 0;
-    if (!LoadSound("win", "sound/win.ogg"))
-        return 0;
-    if (!LoadSound("spawn", "sound/spawn.ogg"))
-        return 0;
-    if (!LoadSound("die", "sound/die.ogg"))
-        return 0;
+    std::vector<std::string> names = {"coin", "jump", "run", "fall", "click", "hover", "win", "spawn", "die"};
+    for (auto &name : names)
+    {
+        if (!LoadSound(name, "sound/" + name + ".ogg"))
+            return 0;
+    }
 
     //----------------------------------------
+
     for (auto &entry : std::filesystem::directory_iterator("sound/musics"))
     {
         std::string name = entry.path().string();
@@ -289,12 +278,6 @@ bool Game::LoadMedia()
                 return 0;
         }
     }
-
-    // for (int i = 0; i < 7; i++)
-    // {
-    //     if (!LoadMusic("sound/bg_music" + str(i) + ".mp3"))
-    //         return 0;
-    // }
 
     //----------------------------------------
 
