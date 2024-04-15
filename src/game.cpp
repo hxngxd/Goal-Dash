@@ -7,7 +7,6 @@
 #include "event/scene.h"
 #include "event/ui.h"
 #include "func/func.h"
-#include <filesystem>
 
 bool Game::running = false;
 std::map<std::string, PropertiesType> Game::properties;
@@ -265,18 +264,6 @@ bool Game::LoadMedia()
     {
         if (!LoadSound(name, "sound/" + name + ".ogg"))
             return 0;
-    }
-
-    //----------------------------------------
-
-    for (auto &entry : std::filesystem::directory_iterator("sound/musics"))
-    {
-        std::string name = entry.path().string();
-        if (name.size() >= 4 && name.substr(name.size() - 4) == ".mp3")
-        {
-            if (!LoadMusic(name))
-                return 0;
-        }
     }
 
     //----------------------------------------

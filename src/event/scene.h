@@ -9,4 +9,5 @@ class Scene
     static void Common();
     static void SpawnPlayer();
     static void Settings();
+    static void SelectMusic();
 };

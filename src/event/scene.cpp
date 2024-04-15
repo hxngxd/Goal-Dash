@@ -5,6 +5,7 @@
 #include "../gameobject/gameobject.h"
 #include "../gameobject/map.h"
 #include "ui.h"
+#include <filesystem>
 
 Vector2 v;
 
@@ -83,7 +84,9 @@ void Scene::Play()
 
     canvas0->AddComponents({
         {new Text("score", v, v, "Score: 0", 1, Screen::font_size, border_opacity), 3},
-        {new Text("time", v, v, "Time: 00:00:00.000", 1, Screen::font_size, border_opacity), 4},
+        {new Text("time", v, v, Game::properties["show_time"].b ? "Time: 00:00:00.000" : "Time: ~_~", 1,
+                  Screen::font_size, border_opacity),
+         4},
         {new Text("map", v, v, "Map: " + str(Map::current_map), 1, Screen::font_size, border_opacity), 3},
         {new Text("dif", v, v, "Difficulty: idk", 1, Screen::font_size, border_opacity), 5},
     });
@@ -333,18 +336,18 @@ void Scene::Settings()
 
     UI::SetVisible("Settings", false);
 
-    canvas0->AddComponent(new Text("title", v, v, "SETTINGS", 1, 2.0f * Screen::font_size), 2);
+    canvas0->AddComponent(new Text("title", v, v, "SETTINGS", 1, 2.0f * Screen::font_size, border_opacity), 2);
 
     std::vector<Canvas *> canvases = {canvas0};
 
-    for (int i = 1; i <= 16; i++)
+    for (int i = 1; i <= 15; i++)
     {
         canvases.push_back(new Canvas("Section-" + str(i), v, v, 0, 0, 0, 0, border_opacity));
         canvas0->AddComponent(canvases[i]);
     }
 
     canvases[1]->AddComponents({
-        {new Text("resolution", v, v, "Resolution (restart required)", 0, Screen::font_size, border_opacity), 4},
+        {new Text("resolution", v, v, "Resolution (restart required)", 0, Screen::font_size), 4},
         {new Button(
              "prev", v, v, "<",
              []() {
@@ -375,7 +378,7 @@ void Scene::Settings()
     });
 
     canvases[2]->AddComponents({
-        {new Text("movespeed", v, v, "Move speed", 0, Screen::font_size, border_opacity), 1},
+        {new Text("movespeed", v, v, "Move speed", 0, Screen::font_size), 2},
         {new Slider(
              "movespeedslider", v, v, 0.5f, 2.5f, Game::properties["player_move_speed"].f, 0.1f,
              [](float &value) {
@@ -386,7 +389,7 @@ void Scene::Settings()
          3},
     });
 
-    canvases[3]->AddComponents({{new Text("jumpspeed", v, v, "Jump speed", 0, Screen::font_size, border_opacity), 1},
+    canvases[3]->AddComponents({{new Text("jumpspeed", v, v, "Jump speed", 0, Screen::font_size), 2},
                                 {new Slider(
                                      "jumpspeedslider", v, v, 0.5f, 2.5f, Game::properties["player_jump_speed"].f, 0.1f,
                                      [](float &value) {
@@ -397,7 +400,7 @@ void Scene::Settings()
                                  3}});
 
     canvases[4]->AddComponents(
-        {{new Text("acceleration", v, v, "Acceleration", 0, Screen::font_size, border_opacity), 1},
+        {{new Text("acceleration", v, v, "Acceleration", 0, Screen::font_size), 2},
          {new Slider(
               "accelerationslider", v, v, 0.25f, 2.0f, Game::properties["player_acceleration"].f, 0.1f,
               [](float &value) {
@@ -408,7 +411,7 @@ void Scene::Settings()
           3}});
 
     canvases[5]->AddComponents({
-        {new Text("gravity", v, v, "Gravity", 0, Screen::font_size, border_opacity), 1},
+        {new Text("gravity", v, v, "Gravity", 0, Screen::font_size), 2},
         {new Slider(
              "gravityslider", v, v, 0.0f, 10.0f, Game::properties["gravity"].f, 0.1f,
              [](float &value) {
@@ -420,54 +423,19 @@ void Scene::Settings()
     });
 
     canvases[6]->AddComponents({
-        {new Text("immortal", v, v, "Immortal", 1, Screen::font_size), 2},
+        {new Text("immortal", v, v, "Immortal", 1, Screen::font_size), 3},
         {new Toggle("immortaltoggle", v, v, Game::properties["player_immortal"].b,
                     [](bool &option) { Game::properties["player_immortal"].b = option; }),
          1},
 
-        {new Text("keyboard", v, v, "Key layout", 1, Screen::font_size), 2},
+        {new Text("keyboard", v, v, "Key layout", 1, Screen::font_size), 3},
         {new Toggle("keyboardtoggle", v, v, Game::properties["keyboard_layout"].b,
                     [](bool &option) { Game::properties["keyboard_layout"].b = option; }),
          1},
     });
 
     canvases[7]->AddComponents({
-        {new Text("music", v, v, "Music", 1, Screen::font_size, border_opacity), 3},
-        {new Button(
-             "prevmusic", v, v, "<",
-             []() {
-                 if (current_music > -1)
-                 {
-                     current_music--;
-                     Game::properties["music"].i = current_music;
-                     if (current_music == -1)
-                     {
-                         Text::SetLabel("Settings.Section-7.curmusic", "Off");
-                         Mix_PauseMusic();
-                     }
-                     else
-                     {
-                         Text::SetLabel("Settings.Section-7.curmusic", str(current_music + 1));
-                         PlayMusic(-1);
-                     }
-                 }
-             },
-             Screen::font_size),
-         1},
-        {new Text("curmusic", v, v, current_music == -1 ? "Off" : str(current_music + 1), 1, Screen::font_size), 1},
-        {new Button(
-             "nextmusic", v, v, ">",
-             []() {
-                 if (current_music < (int)(Musics.size() - 1))
-                 {
-                     current_music++;
-                     Game::properties["music"].i = current_music;
-                     Text::SetLabel("Settings.Section-7.curmusic", str(current_music + 1));
-                     PlayMusic(-1);
-                 }
-             },
-             Screen::font_size),
-         1},
+        {new Button("selectmusic", v, v, "Select music", SelectMusic, Screen::font_size), 4},
         {new Text("sound", v, v, "SoundFX", 1, Screen::font_size), 3},
         {new Toggle("soundtoggle", v, v, Game::properties["sound"].b,
                     [](bool &option) {
@@ -479,7 +447,7 @@ void Scene::Settings()
     });
 
     canvases[8]->AddComponents({
-        {new Text("volume", v, v, "Volume", 0, Screen::font_size, border_opacity), 1},
+        {new Text("volume", v, v, "Volume", 0, Screen::font_size), 2},
         {new Slider(
              "volumeslider", v, v, 0.0f, 127.0f, Game::properties["volume"].i, 1.0f,
              [](float &value) {
@@ -491,18 +459,18 @@ void Scene::Settings()
     });
 
     canvases[9]->AddComponents({
-        {new Text("background", v, v, "Background", 1, Screen::font_size), 2},
+        {new Text("background", v, v, "Background", 1, Screen::font_size), 3},
         {new Toggle("backgroundtoggle", v, v, Game::properties["background_enable"].b,
                     [](bool &option) { Game::properties["background_enable"].b = option; }),
          1},
-        {new Text("grid", v, v, "Point grid", 1, Screen::font_size), 2},
+        {new Text("grid", v, v, "Point grid", 1, Screen::font_size), 3},
         {new Toggle("gridtoggle", v, v, Game::properties["point_grid"].b,
                     [](bool &option) { Game::properties["point_grid"].b = option; }),
          1},
     });
 
     canvases[10]->AddComponents({
-        {new Text("ray", v, v, "Ray opacity", 0, Screen::font_size, border_opacity), 1},
+        {new Text("ray", v, v, "Ray opacity", 0, Screen::font_size), 2},
         {new Slider(
              "rayslider", v, v, 0.0f, 255.0f, Game::properties["ray_opacity"].i, 0.1f,
              [](float &value) { Game::properties["ray_opacity"].i = value; }, Screen::font_size),
@@ -510,36 +478,14 @@ void Scene::Settings()
     });
 
     canvases[11]->AddComponents({
-        {new Text("mapinit", v, v, "Starting map", 0, Screen::font_size, border_opacity), 4},
-        {new Button(
-             "prev", v, v, "<",
-             []() {
-                 if (Game::properties["map_init"].i > 1)
-                     Game::properties["map_init"].i--;
-                 Text::SetLabel("Settings.Section-11.curmap", "Map " + str(Game::properties["map_init"].i));
-             },
-             Screen::font_size),
-         1},
-        {new Text("curmap", v, v, "Map " + str(Game::properties["map_init"].i), 1, Screen::font_size), 2},
-        {new Button(
-             "next", v, v, ">",
-             []() {
-                 Game::properties["map_init"].i++;
-                 Text::SetLabel("Settings.Section-11.curmap", "Map " + str(Game::properties["map_init"].i));
-             },
-             Screen::font_size),
-         1},
-    });
-
-    canvases[12]->AddComponents({
-        {new Text("mapdelay", v, v, "Map animation delay", 0, Screen::font_size, border_opacity), 1},
+        {new Text("mapdelay", v, v, "Map animation delay", 0, Screen::font_size), 2},
         {new Slider(
              "mapdelayslider", v, v, 0.0f, 50.0f, Game::properties["map_delay"].f, 0.1f,
              [](float &value) { Game::properties["map_delay"].f = value; }, Screen::font_size),
-         1},
+         3},
     });
 
-    canvases[13]->AddComponents({
+    canvases[12]->AddComponents({
         {new Text("time", v, v, "Show time", 1, Screen::font_size), 2},
         {new Toggle("timetoggle", v, v, Game::properties["show_time"].b,
                     [](bool &option) {
@@ -560,23 +506,23 @@ void Scene::Settings()
          1},
     });
 
-    canvases[14]->AddComponents({
-        {new Text("wallpossibility", v, v, "Wall possibility", 0, Screen::font_size, border_opacity), 1},
+    canvases[13]->AddComponents({
+        {new Text("wallpossibility", v, v, "Map building: Wall (%)", 0, Screen::font_size), 2},
         {new Slider(
              "wallpossibilityslider", v, v, 0.0f, 35.0f, Game::properties["wall_possibility"].i, 1.0f,
              [](float &value) { Game::properties["wall_possibility"].i = (int)value; }, Screen::font_size),
          3},
     });
 
-    canvases[15]->AddComponents({
-        {new Text("coinpossibility", v, v, "Coin possibility", 0, Screen::font_size, border_opacity), 1},
+    canvases[14]->AddComponents({
+        {new Text("coinpossibility", v, v, "Map building: Coin (%)", 0, Screen::font_size), 2},
         {new Slider(
              "coinpossibilityslider", v, v, 5.0f, 50.0f, Game::properties["coin_possibility"].i, 1.0f,
              [](float &value) { Game::properties["coin_possibility"].i = (int)value; }, Screen::font_size),
          3},
     });
 
-    canvases[16]->AddComponents({
+    canvases[15]->AddComponents({
         {new Button("save", v, v, "Save", Game::SaveConfig, Screen::font_size, border_opacity), 2},
         {new Button(
              "default", v, v, "Default settings (also quit game)",
@@ -605,6 +551,90 @@ void Scene::Settings()
                      MapMaking::allow_drawing = true;
                      break;
                  }
+             },
+             Screen::font_size, border_opacity),
+         1},
+    });
+}
+
+void Scene::SelectMusic()
+{
+    UI::SetVisible("Settings", false);
+
+    Canvas *canvas0 = new Canvas("SelectMusic", Vector2(Screen::tile_size),
+                                 Screen::resolution - Vector2(Screen::tile_size * 2), 240, 0, 0, 1, border_opacity);
+
+    canvas0->AddComponents({
+        {new Text("title", v, v, "SELECT MUSIC", 1, 2.0f * Screen::font_size, border_opacity), 2},
+        {new Text("curmusic", v, v, "Current selection: ", 1, Screen::font_size, border_opacity), 1},
+    });
+
+    std::vector<std::pair<std::string, std::string>> paths;
+    for (auto &entry : std::filesystem::directory_iterator("sound/musics"))
+    {
+        std::string fullname = entry.path().string();
+        if (fullname.size() >= 4 && fullname.substr(fullname.size() - 4) == ".mp3")
+        {
+            size_t lastSlash = fullname.find_last_of('\\');
+            std::string name = fullname.substr(lastSlash + 1);
+
+            size_t lastDot = name.find_last_of('.');
+            if (lastDot != std::string::npos)
+                name = name.substr(0, lastDot);
+
+            if (name.size() > 20)
+                name = name.substr(0, 20) + "....mp3";
+            else
+                name += ".mp3";
+
+            paths.push_back({name, entry.path().string()});
+        }
+    }
+
+    Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 0, 0, 0, border_opacity);
+
+    canvas0->AddComponent(canvas1, (paths.size() + 1) / 2);
+
+    Canvas *canvas10 = new Canvas("Section-10", v, v, 0, 0, 0, 1, border_opacity);
+
+    int cnt = 1;
+    for (int i = 0; i < (paths.size() + 1) / 2; i++)
+    {
+        canvas10->AddComponent(new Button(
+            str(cnt) + paths[i].first, v, v, str(i) + ".  " + paths[i].first, []() {}, Screen::font_size,
+            border_opacity));
+        cnt++;
+    }
+
+    Canvas *canvas11 = new Canvas("Section-11", v, v, 0, 0, 0, 1, border_opacity);
+
+    for (int i = (paths.size() + 1) / 2; i < paths.size(); i++)
+    {
+        canvas11->AddComponent(new Button(
+            str(cnt) + paths[i].first, v, v, str(i) + ".  " + paths[i].first, []() {}, Screen::font_size,
+            border_opacity));
+    }
+
+    canvas1->AddComponents({
+        {canvas10, 1},
+        {canvas11, 1},
+    });
+
+    Canvas *lastCanvas = new Canvas("last", v, v, 0, 0, 0, 0, border_opacity);
+    canvas0->AddComponent(lastCanvas);
+
+    lastCanvas->AddComponents({
+        {new Button(
+             "off", v, v, "Music off", []() {}, Screen::font_size, border_opacity),
+         2},
+        {new Button(
+             "save", v, v, "Save", []() {}, Screen::font_size, border_opacity),
+         2},
+        {new Button(
+             "exit", v, v, "Exit",
+             []() {
+                 UI::SetVisible("Settings", true);
+                 UI::SetVisible("SelectMusic", false);
              },
              Screen::font_size, border_opacity),
          1},
