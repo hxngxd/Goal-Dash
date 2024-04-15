@@ -12,6 +12,9 @@ class Map
     static int nempty;
     static std::map<int, int> count_types;
 
+    static std::vector<std::string> MapPlaylist;
+    static int current_map_id;
+
     static void Border();
     static void LoadMap(std::string path);
     static void AddTile(int i, int j, float &wait, bool animation = true);

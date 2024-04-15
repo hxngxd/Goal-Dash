@@ -17,6 +17,9 @@ Vector2 MapMaking::current_mouse_tile(-1);
 int MapMaking::current_drawing_type = -1;
 bool MapMaking::allow_drawing = false;
 
+std::vector<std::string> Map::MapPlaylist;
+int Map::current_map_id;
+
 Tile::Tile(Vector2 position, Vector2 size)
 {
     this->position = position;
@@ -70,11 +73,6 @@ void Map::LoadMap(std::string path)
         in.close();
         return;
     }
-
-    // if (mode == 1)
-    //     Text::SetLabel("MapBuilding-0.curmap", "Map: " + str(current_map));
-    // else
-    //     Text::SetLabel("Play-0.map", "Map: " + str(current_map));
 
     nempty = 0;
     for (int i = 1; i < Screen::map_size - 1; i++)
@@ -328,8 +326,6 @@ void MapMaking::Update()
 void MapMaking::Random()
 {
     print("generating map...");
-
-    Text::SetLabel("MapBuilding-0.curmap", "Map: 0");
 
     LinkedFunction *lf = new LinkedFunction(
         []() {
@@ -656,8 +652,6 @@ void MapMaking::Save()
     }
     out.close();
 
-    Text::SetLabel("MapBuilding-0.curmap", "Map: " + str(map));
-
     print("saved to", filename);
 }
 
@@ -689,7 +683,6 @@ void MapMaking::Clear(LinkedFunction *post_func)
     print("clearing map...");
     if (Map::mode == 1)
     {
-        Text::SetLabel("MapBuilding-0.curmap", "Map: 0");
         allow_drawing = false;
         ToggleBtns(false);
     }
@@ -701,9 +694,9 @@ void MapMaking::Clear(LinkedFunction *post_func)
 void MapMaking::ToggleBtns(bool toggle)
 {
     std::vector<std::string> btns = {
-        "MapBuilding-0.clear", "MapBuilding-0.save",  "MapBuilding-0.random", "MapBuilding-0.prev",
-        "MapBuilding-0.next",  "MapBuilding-1.erase", "MapBuilding-1.wall",   "MapBuilding-1.coin",
-        "MapBuilding-1.spawn", "MapBuilding-1.win",   "Common.home",          "Common.settings",
+        "MapBuilding-0.clear", "MapBuilding-0.save", "MapBuilding-0.random", "MapBuilding-0.curmap",
+        "MapBuilding-1.erase", "MapBuilding-1.wall", "MapBuilding-1.coin",   "MapBuilding-1.spawn",
+        "MapBuilding-1.win",   "Common.home",        "Common.settings",
     };
     for (auto &btn : btns)
     {

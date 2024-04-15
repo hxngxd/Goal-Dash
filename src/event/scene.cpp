@@ -13,6 +13,7 @@ int border_opacity = 32;
 
 void Scene::Welcome()
 {
+    Map::mode = -1;
     print("creating welcome scene...");
 
     Canvas *canvas = new Canvas(
@@ -20,7 +21,7 @@ void Scene::Welcome()
         Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.0f), 180, 8, 8, 1, border_opacity);
     canvas->AddComponents({
         {new Text("title", v, v, "GOAL DASH", 1, 2.5f * Screen::font_size, border_opacity), 2},
-        {new Button("start", v, v, "Start", Play, 2.0f * Screen::font_size, border_opacity), 1},
+        {new Button("start", v, v, "Start", SelectMap, 2.0f * Screen::font_size, border_opacity), 1},
         {new Button("mapbuilding", v, v, "Map Building", MapMaking, 2.0f * Screen::font_size, border_opacity), 1},
     });
 
@@ -573,35 +574,36 @@ void Scene::SelectMusic()
 
     Canvas *canvas10 = new Canvas("Section-10", v, v, 0, 0, 0, 1, border_opacity);
 
-    int cnt = 1;
-
-    auto changeMusic = [](std::pair<std::string, std::string> path) {
-        Game::properties["music"].s = path.second;
-        if (Music)
-        {
-            if (Mix_PlayingMusic())
-                StopMusic();
-            Mix_FreeMusic(Music);
-            Music = nullptr;
-        }
-        LoadMusic(path.second);
-        PlayMusic(-1);
-        Text::SetLabel("SelectMusic.curmusic", "Current selection: " + path.first);
-    };
-
-    for (int i = 0; i < (paths.size() + 1) / 2; i++)
-    {
-        canvas10->AddComponent(new Button(str(cnt) + paths[i].first, v, v, str(i + 1) + ".  " + paths[i].first,
-                                          std::bind(changeMusic, paths[i]), Screen::font_size, border_opacity));
-        cnt++;
-    }
-
     Canvas *canvas11 = new Canvas("Section-11", v, v, 0, 0, 0, 1, border_opacity);
 
-    for (int i = (paths.size() + 1) / 2; i < paths.size(); i++)
+    int cnt = 1;
+
+    for (int i = 0; i < paths.size(); i++)
     {
-        canvas11->AddComponent(new Button(str(cnt) + paths[i].first, v, v, str(i + 1) + ".  " + paths[i].first,
-                                          std::bind(changeMusic, paths[i]), Screen::font_size, border_opacity));
+        Button *ms = new Button(str(cnt) + paths[i].first, v, v, str(i + 1) + ".  " + paths[i].first,
+                                std::bind(
+                                    [](std::pair<std::string, std::string> path) {
+                                        Game::properties["music"].s = path.second;
+                                        if (Music)
+                                        {
+                                            if (Mix_PlayingMusic())
+                                                StopMusic();
+                                            Mix_FreeMusic(Music);
+                                            Music = nullptr;
+                                        }
+                                        LoadMusic(path.second);
+                                        PlayMusic(-1);
+                                        Text::SetLabel("SelectMusic.curmusic", "Current selection: " + path.first);
+                                    },
+                                    paths[i]),
+                                Screen::font_size, border_opacity);
+
+        if (i < (paths.size() + 1) / 2)
+            canvas10->AddComponent(ms);
+        else
+            canvas11->AddComponent(ms);
+
+        cnt++;
     }
 
     canvas1->AddComponents({
@@ -654,11 +656,52 @@ void Scene::SelectMusic()
     });
 }
 
+void selectMap(std::string path)
+{
+    print(path, "selected");
+    Map::MapPlaylist.push_back(path);
+
+    for (auto &p : Map::MapPlaylist)
+    {
+        std::cout << p << " ";
+    }
+    print("");
+    print(Map::MapPlaylist.size());
+}
+
+void deselectMap(std::string path)
+{
+    print(path, "deselected");
+    Map::MapPlaylist.erase(std::find(Map::MapPlaylist.begin(), Map::MapPlaylist.end(), path));
+
+    for (auto &p : Map::MapPlaylist)
+    {
+        std::cout << p << " ";
+    }
+    print("");
+    print(Map::MapPlaylist.size());
+}
+
+std::vector<std::pair<std::string, std::string>> mpbtnlst;
+bool current_toggle = false;
+
 void Scene::SelectMap()
 {
-    UI::SetVisible("MapBuilding-0", false);
-    UI::SetVisible("MapBuilding-1", false);
-    UI::SetVisible("Common", false);
+    Map::MapPlaylist.clear();
+    Map::current_map_id = 0;
+
+    mpbtnlst.clear();
+
+    if (Map::mode == -1)
+    {
+        UI::SetVisible("Welcome", false);
+    }
+    else if (Map::mode == 1)
+    {
+        UI::SetVisible("MapBuilding-0", false);
+        UI::SetVisible("MapBuilding-1", false);
+        UI::SetVisible("Common", false);
+    }
 
     Canvas *canvas0 = new Canvas("SelectMap", Vector2(Screen::tile_size),
                                  Screen::resolution - Vector2(Screen::tile_size * 2), 240, 0, 0, 1, border_opacity);
@@ -694,30 +737,48 @@ void Scene::SelectMap()
 
     Canvas *canvas10 = new Canvas("Section-10", v, v, 0, 0, 0, 1, border_opacity);
 
-    int cnt = 1;
-
-    auto changeMap = [](std::pair<std::string, std::string> path) {
-        MapMaking::ChangeMap(path.second);
-        UI::SetVisible("SelectMap", false);
-        UI::SetVisible("MapBuilding-0", true);
-        UI::SetVisible("MapBuilding-1", true);
-        UI::SetVisible("Common", true);
-        // Text::SetLabel("SelectMusic.curmusic", "Current selection: " + path.first);
-    };
-
-    for (int i = 0; i < (paths.size() + 1) / 2; i++)
-    {
-        canvas10->AddComponent(new Button(str(cnt) + paths[i].first, v, v, paths[i].first,
-                                          std::bind(changeMap, paths[i]), Screen::font_size, border_opacity));
-        cnt++;
-    }
-
     Canvas *canvas11 = new Canvas("Section-11", v, v, 0, 0, 0, 1, border_opacity);
 
-    for (int i = (paths.size() + 1) / 2; i < paths.size(); i++)
+    int cnt = 1;
+
+    for (int i = 0; i < paths.size(); i++)
     {
-        canvas11->AddComponent(new Button(str(cnt) + paths[i].first, v, v, paths[i].first,
-                                          std::bind(changeMap, paths[i]), Screen::font_size, border_opacity));
+        Button *mp = new Button(
+            str(cnt) + "-" + paths[i].first, v, v, paths[i].first, []() {}, Screen::font_size, border_opacity);
+
+        if (Map::mode == -1)
+        {
+            mp->onClick = std::bind(
+                [](std::string path, Button *mp) {
+                    mp->selected = !mp->selected;
+                    if (mp->selected)
+                        selectMap(path);
+                    else
+                        deselectMap(path);
+                },
+                paths[i].second, mp);
+        }
+        else
+        {
+            mp->onClick = std::bind(
+                [](std::pair<std::string, std::string> path) {
+                    MapMaking::ChangeMap(path.second);
+                    UI::SetVisible("SelectMap", false);
+                    UI::SetVisible("MapBuilding-0", true);
+                    UI::SetVisible("MapBuilding-1", true);
+                    UI::SetVisible("Common", true);
+                },
+                paths[i]);
+        }
+
+        if (i < (paths.size() + 1) / 2)
+            canvas10->AddComponent(mp);
+        else
+            canvas11->AddComponent(mp);
+
+        cnt++;
+
+        mpbtnlst.push_back({mp->name, paths[i].second});
     }
 
     canvas1->AddComponents({
@@ -725,17 +786,49 @@ void Scene::SelectMap()
         {canvas11, 1},
     });
 
-    if (Map::mode == 0)
+    if (Map::mode == -1)
     {
         Canvas *lastCanvas = new Canvas("last", v, v, 0, 0, 0, 0, border_opacity);
         canvas0->AddComponent(lastCanvas);
 
         lastCanvas->AddComponents({
             {new Button(
-                 "ok", v, v, "Play now", []() {}, Screen::font_size, border_opacity),
-             2},
+                 "toggleall", v, v, "Toggle all",
+                 []() {
+                     current_toggle = !current_toggle;
+                     for (int i = 0; i < mpbtnlst.size(); i++)
+                     {
+                         Button *btn = (Button *)UI::UIs[mpbtnlst[i].first];
+                         if (current_toggle)
+                         {
+                             if (!btn->selected)
+                             {
+                                 btn->selected = current_toggle;
+                                 selectMap(mpbtnlst[i].second);
+                             }
+                         }
+                         else
+                         {
+                             if (btn->selected)
+                             {
+                                 btn->selected = current_toggle;
+                                 deselectMap(mpbtnlst[i].second);
+                             }
+                         }
+                     }
+                 },
+                 Screen::font_size, border_opacity),
+             1},
             {new Button(
-                 "goback", v, v, "Back", []() {}, Screen::font_size, border_opacity),
+                 "ok", v, v, "Play now", []() {}, Screen::font_size, border_opacity),
+             1},
+            {new Button(
+                 "goback", v, v, "Back",
+                 []() {
+                     UI::SetVisible("Welcome", true);
+                     UI::RemovingUI("SelectMap");
+                 },
+                 Screen::font_size, border_opacity),
              1},
         });
     }
