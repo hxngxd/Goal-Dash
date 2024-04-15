@@ -588,6 +588,9 @@ void Scene::SelectMusic()
                 name += ".mp3";
 
             paths.push_back({name, entry.path().string()});
+
+            if (paths.size() > 30)
+                break;
         }
     }
 
@@ -634,7 +637,7 @@ void Scene::SelectMusic()
              "exit", v, v, "Exit",
              []() {
                  UI::SetVisible("Settings", true);
-                 UI::SetVisible("SelectMusic", false);
+                 UI::RemovingUI("SelectMusic");
              },
              Screen::font_size, border_opacity),
          1},
