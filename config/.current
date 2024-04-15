@@ -1,28 +1,33 @@
 #config
 
-<bool> {background_enable=1}
-<int> {coin_possibility=10}
+<int> {resolution=3}
+<float> {fps=60.0}
 <string> {font=fonts/Gotu-Regular.ttf}
-<float> {fps=60}
+
 <float> {gravity=9.8}
-<bool> {keyboard_layout=0}
-<float> {map_delay=15}
-<int> {map_init=1}
-<string> {music=sound\musics\Killval  Dark Knight.mp3}
-<float> {player_acceleration=1}
-<float> {player_collision_dist=1}
-<bool> {player_immortal=0}
-<float> {player_jump_speed=1}
-<float> {player_move_speed=1}
 <string> {player_name=Nguyen Tuong Hung}
+<float> {player_move_speed=1}
+<float> {player_jump_speed=1}
+<float> {player_acceleration=1}
+<bool> {player_immortal=0}
+<float> {player_collision_dist=1}
+<bool> {keyboard_layout=0}
+
+<bool> {background_enable=1}
 <bool> {point_grid=1}
 <int> {ray_opacity=180}
-<bool> {reset_health=0}
-<int> {resolution=3}
-<bool> {show_health=1}
-<bool> {show_time=1}
-<bool> {sound=1}
+
+<float> {map_delay=15}
 <float> {tile_rescale_speed=0.075}
 <float> {tile_scale=1}
-<int> {volume=42}
+
+<string> {music=off}
+<bool> {sound=1}
+<int> {volume=64}
+
+<bool> {show_time=1}
+<bool> {show_health=1}
+<bool> {reset_health=0}
+
 <int> {wall_possibility=26}
+<int> {coin_possibility=10}

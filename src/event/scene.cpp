@@ -76,8 +76,7 @@ void Scene::Play()
 
     MapMaking::ToggleBtns(false);
 
-    Map::current_map = Game::properties["map_init"].i;
-    Map::LoadMap();
+    // Map::LoadMap();
 
     Canvas *canvas0 =
         new Canvas("Play-0", v, Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0, border_opacity);
@@ -87,7 +86,7 @@ void Scene::Play()
         {new Text("time", v, v, Game::properties["show_time"].b ? "Time: 00:00:00.000" : "Time: ~_~", 1,
                   Screen::font_size, border_opacity),
          4},
-        {new Text("map", v, v, "Map: " + str(Map::current_map), 1, Screen::font_size, border_opacity), 3},
+        // {new Text("map", v, v, "Map: " + str(Map::current_map), 1, Screen::font_size, border_opacity), 3},
         {new Text("dif", v, v, "Difficulty: idk", 1, Screen::font_size, border_opacity), 5},
     });
 
@@ -125,13 +124,9 @@ void Scene::MapMaking()
     print("entering map building mode...");
     Map::mode = 1;
     MapMaking::allow_drawing = true;
-    MapMaking::ToggleBtns(false);
     UI::RemovingUI("Welcome");
 
-    Map::current_map = Game::properties["map_init"].i;
-    Map::LoadMap();
-
-    Canvas *canvas0 = new Canvas("MapBuilding-0", v, Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0,
+    Canvas *canvas0 = new Canvas("MapBuilding-0", v, Vector2(Screen::tile_size * 12, Screen::tile_size), 255, 0, 0, 0,
                                  border_opacity);
 
     canvas0->AddComponents({
@@ -152,25 +147,7 @@ void Scene::MapMaking()
          2},
         {new Button("save", v, v, "Save", MapMaking::Save, Screen::font_size, border_opacity), 2},
         {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 2},
-        {new Button(
-             "prev", v, v, "<",
-             []() {
-                 if (Map::current_map <= 1)
-                     return;
-                 Map::current_map--;
-                 MapMaking::ChangeMap();
-             },
-             Screen::font_size, border_opacity),
-         1},
-        {new Text("curmap", v, v, "Map: " + str(Map::current_map), 1, Screen::font_size, border_opacity), 2},
-        {new Button(
-             "next", v, v, ">",
-             []() {
-                 Map::current_map++;
-                 MapMaking::ChangeMap();
-             },
-             Screen::font_size, border_opacity),
-         1},
+        {new Button("curmap", v, v, "Current: ", SelectMap, Screen::font_size, border_opacity), 4},
     });
 
     Canvas *canvas1 = new Canvas("MapBuilding-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
@@ -192,16 +169,7 @@ void Scene::MapMaking()
 
     UI::SetVisible("Common", true);
 
-    Map::AddTiles();
-
-    LinkedFunction *lf = new LinkedFunction(
-        []() {
-            MapMaking::ToggleBtns(true);
-            print("done");
-            return 1;
-        },
-        Map::GetMapDelay());
-    lf->Execute();
+    MapMaking::ToggleBtns(true);
 
     print("done");
 }
@@ -336,7 +304,7 @@ void Scene::Settings()
 
     UI::SetVisible("Settings", false);
 
-    canvas0->AddComponent(new Text("title", v, v, "SETTINGS", 1, 2.0f * Screen::font_size, border_opacity), 2);
+    canvas0->AddComponent(new Text("title", v, v, "SETTINGS", 1, 2.0f * Screen::font_size, border_opacity), 1);
 
     std::vector<Canvas *> canvases = {canvas0};
 
@@ -579,7 +547,7 @@ void Scene::SelectMusic()
     };
 
     canvas0->AddComponents({
-        {new Text("title", v, v, "SELECT MUSIC", 1, 2.0f * Screen::font_size, border_opacity), 2},
+        {new Text("title", v, v, "SELECT MUSIC", 1, 2.0f * Screen::font_size, border_opacity), 1},
         {new Text("curmusic", v, v,
                   "Current selection: " +
                       (Game::properties["music"].s == "off" ? "Off" : getName(Game::properties["music"].s)),
@@ -684,4 +652,91 @@ void Scene::SelectMusic()
              Screen::font_size, border_opacity),
          1},
     });
+}
+
+void Scene::SelectMap()
+{
+    UI::SetVisible("MapBuilding-0", false);
+    UI::SetVisible("MapBuilding-1", false);
+    UI::SetVisible("Common", false);
+
+    Canvas *canvas0 = new Canvas("SelectMap", Vector2(Screen::tile_size),
+                                 Screen::resolution - Vector2(Screen::tile_size * 2), 240, 0, 0, 1, border_opacity);
+
+    auto getName = [](std::string fullname) {
+        size_t lastSlash = fullname.find_last_of('\\');
+        std::string name = fullname.substr(lastSlash + 1);
+
+        size_t lastDot = name.find_last_of('.');
+        if (lastDot != std::string::npos)
+            name = name.substr(0, lastDot);
+
+        return name;
+    };
+
+    canvas0->AddComponent(new Text("title", v, v, "SELECT MAP", 1, 2.0f * Screen::font_size, border_opacity));
+
+    std::vector<std::pair<std::string, std::string>> paths;
+    for (auto &entry : std::filesystem::directory_iterator("map"))
+    {
+        std::string fullname = entry.path().string();
+        if (fullname.size() >= 4 && fullname.substr(fullname.size() - 4) == ".map")
+        {
+            paths.push_back({getName(fullname), fullname});
+            if (paths.size() > 30)
+                break;
+        }
+    }
+
+    Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 0, 0, 0, border_opacity);
+
+    canvas0->AddComponent(canvas1, (paths.size() + 1) / 2);
+
+    Canvas *canvas10 = new Canvas("Section-10", v, v, 0, 0, 0, 1, border_opacity);
+
+    int cnt = 1;
+
+    auto changeMap = [](std::pair<std::string, std::string> path) {
+        MapMaking::ChangeMap(path.second);
+        UI::SetVisible("SelectMap", false);
+        UI::SetVisible("MapBuilding-0", true);
+        UI::SetVisible("MapBuilding-1", true);
+        UI::SetVisible("Common", true);
+        // Text::SetLabel("SelectMusic.curmusic", "Current selection: " + path.first);
+    };
+
+    for (int i = 0; i < (paths.size() + 1) / 2; i++)
+    {
+        canvas10->AddComponent(new Button(str(cnt) + paths[i].first, v, v, paths[i].first,
+                                          std::bind(changeMap, paths[i]), Screen::font_size, border_opacity));
+        cnt++;
+    }
+
+    Canvas *canvas11 = new Canvas("Section-11", v, v, 0, 0, 0, 1, border_opacity);
+
+    for (int i = (paths.size() + 1) / 2; i < paths.size(); i++)
+    {
+        canvas11->AddComponent(new Button(str(cnt) + paths[i].first, v, v, paths[i].first,
+                                          std::bind(changeMap, paths[i]), Screen::font_size, border_opacity));
+    }
+
+    canvas1->AddComponents({
+        {canvas10, 1},
+        {canvas11, 1},
+    });
+
+    if (Map::mode == 0)
+    {
+        Canvas *lastCanvas = new Canvas("last", v, v, 0, 0, 0, 0, border_opacity);
+        canvas0->AddComponent(lastCanvas);
+
+        lastCanvas->AddComponents({
+            {new Button(
+                 "ok", v, v, "Play now", []() {}, Screen::font_size, border_opacity),
+             2},
+            {new Button(
+                 "goback", v, v, "Back", []() {}, Screen::font_size, border_opacity),
+             1},
+        });
+    }
 }

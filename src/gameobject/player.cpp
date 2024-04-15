@@ -375,8 +375,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     Game::time[1] = SDL_GetTicks();
                     delete Game::player;
                     Game::player = nullptr;
-                    Map::current_map++;
-                    MapMaking::ChangeMap();
+                    // MapMaking::ChangeMap();
                     return 1;
                 });
                 lf->NextFunction(

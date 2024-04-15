@@ -128,8 +128,6 @@ bool Game::LoadConfig(bool is_default)
 
     Screen::SetWindowSize();
 
-    Map::current_map = properties["map_init"].i;
-
     properties["ray_opacity"].i = Clamp(properties["ray_opacity"].i, 0, 255);
 
     properties["tile_rescale_speed"].f = Clamp(properties["tile_rescale_speed"].f, 0.01f, 0.1f);

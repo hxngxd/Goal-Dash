@@ -48,7 +48,7 @@ class UI
 class Button : public UI
 {
   public:
-    bool enabled;
+    bool enabled, selected;
     std::function<void()> onClick;
     bool hovering_sound, mouse_click;
     int lastButtonClick;

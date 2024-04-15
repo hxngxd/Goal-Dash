@@ -220,6 +220,7 @@ Button::Button(std::string name, const Vector2 &position, const Vector2 &size, s
     this->hovering_sound = this->mouse_hovering = this->mouse_click = false;
     this->lastButtonClick = 0;
     this->enabled = true;
+    this->selected = false;
 
     print(name, "button created");
 }
@@ -271,7 +272,7 @@ void Button::Update()
         SDL_RenderFillRect(Game::renderer, &bgRect);
     }
 
-    Screen::SetDrawColor(mouse_click ? Color::blue() : Color::white(border_opacity));
+    Screen::SetDrawColor(mouse_click ? Color::blue() : (selected ? Color::green() : Color::white(border_opacity)));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
     SDL_RenderCopy(Game::renderer, texture, NULL, &labelRect);

@@ -11,7 +11,6 @@ std::vector<std::vector<std::pair<int, Tile *>>> Map::Tiles;
 Vector2 Map::spawn_tile, Map::win_tile;
 int Map::mode = -1;
 int Map::nempty = 0;
-int Map::current_map;
 std::map<int, int> Map::count_types;
 
 Vector2 MapMaking::current_mouse_tile(-1);
@@ -61,29 +60,21 @@ void Map::Border()
     }
 }
 
-void Map::LoadMap()
+void Map::LoadMap(std::string path)
 {
     print("loading map...");
     std::ifstream in;
-    in.open("map/" + str(current_map) + ".map");
-    int k = 0;
-    while (!in.good())
+    in.open(path);
+    if (!in.good())
     {
         in.close();
-        current_map++;
-        in.open("map/" + str(current_map) + ".map");
-        if (++k >= 100)
-        {
-            current_map = 1;
-            in.open("map/" + str(current_map) + ".map");
-            break;
-        }
+        return;
     }
 
-    if (mode == 1)
-        Text::SetLabel("MapBuilding-0.curmap", "Map: " + str(current_map));
-    else
-        Text::SetLabel("Play-0.map", "Map: " + str(current_map));
+    // if (mode == 1)
+    //     Text::SetLabel("MapBuilding-0.curmap", "Map: " + str(current_map));
+    // else
+    //     Text::SetLabel("Play-0.map", "Map: " + str(current_map));
 
     nempty = 0;
     for (int i = 1; i < Screen::map_size - 1; i++)
@@ -665,32 +656,31 @@ void MapMaking::Save()
     }
     out.close();
 
-    Map::current_map = map;
-
     Text::SetLabel("MapBuilding-0.curmap", "Map: " + str(map));
 
     print("saved to", filename);
 }
 
-void MapMaking::ChangeMap()
+void MapMaking::ChangeMap(std::string path)
 {
     print("changing map...");
-    LinkedFunction *lf = new LinkedFunction(
-        []() {
-            Map::LoadMap();
-            Map::AddTiles();
-            LinkedFunction *lf = new LinkedFunction(
-                []() {
-                    allow_drawing = true;
-                    ToggleBtns(true);
-                    print("done");
-                    return 1;
-                },
-                Map::GetMapDelay());
-            lf->Execute();
-            return 1;
-        },
-        Map::GetMapDelay());
+    LinkedFunction *lf = new LinkedFunction(std::bind(
+                                                [](std::string path) {
+                                                    Map::LoadMap(path);
+                                                    Map::AddTiles();
+                                                    LinkedFunction *lf = new LinkedFunction(
+                                                        []() {
+                                                            allow_drawing = true;
+                                                            ToggleBtns(true);
+                                                            print("done");
+                                                            return 1;
+                                                        },
+                                                        Map::GetMapDelay());
+                                                    lf->Execute();
+                                                    return 1;
+                                                },
+                                                path),
+                                            Map::GetMapDelay());
     Clear(lf);
 }
 

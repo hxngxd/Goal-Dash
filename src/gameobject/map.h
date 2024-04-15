@@ -10,11 +10,10 @@ class Map
     static Vector2 spawn_tile, win_tile;
     static int mode;
     static int nempty;
-    static int current_map;
     static std::map<int, int> count_types;
 
     static void Border();
-    static void LoadMap();
+    static void LoadMap(std::string path);
     static void AddTile(int i, int j, float &wait, bool animation = true);
     static void AddTiles();
     static void RemoveTile(int i, int j, float &wait, bool animation = true);
@@ -45,7 +44,7 @@ class MapMaking
 
     static void Clear(LinkedFunction *post_func);
     static void Save();
-    static void ChangeMap();
+    static void ChangeMap(std::string path);
 
     static void Update();
 

@@ -10,4 +10,5 @@ class Scene
     static void SpawnPlayer();
     static void Settings();
     static void SelectMusic();
+    static void SelectMap();
 };

@@ -17,7 +17,6 @@
 <bool> {point_grid=1}
 <int> {ray_opacity=180}
 
-<int> {map_init=1}
 <float> {map_delay=15}
 <float> {tile_rescale_speed=0.075}
 <float> {tile_scale=1}
