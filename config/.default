@@ -22,7 +22,7 @@
 <float> {tile_rescale_speed=0.075}
 <float> {tile_scale=1}
 
-<int> {music=-1}
+<string> {music=off}
 <bool> {sound=1}
 <int> {volume=64}
 

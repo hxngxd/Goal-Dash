@@ -564,31 +564,36 @@ void Scene::SelectMusic()
     Canvas *canvas0 = new Canvas("SelectMusic", Vector2(Screen::tile_size),
                                  Screen::resolution - Vector2(Screen::tile_size * 2), 240, 0, 0, 1, border_opacity);
 
+    auto getName = [](std::string fullname) {
+        size_t lastSlash = fullname.find_last_of('\\');
+        std::string name = fullname.substr(lastSlash + 1);
+
+        size_t lastDot = name.find_last_of('.');
+        if (lastDot != std::string::npos)
+            name = name.substr(0, lastDot);
+
+        if (name.size() > 25)
+            return name.substr(0, 20) + "....mp3";
+        else
+            return name + ".mp3";
+    };
+
     canvas0->AddComponents({
         {new Text("title", v, v, "SELECT MUSIC", 1, 2.0f * Screen::font_size, border_opacity), 2},
-        {new Text("curmusic", v, v, "Current selection: ", 1, Screen::font_size, border_opacity), 1},
+        {new Text("curmusic", v, v,
+                  "Current selection: " +
+                      (Game::properties["music"].s == "off" ? "Off" : getName(Game::properties["music"].s)),
+                  1, Screen::font_size, border_opacity),
+         1},
     });
 
     std::vector<std::pair<std::string, std::string>> paths;
-    for (auto &entry : std::filesystem::directory_iterator("sound/musics"))
+    for (auto &entry : std::filesystem::directory_iterator("sound\\musics"))
     {
         std::string fullname = entry.path().string();
         if (fullname.size() >= 4 && fullname.substr(fullname.size() - 4) == ".mp3")
         {
-            size_t lastSlash = fullname.find_last_of('\\');
-            std::string name = fullname.substr(lastSlash + 1);
-
-            size_t lastDot = name.find_last_of('.');
-            if (lastDot != std::string::npos)
-                name = name.substr(0, lastDot);
-
-            if (name.size() > 20)
-                name = name.substr(0, 20) + "....mp3";
-            else
-                name += ".mp3";
-
-            paths.push_back({name, entry.path().string()});
-
+            paths.push_back({getName(fullname), fullname});
             if (paths.size() > 30)
                 break;
         }
@@ -601,11 +606,25 @@ void Scene::SelectMusic()
     Canvas *canvas10 = new Canvas("Section-10", v, v, 0, 0, 0, 1, border_opacity);
 
     int cnt = 1;
+
+    auto changeMusic = [](std::pair<std::string, std::string> path) {
+        Game::properties["music"].s = path.second;
+        if (Music)
+        {
+            if (Mix_PlayingMusic())
+                StopMusic();
+            Mix_FreeMusic(Music);
+            Music = nullptr;
+        }
+        LoadMusic(path.second);
+        PlayMusic(-1);
+        Text::SetLabel("SelectMusic.curmusic", "Current selection: " + path.first);
+    };
+
     for (int i = 0; i < (paths.size() + 1) / 2; i++)
     {
-        canvas10->AddComponent(new Button(
-            str(cnt) + paths[i].first, v, v, str(i) + ".  " + paths[i].first, []() {}, Screen::font_size,
-            border_opacity));
+        canvas10->AddComponent(new Button(str(cnt) + paths[i].first, v, v, str(i + 1) + ".  " + paths[i].first,
+                                          std::bind(changeMusic, paths[i]), Screen::font_size, border_opacity));
         cnt++;
     }
 
@@ -613,9 +632,8 @@ void Scene::SelectMusic()
 
     for (int i = (paths.size() + 1) / 2; i < paths.size(); i++)
     {
-        canvas11->AddComponent(new Button(
-            str(cnt) + paths[i].first, v, v, str(i) + ".  " + paths[i].first, []() {}, Screen::font_size,
-            border_opacity));
+        canvas11->AddComponent(new Button(str(cnt) + paths[i].first, v, v, str(i + 1) + ".  " + paths[i].first,
+                                          std::bind(changeMusic, paths[i]), Screen::font_size, border_opacity));
     }
 
     canvas1->AddComponents({
@@ -623,18 +641,42 @@ void Scene::SelectMusic()
         {canvas11, 1},
     });
 
+    Canvas *canvas2 = new Canvas("Section-2", v, v, 0, 0, 0, 0, border_opacity);
+    canvas0->AddComponent(canvas2);
+
+    canvas2->AddComponents({
+        {new Text("volume", v, v, "Volume", 0, Screen::font_size), 2},
+        {new Slider(
+             "volumeslider", v, v, 0.0f, 127.0f, Game::properties["volume"].i, 1.0f,
+             [](float &value) {
+                 Game::properties["volume"].i = (int)value;
+                 ((Slider *)UI::UIs["Settings.Section-8.volumeslider"])->current_value = value;
+                 Mix_VolumeMusic(value);
+             },
+             Screen::font_size),
+         3},
+    });
+
     Canvas *lastCanvas = new Canvas("last", v, v, 0, 0, 0, 0, border_opacity);
     canvas0->AddComponent(lastCanvas);
 
     lastCanvas->AddComponents({
         {new Button(
-             "off", v, v, "Music off", []() {}, Screen::font_size, border_opacity),
+             "off", v, v, "Music off",
+             []() {
+                 Game::properties["music"].s = "off";
+                 Text::SetLabel("SelectMusic.curmusic", "Current selection: Off");
+                 if (!Music)
+                     return;
+                 StopMusic();
+                 Mix_FreeMusic(Music);
+                 Music = nullptr;
+             },
+             Screen::font_size, border_opacity),
          2},
+        {new Button("save", v, v, "Save", Game::SaveConfig, Screen::font_size, border_opacity), 2},
         {new Button(
-             "save", v, v, "Save", []() {}, Screen::font_size, border_opacity),
-         2},
-        {new Button(
-             "exit", v, v, "Exit",
+             "goback", v, v, "Back",
              []() {
                  UI::SetVisible("Settings", true);
                  UI::RemovingUI("SelectMusic");

@@ -1,8 +1,7 @@
 #include "mixer.h"
 
 std::map<std::string, Mix_Chunk *> Sounds;
-std::vector<Mix_Music *> Musics;
-int current_music = 0;
+Mix_Music *Music = nullptr;
 
 bool LoadSound(std::string name, std::string path)
 {
@@ -37,21 +36,20 @@ void StopAllSound()
 bool LoadMusic(std::string path)
 {
     print("loading music:", path);
-    Mix_Music *music = Mix_LoadMUS(path.c_str());
-    if (!music)
+    Music = Mix_LoadMUS(path.c_str());
+    if (!Music)
     {
-        Mix_FreeMusic(music);
+        Mix_FreeMusic(Music);
         print("failed to load music:", path);
         return 0;
     }
-    Musics.push_back(music);
     print(path, "ok");
     return 1;
 }
 
 void PlayMusic(int loop)
 {
-    Mix_PlayMusic(Musics[current_music], loop);
+    Mix_PlayMusic(Music, loop);
 }
 
 void StopMusic()

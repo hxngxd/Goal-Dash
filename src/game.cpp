@@ -95,7 +95,7 @@ void Game::Start()
 
     //----------------------------------------
 
-    if (properties["music"].i != -1)
+    if (properties["music"].s != "off")
     {
         print("playing background music...");
         PlayMusic(-1);
@@ -266,9 +266,13 @@ bool Game::LoadMedia()
             return 0;
     }
 
-    //----------------------------------------
+    if (properties["music"].s != "off")
+    {
+        if (!LoadMusic(properties["music"].s))
+            return 0;
+    }
 
-    current_music = properties["music"].i = Clamp(properties["music"].i, -1, (int)(Musics.size() - 1));
+    //----------------------------------------
 
     return 1;
 }
@@ -329,12 +333,10 @@ void Game::Quit()
         print("deleted", sound.first);
     }
 
-    for (auto &music : Musics)
+    if (Music)
     {
-        if (!music)
-            continue;
-        Mix_FreeMusic(music);
-        music = nullptr;
+        Mix_FreeMusic(Music);
+        Music = nullptr;
     }
 
     print("sounds and music deleted");

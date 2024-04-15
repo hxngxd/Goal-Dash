@@ -7,8 +7,7 @@
 #include <vector>
 
 extern std::map<std::string, Mix_Chunk *> Sounds;
-extern std::vector<Mix_Music *> Musics;
-extern int current_music;
+extern Mix_Music *Music;
 
 bool LoadSound(std::string name, std::string path);
 
