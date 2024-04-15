@@ -529,6 +529,7 @@ void Scene::Settings()
 void Scene::SelectMusic()
 {
     UI::SetVisible("Settings", false);
+    UI::SetVisible("Common", false);
 
     Canvas *canvas0 = new Canvas("SelectMusic", Vector2(Screen::tile_size),
                                  Screen::resolution - Vector2(Screen::tile_size * 2), 240, 0, 0, 1, border_opacity);
@@ -541,8 +542,8 @@ void Scene::SelectMusic()
         if (lastDot != std::string::npos)
             name = name.substr(0, lastDot);
 
-        if (name.size() > 25)
-            return name.substr(0, 20) + "....mp3";
+        if (name.size() > 30)
+            return name.substr(0, 30) + "....mp3";
         else
             return name + ".mp3";
     };
@@ -550,8 +551,7 @@ void Scene::SelectMusic()
     canvas0->AddComponents({
         {new Text("title", v, v, "SELECT MUSIC", 1, 2.0f * Screen::font_size, border_opacity), 1},
         {new Text("curmusic", v, v,
-                  "Current selection: " +
-                      (Game::properties["music"].s == "off" ? "Off" : getName(Game::properties["music"].s)),
+                  "Playing: " + (Game::properties["music"].s == "off" ? "Off" : getName(Game::properties["music"].s)),
                   1, Screen::font_size, border_opacity),
          1},
     });
@@ -570,7 +570,7 @@ void Scene::SelectMusic()
 
     Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 0, 0, 0, border_opacity);
 
-    canvas0->AddComponent(canvas1, (paths.size() + 1) / 2);
+    canvas0->AddComponent(canvas1, 10);
 
     Canvas *canvas10 = new Canvas("Section-10", v, v, 0, 0, 0, 1, border_opacity);
 
@@ -593,7 +593,7 @@ void Scene::SelectMusic()
                                         }
                                         LoadMusic(path.second);
                                         PlayMusic(-1);
-                                        Text::SetLabel("SelectMusic.curmusic", "Current selection: " + path.first);
+                                        Text::SetLabel("SelectMusic.curmusic", "Playing: " + path.first);
                                     },
                                     paths[i]),
                                 Screen::font_size, border_opacity);
@@ -635,7 +635,7 @@ void Scene::SelectMusic()
              "off", v, v, "Music off",
              []() {
                  Game::properties["music"].s = "off";
-                 Text::SetLabel("SelectMusic.curmusic", "Current selection: Off");
+                 Text::SetLabel("SelectMusic.curmusic", "Playing: Off");
                  if (!Music)
                      return;
                  StopMusic();
@@ -649,6 +649,7 @@ void Scene::SelectMusic()
              "goback", v, v, "Back",
              []() {
                  UI::SetVisible("Settings", true);
+                 UI::SetVisible("Common", true);
                  UI::RemovingUI("SelectMusic");
              },
              Screen::font_size, border_opacity),
@@ -656,34 +657,20 @@ void Scene::SelectMusic()
     });
 }
 
+std::vector<std::pair<std::string, std::string>> mpbtnlst;
+bool current_toggle = false;
+
 void selectMap(std::string path)
 {
     print(path, "selected");
     Map::MapPlaylist.push_back(path);
-
-    for (auto &p : Map::MapPlaylist)
-    {
-        std::cout << p << " ";
-    }
-    print("");
-    print(Map::MapPlaylist.size());
 }
 
 void deselectMap(std::string path)
 {
     print(path, "deselected");
     Map::MapPlaylist.erase(std::find(Map::MapPlaylist.begin(), Map::MapPlaylist.end(), path));
-
-    for (auto &p : Map::MapPlaylist)
-    {
-        std::cout << p << " ";
-    }
-    print("");
-    print(Map::MapPlaylist.size());
 }
-
-std::vector<std::pair<std::string, std::string>> mpbtnlst;
-bool current_toggle = false;
 
 void Scene::SelectMap()
 {
@@ -733,7 +720,7 @@ void Scene::SelectMap()
 
     Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 0, 0, 0, border_opacity);
 
-    canvas0->AddComponent(canvas1, (paths.size() + 1) / 2);
+    canvas0->AddComponent(canvas1, Map::mode == 1 ? 13 : 12);
 
     Canvas *canvas10 = new Canvas("Section-10", v, v, 0, 0, 0, 1, border_opacity);
 
@@ -793,7 +780,7 @@ void Scene::SelectMap()
 
         lastCanvas->AddComponents({
             {new Button(
-                 "toggleall", v, v, "Toggle all",
+                 "toggleall", v, v, "All",
                  []() {
                      current_toggle = !current_toggle;
                      for (int i = 0; i < mpbtnlst.size(); i++)
