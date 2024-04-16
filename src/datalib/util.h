@@ -16,6 +16,10 @@ std::string strRound(float value, int n);
 
 //----------------------------------------
 
+std::string getFileName(std::string path, int maximum_length);
+
+//----------------------------------------
+
 template <typename T> std::string str(T data)
 {
     return std::to_string(data);

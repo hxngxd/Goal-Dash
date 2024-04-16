@@ -17,6 +17,23 @@ std::string strRound(float value, int n)
 
 //----------------------------------------
 
+std::string getFileName(std::string path, int maximum_length)
+{
+    size_t lastSlash = path.find_last_of('\\');
+    std::string name = path.substr(lastSlash + 1);
+
+    size_t lastDot = name.find_last_of('.');
+    if (lastDot != std::string::npos)
+        name = name.substr(0, lastDot);
+
+    if (name.size() > maximum_length)
+        return name.substr(0, maximum_length) + "...";
+    else
+        return name;
+}
+
+//----------------------------------------
+
 bool RandomChoice(int possibility)
 {
     int n = IntegralRandom<int>(0, 100);

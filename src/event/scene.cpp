@@ -534,39 +534,14 @@ void Scene::SelectMusic()
     Canvas *canvas0 = new Canvas("SelectMusic", Vector2(Screen::tile_size),
                                  Screen::resolution - Vector2(Screen::tile_size * 2), 240, 0, 0, 1, border_opacity);
 
-    auto getName = [](std::string fullname) {
-        size_t lastSlash = fullname.find_last_of('\\');
-        std::string name = fullname.substr(lastSlash + 1);
-
-        size_t lastDot = name.find_last_of('.');
-        if (lastDot != std::string::npos)
-            name = name.substr(0, lastDot);
-
-        if (name.size() > 30)
-            return name.substr(0, 30) + "....mp3";
-        else
-            return name + ".mp3";
-    };
-
     canvas0->AddComponents({
         {new Text("title", v, v, "SELECT MUSIC", 1, 2.0f * Screen::font_size, border_opacity), 1},
         {new Text("curmusic", v, v,
-                  "Playing: " + (Game::properties["music"].s == "off" ? "Off" : getName(Game::properties["music"].s)),
+                  "Playing: " +
+                      (Game::properties["music"].s == "off" ? "Off" : getFileName(Game::properties["music"].s, 25)),
                   1, Screen::font_size, border_opacity),
          1},
     });
-
-    std::vector<std::pair<std::string, std::string>> paths;
-    for (auto &entry : std::filesystem::directory_iterator("sound\\musics"))
-    {
-        std::string fullname = entry.path().string();
-        if (fullname.size() >= 4 && fullname.substr(fullname.size() - 4) == ".mp3")
-        {
-            paths.push_back({getName(fullname), fullname});
-            if (paths.size() > 30)
-                break;
-        }
-    }
 
     Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 0, 0, 0, border_opacity);
 
@@ -576,42 +551,47 @@ void Scene::SelectMusic()
 
     Canvas *canvas11 = new Canvas("Section-11", v, v, 0, 0, 0, 1, border_opacity);
 
-    int cnt = 1;
-
-    for (int i = 0; i < paths.size(); i++)
-    {
-        Button *ms = new Button(str(cnt) + paths[i].first, v, v, str(i + 1) + ".  " + paths[i].first,
-                                std::bind(
-                                    [](std::pair<std::string, std::string> path) {
-                                        Game::properties["music"].s = path.second;
-                                        if (Music)
-                                        {
-                                            if (Mix_PlayingMusic())
-                                                StopMusic();
-                                            Mix_FreeMusic(Music);
-                                            Music = nullptr;
-                                        }
-                                        LoadMusic(path.second);
-                                        PlayMusic(-1);
-                                        Text::SetLabel("SelectMusic.curmusic", "Playing: " + path.first);
-                                    },
-                                    paths[i]),
-                                Screen::font_size, border_opacity);
-
-        if (i < (paths.size() + 1) / 2)
-            canvas10->AddComponent(ms);
-        else
-            canvas11->AddComponent(ms);
-
-        cnt++;
-    }
-
     canvas1->AddComponents({
         {canvas10, 1},
         {canvas11, 1},
     });
 
+    int cnt = 0;
+
+    for (auto &entry : std::filesystem::directory_iterator("sound\\musics"))
+    {
+        std::string path = entry.path().string();
+        if (path.size() >= 4 && path.substr(path.size() - 4) == ".mp3")
+        {
+            Button *ms = new Button(str(cnt) + "-" + getFileName(path, 5), v, v, getFileName(path, 30),
+                                    std::bind(
+                                        [](std::string path) {
+                                            Game::properties["music"].s = path;
+                                            if (Music)
+                                            {
+                                                if (Mix_PlayingMusic())
+                                                    StopMusic();
+                                                Mix_FreeMusic(Music);
+                                                Music = nullptr;
+                                            }
+                                            LoadMusic(path);
+                                            PlayMusic(-1);
+                                            Text::SetLabel("SelectMusic.curmusic", "Playing: " + getFileName(path, 30));
+                                        },
+                                        path),
+                                    Screen::font_size, border_opacity);
+
+            if (cnt < 10)
+                canvas10->AddComponent(ms);
+            else
+                canvas11->AddComponent(ms);
+
+            cnt++;
+        }
+    }
+
     Canvas *canvas2 = new Canvas("Section-2", v, v, 0, 0, 0, 0, border_opacity);
+
     canvas0->AddComponent(canvas2);
 
     canvas2->AddComponents({
@@ -628,6 +608,7 @@ void Scene::SelectMusic()
     });
 
     Canvas *lastCanvas = new Canvas("last", v, v, 0, 0, 0, 0, border_opacity);
+
     canvas0->AddComponent(lastCanvas);
 
     lastCanvas->AddComponents({
@@ -657,27 +638,26 @@ void Scene::SelectMusic()
     });
 }
 
-std::vector<std::pair<std::string, std::string>> mpbtnlst;
 bool current_toggle = false;
 
-void selectMap(std::string path)
+void selectMap(std::pair<std::string, std::string> map)
 {
-    print(path, "selected");
-    Map::MapPlaylist.push_back(path);
+    print(map.second, "selected");
+    Map::MapPlaylist.push_back(map);
 }
 
-void deselectMap(std::string path)
+int deselectMap(std::pair<std::string, std::string> map)
 {
-    print(path, "deselected");
-    Map::MapPlaylist.erase(std::find(Map::MapPlaylist.begin(), Map::MapPlaylist.end(), path));
+    print(map.second, "deselected");
+    auto id = std::find(Map::MapPlaylist.begin(), Map::MapPlaylist.end(), map);
+    Map::MapPlaylist.erase(id);
+    return id - Map::MapPlaylist.begin();
 }
 
 void Scene::SelectMap()
 {
     Map::MapPlaylist.clear();
     Map::current_map_id = 0;
-
-    mpbtnlst.clear();
 
     if (Map::mode == -1)
     {
@@ -693,30 +673,7 @@ void Scene::SelectMap()
     Canvas *canvas0 = new Canvas("SelectMap", Vector2(Screen::tile_size),
                                  Screen::resolution - Vector2(Screen::tile_size * 2), 240, 0, 0, 1, border_opacity);
 
-    auto getName = [](std::string fullname) {
-        size_t lastSlash = fullname.find_last_of('\\');
-        std::string name = fullname.substr(lastSlash + 1);
-
-        size_t lastDot = name.find_last_of('.');
-        if (lastDot != std::string::npos)
-            name = name.substr(0, lastDot);
-
-        return name;
-    };
-
     canvas0->AddComponent(new Text("title", v, v, "SELECT MAP", 1, 2.0f * Screen::font_size, border_opacity));
-
-    std::vector<std::pair<std::string, std::string>> paths;
-    for (auto &entry : std::filesystem::directory_iterator("map"))
-    {
-        std::string fullname = entry.path().string();
-        if (fullname.size() >= 4 && fullname.substr(fullname.size() - 4) == ".map")
-        {
-            paths.push_back({getName(fullname), fullname});
-            if (paths.size() > 30)
-                break;
-        }
-    }
 
     Canvas *canvas1 = new Canvas("Section-1", v, v, 0, 0, 0, 0, border_opacity);
 
@@ -726,52 +683,67 @@ void Scene::SelectMap()
 
     Canvas *canvas11 = new Canvas("Section-11", v, v, 0, 0, 0, 1, border_opacity);
 
-    int cnt = 1;
-
-    for (int i = 0; i < paths.size(); i++)
-    {
-        Button *mp = new Button(
-            str(cnt) + "-" + paths[i].first, v, v, paths[i].first, []() {}, Screen::font_size, border_opacity);
-
-        if (Map::mode == -1)
-        {
-            mp->onClick = std::bind(
-                [](std::string path, Button *mp) {
-                    mp->selected = !mp->selected;
-                    if (mp->selected)
-                        selectMap(path);
-                    else
-                        deselectMap(path);
-                },
-                paths[i].second, mp);
-        }
-        else
-        {
-            mp->onClick = std::bind(
-                [](std::pair<std::string, std::string> path) {
-                    MapMaking::ChangeMap(path.second);
-                    UI::SetVisible("SelectMap", false);
-                    UI::SetVisible("MapBuilding-0", true);
-                    UI::SetVisible("MapBuilding-1", true);
-                    UI::SetVisible("Common", true);
-                },
-                paths[i]);
-        }
-
-        if (i < (paths.size() + 1) / 2)
-            canvas10->AddComponent(mp);
-        else
-            canvas11->AddComponent(mp);
-
-        cnt++;
-
-        mpbtnlst.push_back({mp->name, paths[i].second});
-    }
-
     canvas1->AddComponents({
         {canvas10, 1},
         {canvas11, 1},
     });
+
+    int cnt = 0;
+
+    for (auto &entry : std::filesystem::directory_iterator("map"))
+    {
+        std::string path = entry.path().string();
+        if (path.size() >= 4 && path.substr(path.size() - 4) == ".map")
+        {
+            Button *mp = new Button(
+                str(cnt) + "-" + path, v, v, getFileName(path, 15), []() {}, Screen::font_size, border_opacity);
+
+            if (cnt < 10)
+                canvas10->AddComponent(mp);
+            else
+                canvas11->AddComponent(mp);
+
+            if (Map::mode == -1)
+            {
+                mp->onClick = std::bind(
+                    [](std::string path, Button *mp) {
+                        mp->selected = !mp->selected;
+                        if (mp->selected)
+                        {
+                            selectMap(std::make_pair(mp->name, path));
+                            mp->label += " (" + str(Map::MapPlaylist.size()) + ")";
+                        }
+                        else
+                        {
+                            int id = deselectMap(std::make_pair(mp->name, path));
+                            mp->label = getFileName(path, 15);
+                            for (int i = id; i < Map::MapPlaylist.size(); i++)
+                            {
+                                UI::UIs[Map::MapPlaylist[i].first]->label =
+                                    getFileName(Map::MapPlaylist[i].second, 15) + " (" + str(i + 1) + ")";
+                                ((Button *)UI::UIs[Map::MapPlaylist[i].first])->Recalculate();
+                            }
+                        }
+                        mp->Recalculate();
+                    },
+                    path, mp);
+            }
+            else
+            {
+                mp->onClick = std::bind(
+                    [](std::string path) {
+                        MapMaking::ChangeMap(path);
+                        UI::SetVisible("SelectMap", false);
+                        UI::SetVisible("MapBuilding-0", true);
+                        UI::SetVisible("MapBuilding-1", true);
+                        UI::SetVisible("Common", true);
+                    },
+                    path);
+            }
+
+            cnt++;
+        }
+    }
 
     if (Map::mode == -1)
     {
@@ -783,26 +755,26 @@ void Scene::SelectMap()
                  "toggleall", v, v, "All",
                  []() {
                      current_toggle = !current_toggle;
-                     for (int i = 0; i < mpbtnlst.size(); i++)
-                     {
-                         Button *btn = (Button *)UI::UIs[mpbtnlst[i].first];
-                         if (current_toggle)
-                         {
-                             if (!btn->selected)
-                             {
-                                 btn->selected = current_toggle;
-                                 selectMap(mpbtnlst[i].second);
-                             }
-                         }
-                         else
-                         {
-                             if (btn->selected)
-                             {
-                                 btn->selected = current_toggle;
-                                 deselectMap(mpbtnlst[i].second);
-                             }
-                         }
-                     }
+                     //   for (int i = 0; i < mpbtnlst.size(); i++)
+                     //   {
+                     //       Button *btn = (Button *)UI::UIs[mpbtnlst[i].first];
+                     //       if (current_toggle)
+                     //       {
+                     //           if (!btn->selected)
+                     //           {
+                     //               btn->selected = current_toggle;
+                     //               selectMap(mpbtnlst[i].second);
+                     //           }
+                     //       }
+                     //       else
+                     //       {
+                     //           if (btn->selected)
+                     //           {
+                     //               btn->selected = current_toggle;
+                     //               deselectMap(mpbtnlst[i].second);
+                     //           }
+                     //       }
+                     //   }
                  },
                  Screen::font_size, border_opacity),
              1},

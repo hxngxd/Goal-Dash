@@ -12,7 +12,7 @@ class Map
     static int nempty;
     static std::map<int, int> count_types;
 
-    static std::vector<std::string> MapPlaylist;
+    static std::vector<std::pair<std::string, std::string>> MapPlaylist;
     static int current_map_id;
 
     static void Border();

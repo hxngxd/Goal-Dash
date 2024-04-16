@@ -17,7 +17,7 @@ Vector2 MapMaking::current_mouse_tile(-1);
 int MapMaking::current_drawing_type = -1;
 bool MapMaking::allow_drawing = false;
 
-std::vector<std::string> Map::MapPlaylist;
+std::vector<std::pair<std::string, std::string>> Map::MapPlaylist;
 int Map::current_map_id;
 
 Tile::Tile(Vector2 position, Vector2 size)
