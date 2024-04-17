@@ -368,7 +368,10 @@ int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
 void Text::SetLabel(std::string name, std::string label)
 {
     if (UIs.find(name) != UIs.end())
+    {
         UIs[name]->label = label;
+        UI::Recalculate(UIs[name], UIs[name]->visible);
+    }
 }
 
 //----------------------------------------

@@ -151,7 +151,7 @@ void Scene::MapMaking()
          3},
         {new Button("save", v, v, "Save", MapMaking::Save, Screen::font_size, border_opacity), 3},
         {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 3},
-        {new Button("curmap", v, v, "Current: ", SelectMap, Screen::font_size, border_opacity), 6},
+        {new Button("curmap", v, v, "No map selected", SelectMap, Screen::font_size, border_opacity), 6},
     });
 
     Canvas *canvas1 =
@@ -560,6 +560,14 @@ void Scene::SelectMusic()
         {canvas11, 1},
     });
 
+    int numOfMusic = 0;
+    for (auto &entry : std::filesystem::directory_iterator("sound\\musics"))
+    {
+        std::string path = entry.path().string();
+        if (path.size() >= 4 && path.substr(path.size() - 4) == ".mp3")
+            numOfMusic++;
+    }
+
     int cnt = 0;
 
     for (auto &entry : std::filesystem::directory_iterator("sound\\musics"))
@@ -585,7 +593,7 @@ void Scene::SelectMusic()
                                         path),
                                     Screen::font_size, border_opacity);
 
-            if (cnt < 10)
+            if (cnt < (numOfMusic + 1) / 2)
                 canvas10->AddComponent(ms);
             else
                 canvas11->AddComponent(ms);
@@ -698,6 +706,15 @@ void Scene::SelectMap()
         {canvas11, 1},
     });
 
+    int numOfMap = 0;
+
+    for (auto &entry : std::filesystem::directory_iterator("map"))
+    {
+        std::string path = entry.path().string();
+        if (path.size() >= 4 && path.substr(path.size() - 4) == ".map")
+            numOfMap++;
+    }
+
     int cnt = 0;
 
     for (auto &entry : std::filesystem::directory_iterator("map"))
@@ -708,7 +725,7 @@ void Scene::SelectMap()
             Button *mp = new Button(
                 str(cnt) + "-" + path, v, v, getFileName(path, 5), []() {}, Screen::font_size, border_opacity);
 
-            if (cnt < 10)
+            if (cnt < (numOfMap + 1) / 2)
                 canvas10->AddComponent(mp);
             else
                 canvas11->AddComponent(mp);
@@ -743,6 +760,7 @@ void Scene::SelectMap()
                 mp->onClick = std::bind(
                     [](std::string path) {
                         MapMaking::ChangeMap(path);
+                        Text::SetLabel("MapBuilding-0.curmap", "Current map: " + getFileName(path, 5));
                         UI::RemovingUI("SelectMap");
                         UI::SetVisible("MapBuilding-0", true);
                         UI::SetVisible("MapBuilding-1", true);

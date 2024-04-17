@@ -456,6 +456,7 @@ void MapMaking::Random()
 
             Map::AddTiles();
 
+            Text::SetLabel("MapBuilding-0.curmap", "Random map");
             LinkedFunction *lf = new LinkedFunction(
                 []() {
                     allow_drawing = true;
@@ -681,6 +682,7 @@ void MapMaking::ChangeMap(std::string path)
 void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
+    Text::SetLabel("MapBuilding-0.curmap", "No map selected");
     if (Map::mode == 1)
     {
         allow_drawing = false;
