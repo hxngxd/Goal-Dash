@@ -144,3 +144,6 @@ class Canvas : public UI
 
     void Update();
 };
+
+extern SDL_Cursor *myCursor;
+bool ChangeCursor(std::string path);

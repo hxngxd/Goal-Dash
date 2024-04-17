@@ -684,3 +684,16 @@ void Canvas::Update()
     Screen::SetDrawColor(Color::white(border_opacity));
     SDL_RenderDrawRect(Game::renderer, &rect);
 }
+
+SDL_Cursor *myCursor = nullptr;
+
+bool ChangeCursor(std::string path)
+{
+    SDL_Surface *cssf = IMG_Load(path.c_str());
+    if (!cssf)
+        return 0;
+    myCursor = SDL_CreateColorCursor(cssf, 0, 0);
+    SDL_SetCursor(myCursor);
+    SDL_FreeSurface(cssf);
+    return 1;
+}

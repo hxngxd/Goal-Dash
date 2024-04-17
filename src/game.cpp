@@ -34,9 +34,6 @@ void Game::Update()
 
     //----------------------------------------
 
-    if (Map::mode == 1)
-        MapMaking::Update();
-
     EventHandler::Update();
 
     if (player)
@@ -63,6 +60,9 @@ void Game::Update()
 
     if (player)
         player->Update();
+
+    if (Map::mode == 1)
+        MapMaking::Update();
 
     UI::Update();
 
@@ -138,6 +138,16 @@ void Game::Start()
     Screen::CalculateMoveSpeed();
     Screen::CalculateJumpSpeed();
     Screen::CalculateAcceleration();
+
+    //----------------------------------------
+
+    print("changing cursor");
+    if (!ChangeCursor("img\\cursor.png"))
+    {
+        print("failed to change cursor");
+        return;
+    }
+    print("cursor changed");
 
     //----------------------------------------
 
@@ -373,6 +383,14 @@ void Game::Quit()
         print("deleting font...");
         TTF_CloseFont(myFont);
         print("font deleted");
+    }
+
+    //----------------------------------------
+
+    if (myCursor)
+    {
+        print("deleting cursor...");
+        SDL_FreeCursor(myCursor);
     }
 
     //----------------------------------------
