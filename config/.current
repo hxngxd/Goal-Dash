@@ -7,7 +7,7 @@
 <float> {gravity=0}
 <bool> {keyboard_layout=0}
 <float> {map_delay=15}
-<string> {music=off}
+<string> {music=sound\musics\y2mate.com - ILLIT 아일릿  Magnetic Audio.mp3}
 <float> {player_acceleration=1}
 <float> {player_collision_dist=1}
 <bool> {player_immortal=0}
@@ -23,5 +23,5 @@
 <bool> {sound=1}
 <float> {tile_rescale_speed=0.075}
 <float> {tile_scale=1}
-<int> {volume=28}
+<int> {volume=39}
 <int> {wall_possibility=26}

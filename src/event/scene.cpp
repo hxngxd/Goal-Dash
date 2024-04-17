@@ -589,6 +589,7 @@ void Scene::SelectMusic()
                                             }
                                             LoadMusic(path);
                                             PlayMusic(-1);
+                                            Mix_VolumeMusic(Game::properties["volume"].i);
                                             Text::SetLabel("SelectMusic.curmusic", "Playing: " + getFileName(path, 30));
                                         },
                                         path),
