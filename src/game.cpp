@@ -32,12 +32,7 @@ void Game::Update()
     if (properties["point_grid"].b)
         Screen::PointGrid(Color::white());
 
-    if (properties["background_enable"].b)
-        Background::Update();
-
     //----------------------------------------
-
-    Map::Update();
 
     if (Map::mode == 1)
         MapMaking::Update();
@@ -46,16 +41,35 @@ void Game::Update()
 
     if (player)
     {
-        player->Update();
         if (Game::properties["show_time"].b)
             Text::SetLabel("Play-0.time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
+
+        if (properties["background_enable"].b)
+        {
+            Background::MoveRelativeTo(player->position);
+            Background::Update();
+        }
     }
+    else
+    {
+        if (properties["background_enable"].b)
+        {
+            Background::MoveRelativeTo(EventHandler::MousePosition);
+            Background::Update();
+        }
+    }
+
+    Map::Update();
+
+    if (player)
+        player->Update();
 
     UI::Update();
 
     LinkedFunction::Update();
 
     UI::RemoveUIs();
+
     //----------------------------------------
 
     Screen::Display();
@@ -250,11 +264,11 @@ bool Game::LoadMedia()
 
     //----------------------------------------
 
-    if (!Background::loadBackground("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096), 1.25))
+    if (!Background::loadBackground("img/bg_cloud.png", Vector2(4096)))
         return 0;
-    if (!Background::loadBackground("bg_star1", "img/bg_star.png", 1, Vector2(4096), 1.5))
+    if (!Background::loadBackground("img/bg_star.png", Vector2(4096)))
         return 0;
-    if (!Background::loadBackground("bg_star", "img/bg_star.png", 1, Vector2(4096), 2))
+    if (!Background::loadBackground("img/bg_star1.png", Vector2(4096)))
         return 0;
 
     //----------------------------------------
@@ -306,6 +320,17 @@ void Game::Quit()
         }
         print("tiles deleted");
     }
+
+    //----------------------------------------
+
+    print("deleting backgrounds...");
+    for (auto &bg : Background::Backgrounds)
+    {
+        delete bg;
+        bg = nullptr;
+    }
+    Background::Backgrounds.clear();
+    print("backgrounds deleted");
 
     //----------------------------------------
 

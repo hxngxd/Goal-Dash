@@ -687,6 +687,7 @@ void MapMaking::Clear(LinkedFunction *post_func)
         ToggleBtns(false);
     }
     Map::RemoveTiles();
+    Map::nempty = 0;
     if (post_func)
         post_func->Execute();
 }

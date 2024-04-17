@@ -26,12 +26,13 @@ class Background : public GameObject
   public:
     int opacity;
     bool toggle;
-
+    static std::vector<Background *> Backgrounds;
     Background(std::string name, float scale);
-    static bool loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale);
+    static bool loadBackground(std::string path, Vector2 realSize);
 
-    static void Move(Vector2 velocity, int index, float ratio);
     static void Update();
+
+    static void MoveRelativeTo(const Vector2 &position);
 };
 
 extern std::vector<Background> Backgrounds;

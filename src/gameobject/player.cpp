@@ -153,10 +153,6 @@ void Player::MoveRightLeft()
 
     position.x += vx * Game::properties["player_move_speed"].f;
 
-    Background::Move(Vector2(-vx, 0), 0, 0.25);
-    Background::Move(Vector2(-vx, 0), 1, 0.5);
-    Background::Move(Vector2(-vx, 0), 2, 0.75);
-
     if (velocity.l + velocity.r != 0)
     {
         if (!collide_down.second)
@@ -360,31 +356,41 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                                   0) &&
                 !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::properties["tile_scale"].f)
             {
-                MapMaking::ToggleBtns(false);
-                print("player won");
-                won = true;
-                print("deleting player...");
-                LinkedFunction *lf = new LinkedFunction(
-                    []() {
-                        return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
-                    },
-                    250);
-                lf->NextFunction([]() {
-                    if (Game::properties["sound"].b)
-                        PlaySound("win", CHANNEL_SPAWN_WIN, 0);
-                    Game::time[1] = SDL_GetTicks();
-                    delete Game::player;
-                    Game::player = nullptr;
-                    // MapMaking::ChangeMap();
-                    return 1;
-                });
-                lf->NextFunction(
-                    []() {
-                        Scene::SpawnPlayer();
+                if (Map::current_map_id < Map::MapPlaylist.size() - 1)
+                {
+                    Map::current_map_id++;
+                    Text::SetLabel("Play-0.map",
+                                   "Map: " + getFileName(Map::MapPlaylist[Map::current_map_id].second, 5));
+                    MapMaking::ToggleBtns(false);
+                    print("player won");
+                    won = true;
+                    print("deleting player...");
+                    LinkedFunction *lf = new LinkedFunction(
+                        []() {
+                            return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
+                        },
+                        250);
+                    lf->NextFunction([]() {
+                        if (Game::properties["sound"].b)
+                            PlaySound("win", CHANNEL_SPAWN_WIN, 0);
+                        Game::time[1] = SDL_GetTicks();
+                        delete Game::player;
+                        Game::player = nullptr;
+                        MapMaking::ChangeMap(Map::MapPlaylist[Map::current_map_id].second);
                         return 1;
-                    },
-                    Map::GetMapDelay(750));
-                lf->Execute();
+                    });
+                    lf->NextFunction(
+                        []() {
+                            Scene::SpawnPlayer();
+                            return 1;
+                        },
+                        Map::GetMapDelay(750));
+                    lf->Execute();
+                }
+                else
+                {
+                    print("HAHAHAHA");
+                }
             }
         }
         else if (type & SPAWN)
@@ -411,10 +417,6 @@ void Player::Jump()
 
         velocity.d += Game::properties["gravity"].f;
         position.y += velocity.d;
-
-        Background::Move(Vector2(0, -velocity.d), 0, 0.1);
-        Background::Move(Vector2(0, -velocity.d), 1, 0.15);
-        Background::Move(Vector2(0, -velocity.d), 2, 0.2);
     }
     else
     {

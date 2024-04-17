@@ -74,10 +74,11 @@ void Scene::Play()
     Map::mode = 0;
 
     UI::RemovingUI("Welcome");
+    UI::RemovingUI("SelectMap");
 
     MapMaking::ToggleBtns(false);
 
-    // Map::LoadMap();
+    Map::LoadMap(Map::MapPlaylist[Map::current_map_id].second);
 
     Canvas *canvas0 =
         new Canvas("Play-0", v, Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0, border_opacity);
@@ -87,7 +88,9 @@ void Scene::Play()
         {new Text("time", v, v, Game::properties["show_time"].b ? "Time: 00:00:00.000" : "Time: ~_~", 1,
                   Screen::font_size, border_opacity),
          4},
-        // {new Text("map", v, v, "Map: " + str(Map::current_map), 1, Screen::font_size, border_opacity), 3},
+        {new Text("map", v, v, "Map: " + getFileName(Map::MapPlaylist[Map::current_map_id].second, 5), 1,
+                  Screen::font_size, border_opacity),
+         3},
         {new Text("dif", v, v, "Difficulty: idk", 1, Screen::font_size, border_opacity), 5},
     });
 
@@ -127,7 +130,7 @@ void Scene::MapMaking()
     MapMaking::allow_drawing = true;
     UI::RemovingUI("Welcome");
 
-    Canvas *canvas0 = new Canvas("MapBuilding-0", v, Vector2(Screen::tile_size * 12, Screen::tile_size), 255, 0, 0, 0,
+    Canvas *canvas0 = new Canvas("MapBuilding-0", v, Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0,
                                  border_opacity);
 
     canvas0->AddComponents({
@@ -145,14 +148,15 @@ void Scene::MapMaking()
                  MapMaking::Clear(lf);
              },
              Screen::font_size, border_opacity),
-         2},
-        {new Button("save", v, v, "Save", MapMaking::Save, Screen::font_size, border_opacity), 2},
-        {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 2},
-        {new Button("curmap", v, v, "Current: ", SelectMap, Screen::font_size, border_opacity), 4},
+         3},
+        {new Button("save", v, v, "Save", MapMaking::Save, Screen::font_size, border_opacity), 3},
+        {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 3},
+        {new Button("curmap", v, v, "Current: ", SelectMap, Screen::font_size, border_opacity), 6},
     });
 
-    Canvas *canvas1 = new Canvas("MapBuilding-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
-                                 Vector2(Screen::tile_size * 10, Screen::tile_size), 255, 0, 0, 0, border_opacity);
+    Canvas *canvas1 =
+        new Canvas("MapBuilding-1", Vector2(0, Screen::tile_size * (Screen::map_size - 1)),
+                   Vector2(Screen::tile_size * Screen::map_size, Screen::tile_size), 255, 0, 0, 0, border_opacity);
 
     auto change_drawing_type = [](int type) {
         MapMaking::current_drawing_type = (MapMaking::current_drawing_type == type ? -1 : type);
@@ -160,12 +164,12 @@ void Scene::MapMaking()
 
     canvas1->AddComponents({
         {new Button("erase", v, v, "EMPTY", std::bind(change_drawing_type, EMPTY), Screen::font_size, border_opacity),
-         2},
-        {new Button("wall", v, v, "WALL", std::bind(change_drawing_type, WALL), Screen::font_size, border_opacity), 2},
-        {new Button("coin", v, v, "COIN", std::bind(change_drawing_type, COIN), Screen::font_size, border_opacity), 2},
+         1},
+        {new Button("wall", v, v, "WALL", std::bind(change_drawing_type, WALL), Screen::font_size, border_opacity), 1},
+        {new Button("coin", v, v, "COIN", std::bind(change_drawing_type, COIN), Screen::font_size, border_opacity), 1},
         {new Button("spawn", v, v, "SPAWN", std::bind(change_drawing_type, SPAWN), Screen::font_size, border_opacity),
-         2},
-        {new Button("win", v, v, "WIN", std::bind(change_drawing_type, WIN), Screen::font_size, border_opacity), 2},
+         1},
+        {new Button("win", v, v, "WIN", std::bind(change_drawing_type, WIN), Screen::font_size, border_opacity), 1},
     });
 
     UI::SetVisible("Common", true);
@@ -644,6 +648,7 @@ void selectMap(std::pair<std::string, std::string> map)
 {
     print(map.second, "selected");
     Map::MapPlaylist.push_back(map);
+    ((Button *)UI::UIs["SelectMap.last.ok"])->enabled = true;
 }
 
 int deselectMap(std::pair<std::string, std::string> map)
@@ -651,12 +656,17 @@ int deselectMap(std::pair<std::string, std::string> map)
     print(map.second, "deselected");
     auto id = std::find(Map::MapPlaylist.begin(), Map::MapPlaylist.end(), map);
     Map::MapPlaylist.erase(id);
+    if (Map::MapPlaylist.size() == 0)
+        ((Button *)UI::UIs["SelectMap.last.ok"])->enabled = false;
     return id - Map::MapPlaylist.begin();
 }
+
+std::vector<std::pair<std::string, std::string>> tmpMaps;
 
 void Scene::SelectMap()
 {
     Map::MapPlaylist.clear();
+    tmpMaps.clear();
     Map::current_map_id = 0;
 
     if (Map::mode == -1)
@@ -696,7 +706,7 @@ void Scene::SelectMap()
         if (path.size() >= 4 && path.substr(path.size() - 4) == ".map")
         {
             Button *mp = new Button(
-                str(cnt) + "-" + path, v, v, getFileName(path, 15), []() {}, Screen::font_size, border_opacity);
+                str(cnt) + "-" + path, v, v, getFileName(path, 5), []() {}, Screen::font_size, border_opacity);
 
             if (cnt < 10)
                 canvas10->AddComponent(mp);
@@ -716,11 +726,11 @@ void Scene::SelectMap()
                         else
                         {
                             int id = deselectMap(std::make_pair(mp->name, path));
-                            mp->label = getFileName(path, 15);
+                            mp->label = getFileName(path, 5);
                             for (int i = id; i < Map::MapPlaylist.size(); i++)
                             {
                                 UI::UIs[Map::MapPlaylist[i].first]->label =
-                                    getFileName(Map::MapPlaylist[i].second, 15) + " (" + str(i + 1) + ")";
+                                    getFileName(Map::MapPlaylist[i].second, 5) + " (" + str(i + 1) + ")";
                                 ((Button *)UI::UIs[Map::MapPlaylist[i].first])->Recalculate();
                             }
                         }
@@ -733,13 +743,15 @@ void Scene::SelectMap()
                 mp->onClick = std::bind(
                     [](std::string path) {
                         MapMaking::ChangeMap(path);
-                        UI::SetVisible("SelectMap", false);
+                        UI::RemovingUI("SelectMap");
                         UI::SetVisible("MapBuilding-0", true);
                         UI::SetVisible("MapBuilding-1", true);
                         UI::SetVisible("Common", true);
                     },
                     path);
             }
+
+            tmpMaps.push_back(std::make_pair(mp->name, path));
 
             cnt++;
         }
@@ -755,32 +767,33 @@ void Scene::SelectMap()
                  "toggleall", v, v, "All",
                  []() {
                      current_toggle = !current_toggle;
-                     //   for (int i = 0; i < mpbtnlst.size(); i++)
-                     //   {
-                     //       Button *btn = (Button *)UI::UIs[mpbtnlst[i].first];
-                     //       if (current_toggle)
-                     //       {
-                     //           if (!btn->selected)
-                     //           {
-                     //               btn->selected = current_toggle;
-                     //               selectMap(mpbtnlst[i].second);
-                     //           }
-                     //       }
-                     //       else
-                     //       {
-                     //           if (btn->selected)
-                     //           {
-                     //               btn->selected = current_toggle;
-                     //               deselectMap(mpbtnlst[i].second);
-                     //           }
-                     //       }
-                     //   }
+                     for (int i = 0; i < tmpMaps.size(); i++)
+                     {
+                         Button *btn = (Button *)UI::UIs[tmpMaps[i].first];
+                         if (current_toggle)
+                         {
+                             if (!btn->selected)
+                             {
+                                 btn->selected = current_toggle;
+                                 selectMap(tmpMaps[i]);
+                                 btn->label += " (" + str(Map::MapPlaylist.size()) + ")";
+                             }
+                         }
+                         else
+                         {
+                             if (btn->selected)
+                             {
+                                 btn->selected = current_toggle;
+                                 deselectMap(tmpMaps[i]);
+                                 btn->label = getFileName(tmpMaps[i].second, 5);
+                             }
+                         }
+                         btn->Recalculate();
+                     }
                  },
                  Screen::font_size, border_opacity),
              1},
-            {new Button(
-                 "ok", v, v, "Play now", []() {}, Screen::font_size, border_opacity),
-             1},
+            {new Button("ok", v, v, "Play now", Play, Screen::font_size, border_opacity), 1},
             {new Button(
                  "goback", v, v, "Back",
                  []() {
@@ -790,5 +803,6 @@ void Scene::SelectMap()
                  Screen::font_size, border_opacity),
              1},
         });
+        ((Button *)UI::UIs["SelectMap.last.ok"])->enabled = false;
     }
 }
