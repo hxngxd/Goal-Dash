@@ -127,6 +127,10 @@ void Game::Start()
     }
     print("font loaded");
 
+    print("starting sdl text input...");
+    SDL_StartTextInput();
+    print("done");
+
     //----------------------------------------
 
     UI::Start();
@@ -384,6 +388,10 @@ void Game::Quit()
         TTF_CloseFont(myFont);
         print("font deleted");
     }
+
+    print("stopping sdl text input");
+    SDL_StopTextInput();
+    print("done");
 
     //----------------------------------------
 

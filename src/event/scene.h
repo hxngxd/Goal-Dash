@@ -11,4 +11,6 @@ class Scene
     static void Settings();
     static void SelectMusic();
     static void SelectMap();
+    static void SaveChoice();
+    static void SaveAs();
 };

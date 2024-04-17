@@ -75,6 +75,9 @@ void EventHandler::MouseInputHandler()
     }
 }
 
+std::string *EventHandler::currentInputtingText = nullptr;
+int EventHandler::currentMaximumInputLength = 100;
+
 void EventHandler::Update()
 {
     while (SDL_PollEvent(&Game::event) != 0)
@@ -82,10 +85,25 @@ void EventHandler::Update()
         if (Game::event.type == SDL_QUIT)
             game->running = false;
 
-        EventHandler::MouseInputHandler();
+        MouseInputHandler();
 
         if (Game::player)
-            EventHandler::PlayerInputHandler(Game::player,
-                                             Game::properties["keyboard_layout"].b ? right_keys : left_keys);
+            PlayerInputHandler(Game::player, Game::properties["keyboard_layout"].b ? right_keys : left_keys);
+
+        if (currentInputtingText)
+            TextInputHandler();
+    }
+}
+
+void EventHandler::TextInputHandler()
+{
+    if (Game::event.type == SDL_TEXTINPUT && currentInputtingText->size() < currentMaximumInputLength)
+    {
+        *currentInputtingText += Game::event.text.text;
+    }
+    if (Game::event.type == SDL_KEYDOWN && Game::event.key.keysym.sym == SDLK_BACKSPACE &&
+        currentInputtingText->size() > 0)
+    {
+        *currentInputtingText = currentInputtingText->substr(0, currentInputtingText->size() - 1);
     }
 }

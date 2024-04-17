@@ -327,6 +327,8 @@ void MapMaking::Random()
 {
     print("generating map...");
 
+    Map::MapPlaylist.clear();
+
     LinkedFunction *lf = new LinkedFunction(
         []() {
             std::vector<std::vector<bool>> visitable(Screen::map_size, std::vector<bool>(Screen::map_size, false));
@@ -605,41 +607,31 @@ bool MapMaking::Validation(int ei, int ej)
     return true;
 }
 
-void MapMaking::Save()
+bool MapMaking::Save(bool as, std::string filename)
 {
     if (!Map::nempty)
     {
         print("nothing to save");
-        return;
+        return 0;
     }
 
     if (Map::count_types[SPAWN] != 1 || Map::count_types[WIN] != 1)
     {
-        print("failed to save map");
-        return;
+        print("failed to save map (not enough SPAWN or WIN)");
+        return 0;
     }
-
-    int map = 1;
-    std::ifstream in;
-    in.open("map/" + str(map) + ".map");
-
-    while (in.good())
-    {
-        in.close();
-        map++;
-        in.open("map/" + str(map) + ".map");
-    }
-    in.close();
 
     std::ofstream out;
-    std::string filename = "map/" + str(map) + ".map";
-    out.open(filename);
+    if (!as)
+        out.open(Map::MapPlaylist.front().second);
+    else
+        out.open("map\\" + filename + ".map");
 
     if (!out.good())
     {
-        print("failed to save map");
+        print("failed to save map (can't open file)");
         out.close();
-        return;
+        return 0;
     }
 
     for (int i = 1; i < Screen::map_size - 1; i++)
@@ -653,7 +645,16 @@ void MapMaking::Save()
     }
     out.close();
 
-    print("saved to", filename);
+    if (!as)
+        print("saved to", Map::MapPlaylist.front().second);
+    else
+    {
+        print("saved to", filename);
+        Map::MapPlaylist.clear();
+        Map::MapPlaylist.push_back(std::make_pair("", "map\\" + filename + ".map"));
+    }
+
+    return 1;
 }
 
 void MapMaking::ChangeMap(std::string path)
@@ -683,6 +684,7 @@ void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
     Text::SetLabel("MapBuilding-0.curmap", "No map selected");
+    Map::MapPlaylist.clear();
     if (Map::mode == 1)
     {
         allow_drawing = false;

@@ -208,6 +208,11 @@ void UI::Recalculate(UI *ui, bool visible)
     }
 }
 
+void UI::Recalculate(std::string name)
+{
+    Recalculate(UI::UIs[name], UI::UIs[name]->visible);
+}
+
 //----------------------------------------
 
 Button::Button(std::string name, const Vector2 &position, const Vector2 &size, std::string label,
@@ -300,11 +305,17 @@ void Button::Recalculate()
 //----------------------------------------
 
 Text::Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
-           int font_size, int border_opacity)
+           int font_size, int border_opacity, bool caret)
     : UI(TEXT, name, position, size, label, label_alignment, font_size, border_opacity)
 {
     print("creating", name, "text");
     UIs[name] = this;
+    this->caret = caret;
+    if (this->caret)
+    {
+        toggle_caret = true;
+        caret_opacity = 0;
+    }
     print(name, "text created");
 }
 
@@ -332,6 +343,25 @@ void Text::Update()
     }
     labelRect.y = center.y - labelRect.h / 2.0f;
 
+    if (caret)
+    {
+        if (toggle_caret)
+        {
+            caret_opacity += 8;
+            if (caret_opacity >= 248)
+                toggle_caret = false;
+        }
+        else
+        {
+            caret_opacity -= 8;
+            if (caret_opacity <= 8)
+                toggle_caret = true;
+        }
+        Screen::SetDrawColor(Color::white(caret_opacity));
+        SDL_RenderDrawLine(Game::renderer, labelRect.x + labelRect.w, labelRect.y, labelRect.x + labelRect.w,
+                           labelRect.y + labelRect.h);
+    }
+
     Screen::SetDrawColor(Color::white(border_opacity));
     SDL_RenderDrawRect(Game::renderer, &bgRect);
 
@@ -353,15 +383,30 @@ void Text::Recalculate()
 
 int Text::CalculateFontSize(const Vector2 &bg_size, std::string label)
 {
-    int perfectFs = 200;
+    int minFs = 10;
+    int maxFs = 100;
+    int perfectFs = -1;
+
     SDL_Rect rect;
     rect.w = rect.h = 100000;
-    while ((rect.w >= bg_size.x || rect.h >= bg_size.y) && perfectFs >= 10)
+
+    while (minFs <= maxFs)
     {
-        TTF_SetFontSize(myFont, perfectFs);
+        int midFs = (minFs + maxFs) / 2;
+        TTF_SetFontSize(myFont, midFs);
         TTF_SizeText(myFont, label.c_str(), &rect.w, &rect.h);
-        perfectFs -= 2;
+
+        if (rect.w >= bg_size.x || rect.h >= bg_size.y)
+        {
+            maxFs = midFs - 1;
+        }
+        else
+        {
+            perfectFs = midFs;
+            minFs = midFs + 1;
+        }
     }
+
     return perfectFs;
 }
 

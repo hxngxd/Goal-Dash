@@ -46,7 +46,7 @@ class MapMaking
     static void DownVertical(int i, int j, std::vector<std::vector<bool>> &visitable);
 
     static void Clear(LinkedFunction *post_func);
-    static void Save();
+    static bool Save(bool as, std::string filename = "");
     static void ChangeMap(std::string path);
 
     static void Update();

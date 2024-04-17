@@ -43,6 +43,7 @@ class UI
 
     static void SetVisible(std::string name, bool visible);
     static void Recalculate(UI *ui, bool visible);
+    static void Recalculate(std::string name);
 };
 
 class Button : public UI
@@ -66,9 +67,12 @@ class Text : public UI
 {
   public:
     SDL_Rect labelRect;
+    bool caret;
+    bool toggle_caret;
+    int caret_opacity;
 
     Text(std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,
-         int font_size = 150, int border_opacity = 0);
+         int font_size = 150, int border_opacity = 0, bool caret = 0);
 
     static int CalculateFontSize(const Vector2 &bg_size, std::string label);
 

@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "../datalib/mixer.h"
 #include "../datalib/msg.h"
+#include "../event/input.h"
 #include "../game.h"
 #include "../gameobject/gameobject.h"
 #include "../gameobject/map.h"
@@ -18,7 +19,7 @@ void Scene::Welcome()
 
     Canvas *canvas = new Canvas(
         "Welcome", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 4.0f),
-        Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.0f), 180, 8, 8, 1, border_opacity);
+        Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 2.0f), 240, 8, 8, 1, border_opacity);
     canvas->AddComponents({
         {new Text("title", v, v, "GOAL DASH", 1, 2.5f * Screen::font_size, border_opacity), 2},
         {new Button("start", v, v, "Start", SelectMap, 2.0f * Screen::font_size, border_opacity), 1},
@@ -88,7 +89,7 @@ void Scene::Play()
         {new Text("time", v, v, Game::properties["show_time"].b ? "Time: 00:00:00.000" : "Time: ~_~", 1,
                   Screen::font_size, border_opacity),
          4},
-        {new Text("map", v, v, "Map: " + getFileName(Map::MapPlaylist[Map::current_map_id].second, 5), 1,
+        {new Text("map", v, v, "Map: " + getFileName(Map::MapPlaylist[Map::current_map_id].second, 12), 1,
                   Screen::font_size, border_opacity),
          3},
         {new Text("dif", v, v, "Difficulty: idk", 1, Screen::font_size, border_opacity), 5},
@@ -149,7 +150,7 @@ void Scene::MapMaking()
              },
              Screen::font_size, border_opacity),
          3},
-        {new Button("save", v, v, "Save", MapMaking::Save, Screen::font_size, border_opacity), 3},
+        {new Button("save", v, v, "Save", SaveChoice, Screen::font_size, border_opacity), 3},
         {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 3},
         {new Button("curmap", v, v, "No map selected", SelectMap, Screen::font_size, border_opacity), 6},
     });
@@ -723,7 +724,7 @@ void Scene::SelectMap()
         if (path.size() >= 4 && path.substr(path.size() - 4) == ".map")
         {
             Button *mp = new Button(
-                str(cnt) + "-" + path, v, v, getFileName(path, 5), []() {}, Screen::font_size, border_opacity);
+                str(cnt) + "-" + path, v, v, getFileName(path, 12), []() {}, Screen::font_size, border_opacity);
 
             if (cnt < (numOfMap + 1) / 2)
                 canvas10->AddComponent(mp);
@@ -743,11 +744,11 @@ void Scene::SelectMap()
                         else
                         {
                             int id = deselectMap(std::make_pair(mp->name, path));
-                            mp->label = getFileName(path, 5);
+                            mp->label = getFileName(path, 12);
                             for (int i = id; i < Map::MapPlaylist.size(); i++)
                             {
                                 UI::UIs[Map::MapPlaylist[i].first]->label =
-                                    getFileName(Map::MapPlaylist[i].second, 5) + " (" + str(i + 1) + ")";
+                                    getFileName(Map::MapPlaylist[i].second, 12) + " (" + str(i + 1) + ")";
                                 ((Button *)UI::UIs[Map::MapPlaylist[i].first])->Recalculate();
                             }
                         }
@@ -760,7 +761,9 @@ void Scene::SelectMap()
                 mp->onClick = std::bind(
                     [](std::string path) {
                         MapMaking::ChangeMap(path);
-                        Text::SetLabel("MapBuilding-0.curmap", "Current map: " + getFileName(path, 5));
+                        Map::MapPlaylist.clear();
+                        Map::MapPlaylist.push_back(std::make_pair("", path));
+                        Text::SetLabel("MapBuilding-0.curmap", "Current map: " + getFileName(path, 12));
                         UI::RemovingUI("SelectMap");
                         UI::SetVisible("MapBuilding-0", true);
                         UI::SetVisible("MapBuilding-1", true);
@@ -803,7 +806,7 @@ void Scene::SelectMap()
                              {
                                  btn->selected = current_toggle;
                                  deselectMap(tmpMaps[i]);
-                                 btn->label = getFileName(tmpMaps[i].second, 5);
+                                 btn->label = getFileName(tmpMaps[i].second, 12);
                              }
                          }
                          btn->Recalculate();
@@ -823,4 +826,122 @@ void Scene::SelectMap()
         });
         ((Button *)UI::UIs["SelectMap.last.ok"])->enabled = false;
     }
+}
+
+void Scene::SaveChoice()
+{
+    UI::SetVisible("MapBuilding-0", false);
+    UI::SetVisible("MapBuilding-1", false);
+    UI::SetVisible("Common", false);
+
+    MapMaking::allow_drawing = false;
+
+    Canvas *canvas = new Canvas(
+        "SaveChoice", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 4.0f, Screen::resolution.y / 6.0f),
+        Vector2(Screen::resolution.x / 2.0f, Screen::resolution.y / 3.0f), 240, 8, 8, 1, border_opacity);
+
+    if (Map::MapPlaylist.size())
+    {
+        canvas->AddComponent(new Button(
+            "tothismap", v, v, "Save current map",
+            []() {
+                bool success = MapMaking::Save(0);
+                if (success)
+                {
+                    UI::SetVisible("MapBuilding-0", true);
+                    UI::SetVisible("MapBuilding-1", true);
+                    UI::SetVisible("Common", true);
+                    UI::RemovingUI("SaveChoice");
+                    MapMaking::allow_drawing = true;
+                }
+                else
+                {
+                    print("TRY AGAIN");
+                }
+            },
+            Screen::font_size, border_opacity));
+    }
+
+    canvas->AddComponents({
+        {new Button("tonewmap", v, v, "Save as new map", SaveAs, Screen::font_size, border_opacity), 1},
+        {new Button(
+             "Back", v, v, "Go back",
+             []() {
+                 UI::SetVisible("MapBuilding-0", true);
+                 UI::SetVisible("MapBuilding-1", true);
+                 UI::SetVisible("Common", true);
+                 UI::RemovingUI("SaveChoice");
+                 MapMaking::allow_drawing = true;
+             },
+             Screen::font_size, border_opacity),
+         1},
+    });
+}
+
+void Scene::SaveAs()
+{
+    UI::SetVisible("SaveChoice", false);
+
+    Canvas *canvas0 = new Canvas(
+        "SaveAs", Screen::resolution / 2.0f - Vector2(Screen::resolution.x / 3.0f, Screen::resolution.y / 10.0f),
+        Vector2(Screen::resolution.x / 1.5f, Screen::resolution.y / 5.0f), 240, 8, 8, 1, border_opacity);
+
+    Canvas *canvas1 = new Canvas("NameInput", v, v, 0, 8, 0, 0, border_opacity);
+
+    Canvas *canvas2 = new Canvas("SaveOrBack", v, v, 0, 8, 0, 0, border_opacity);
+
+    canvas0->AddComponents({
+        {canvas1, 2},
+        {canvas2, 1},
+    });
+
+    canvas1->AddComponents({
+        {new Text("mapname", v, v, "Map name: ", 1, Screen::font_size, border_opacity), 1},
+        {new Text("curmapname", v, v, "", 1, Screen::font_size, border_opacity, 1), 3},
+    });
+
+    EventHandler::currentInputtingText = &UI::UIs["SaveAs.NameInput.curmapname"]->label;
+    EventHandler::currentMaximumInputLength = 12;
+
+    canvas2->AddComponents({
+        {new Button(
+             "ok", v, v, "Okay",
+             []() {
+                 std::string &label = UI::UIs["SaveAs.NameInput.curmapname"]->label;
+                 if (label.size())
+                 {
+                     bool success = MapMaking::Save(1, label);
+                     if (success)
+                     {
+                         UI::SetVisible("MapBuilding-0", true);
+                         UI::SetVisible("MapBuilding-1", true);
+                         UI::SetVisible("Common", true);
+                         UI::RemovingUI("SaveAs");
+                         UI::RemovingUI("SaveChoice");
+                         EventHandler::currentInputtingText = nullptr;
+                         Text::SetLabel("MapBuilding-0.curmap", "Current map: " + label);
+                         MapMaking::allow_drawing = true;
+                     }
+                     else
+                     {
+                         print("TRY AGAIN");
+                     }
+                 }
+                 else
+                 {
+                     print("TRY AGAIN");
+                 }
+             },
+             Screen::font_size, border_opacity),
+         1},
+        {new Button(
+             "back", v, v, "Go back",
+             []() {
+                 UI::SetVisible("SaveChoice", true);
+                 UI::RemovingUI("SaveAs");
+                 EventHandler::currentInputtingText = nullptr;
+             },
+             Screen::font_size, border_opacity),
+         1},
+    });
 }

@@ -12,5 +12,9 @@ class EventHandler
 
     static void PlayerInputHandler(Player *player, Keys &keys);
     static void MouseInputHandler();
+    static void TextInputHandler();
+    static std::string *currentInputtingText;
+    static int currentMaximumInputLength;
+
     static void Update();
 };

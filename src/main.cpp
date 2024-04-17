@@ -5,6 +5,9 @@ Game *game = nullptr;
 
 int main(int argc, char *argv[])
 {
+
+    system("cls");
+
     //----------------------------------------
 
     print("starting new game...");
