@@ -3,6 +3,7 @@
 #include "../event/input.h"
 #include "../event/ui.h"
 #include "../game.h"
+#include "filesystem"
 #include <fstream>
 #include <queue>
 #include <set>
@@ -680,6 +681,44 @@ void MapMaking::ChangeMap(std::string path)
     Clear(lf);
 }
 
+bool MapMaking::Delete()
+{
+    if (Map::MapPlaylist.size() == 0)
+        return 0;
+
+    try
+    {
+        if (std::filesystem::remove(Map::MapPlaylist.front().second))
+        {
+            print(Map::MapPlaylist.front().second, "deleted");
+            LinkedFunction *lf = new LinkedFunction(
+                []() {
+                    MapMaking::allow_drawing = true;
+                    MapMaking::ToggleBtns(true);
+                    print("done");
+                    return 1;
+                },
+                Map::GetMapDelay());
+            Clear(lf);
+            Text::SetLabel("MapBuilding-0.curmap", "No map selected");
+            Map::MapPlaylist.clear();
+            return 1;
+        }
+        else
+        {
+            print("failed to delete", Map::MapPlaylist.front().second);
+            return 0;
+        }
+    }
+    catch (const std::filesystem::filesystem_error &err)
+    {
+        print("error", err.what());
+        return 0;
+    }
+
+    return 1;
+}
+
 void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
@@ -699,9 +738,9 @@ void MapMaking::Clear(LinkedFunction *post_func)
 void MapMaking::ToggleBtns(bool toggle)
 {
     std::vector<std::string> btns = {
-        "MapBuilding-0.clear", "MapBuilding-0.save", "MapBuilding-0.random", "MapBuilding-0.curmap",
-        "MapBuilding-1.erase", "MapBuilding-1.wall", "MapBuilding-1.coin",   "MapBuilding-1.spawn",
-        "MapBuilding-1.win",   "Common.home",        "Common.settings",
+        "MapBuilding-0.clear",  "MapBuilding-0.save",  "MapBuilding-0.random", "MapBuilding-0.delete",
+        "MapBuilding-0.curmap", "MapBuilding-1.erase", "MapBuilding-1.wall",   "MapBuilding-1.coin",
+        "MapBuilding-1.spawn",  "MapBuilding-1.win",   "Common.home",          "Common.settings",
     };
     for (auto &btn : btns)
     {

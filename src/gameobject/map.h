@@ -48,6 +48,7 @@ class MapMaking
     static void Clear(LinkedFunction *post_func);
     static bool Save(bool as, std::string filename = "");
     static void ChangeMap(std::string path);
+    static bool Delete();
 
     static void Update();
 

@@ -149,9 +149,21 @@ void Scene::MapMaking()
                  MapMaking::Clear(lf);
              },
              Screen::font_size, border_opacity),
-         3},
-        {new Button("save", v, v, "Save", SaveChoice, Screen::font_size, border_opacity), 3},
-        {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 3},
+         2},
+        {new Button("save", v, v, "Save", SaveChoice, Screen::font_size, border_opacity), 2},
+        {new Button("random", v, v, "Random", MapMaking::Random, Screen::font_size, border_opacity), 2},
+        {new Button(
+             "delete", v, v, "Delete",
+             []() {
+                 bool success = MapMaking::Delete();
+                 if (success)
+                 {
+                 }
+                 else
+                     print("TRY AGAIN");
+             },
+             Screen::font_size, border_opacity),
+         2},
         {new Button("curmap", v, v, "No map selected", SelectMap, Screen::font_size, border_opacity), 6},
     });
 
