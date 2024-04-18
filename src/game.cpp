@@ -287,7 +287,8 @@ bool Game::LoadMedia()
 
     //----------------------------------------
 
-    std::vector<std::string> names = {"coin", "jump", "run", "fall", "click", "hover", "win", "spawn", "die"};
+    std::vector<std::string> names = {"coin", "jump",  "run", "fall",      "click",     "hover",
+                                      "win",  "spawn", "die", "win_scene", "lose_scene"};
     for (auto &name : names)
     {
         if (!LoadSound(name, "sound/" + name + ".ogg"))

@@ -73,6 +73,8 @@ void Scene::Play()
 {
     print("entering play mode...");
     Map::mode = 0;
+    Player::total_score = 0;
+    Player::hp = 100;
 
     UI::RemovingUI("Welcome");
     UI::RemovingUI("SelectMap");
@@ -989,4 +991,48 @@ void Scene::ShowMessage(std::string message)
         },
         1000);
     lf->Execute();
+}
+
+void Scene::ShowWinOrLose(bool win, int time)
+{
+    PlaySound(win ? "win_scene" : "lose_scene", CHANNEL_SPAWN_WIN, 0);
+
+    UI::RemovingUI("Play-0");
+    UI::RemovingUI("Play-1");
+    UI::SetVisible("Common", false);
+
+    Canvas *canvas0 = new Canvas("winorlosebg", Vector2(), Screen::resolution, 180, 0, Screen::resolution.x / 5.0f, 1);
+
+    Canvas *canvas1 = new Canvas("row1", v, v, 0, 0, 0);
+    Canvas *canvas2 = new Canvas("row2", v, v, 240, 0, 0, 1, border_opacity);
+    Canvas *canvas3 = new Canvas("row3", v, v, 0, 0, 0);
+    canvas0->AddComponents({
+        {canvas1, 1},
+        {canvas2, 4},
+        {canvas3, 1},
+    });
+
+    canvas2->AddComponents({
+        {new Text("state", v, v, win ? "You passed!" : "You failed, try again next time!", 1, 1.5 * Screen::font_size),
+         2},
+        {new Text("score", v, v, "Scored: " + str(Player::total_score), 1, Screen::font_size), 1},
+        {new Text("time", v, v, "In: " + FormatMS(time), 1, Screen::font_size), 1},
+        {new Button(
+             "again", v, v, "Play again",
+             []() {
+                 Map::current_map_id = 0;
+                 UI::RemovingUI("winorlosebg");
+                 Scene::Play();
+             },
+             Screen::font_size, border_opacity),
+         1},
+        {new Button(
+             "home", v, v, "Go home",
+             []() {
+                 UI::RemovingUI("winorlosebg");
+                 Scene::Welcome();
+             },
+             Screen::font_size, border_opacity),
+         1},
+    });
 }

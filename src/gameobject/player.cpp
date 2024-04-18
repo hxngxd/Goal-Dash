@@ -349,41 +349,51 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                                   0) &&
                 !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::properties["tile_scale"].f)
             {
-                if (Map::current_map_id < Map::MapPlaylist.size() - 1)
+                print("player won");
+                won = true;
+                Map::current_map_id++;
+
+                if (Map::current_map_id < Map::MapPlaylist.size())
                 {
-                    Map::current_map_id++;
                     Text::SetLabel("Play-0.map",
                                    "Map: " + getFileName(Map::MapPlaylist[Map::current_map_id].second, 5));
                     MapMaking::ToggleBtns(false);
-                    print("player won");
-                    won = true;
-                    print("deleting player...");
-                    LinkedFunction *lf = new LinkedFunction(
-                        []() {
-                            return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
-                        },
-                        250);
-                    lf->NextFunction([]() {
-                        if (Game::properties["sound"].b)
-                            PlaySound("win", CHANNEL_SPAWN_WIN, 0);
-                        Game::time[1] = SDL_GetTicks();
-                        delete Game::player;
-                        Game::player = nullptr;
+                }
+
+                print("deleting player...");
+                LinkedFunction *lf = new LinkedFunction(
+                    []() {
+                        return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
+                    },
+                    250);
+                lf->NextFunction([]() {
+                    if (Game::properties["sound"].b)
+                        PlaySound("win", CHANNEL_SPAWN_WIN, 0);
+                    Game::time[1] = SDL_GetTicks();
+                    delete Game::player;
+                    Game::player = nullptr;
+                    if (Map::current_map_id < Map::MapPlaylist.size())
+                    {
                         MapMaking::ChangeMap(Map::MapPlaylist[Map::current_map_id].second);
-                        return 1;
-                    });
+                    }
+                    else
+                    {
+                        MapMaking::Clear(nullptr);
+                        Scene::ShowWinOrLose(1, SDL_GetTicks() - Game::time[0]);
+                    }
+                    return 1;
+                });
+
+                if (Map::current_map_id < Map::MapPlaylist.size())
+                {
                     lf->NextFunction(
                         []() {
                             Scene::SpawnPlayer();
                             return 1;
                         },
                         Map::GetMapDelay(750));
-                    lf->Execute();
                 }
-                else
-                {
-                    print("HAHAHAHA");
-                }
+                lf->Execute();
             }
         }
         else if (type & SPAWN)
@@ -432,6 +442,21 @@ void Player::Jump()
                 {
                     hp = 0;
                     PlaySound("die", CHANNEL_DIE, 0);
+                    print("deleting player...");
+                    LinkedFunction *lf = new LinkedFunction(
+                        []() {
+                            return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
+                        },
+                        250);
+                    lf->NextFunction([]() {
+                        Game::time[1] = SDL_GetTicks();
+                        delete Game::player;
+                        Game::player = nullptr;
+                        MapMaking::Clear(nullptr);
+                        Scene::ShowWinOrLose(0, SDL_GetTicks() - Game::time[0]);
+                        return 1;
+                    });
+                    lf->Execute();
                 }
 
                 if (Game::properties["show_health"].b)

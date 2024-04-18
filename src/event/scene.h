@@ -15,4 +15,5 @@ class Scene
     static void SaveChoice();
     static void SaveAs();
     static void ShowMessage(std::string message);
+    static void ShowWinOrLose(bool win, int time);
 };

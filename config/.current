@@ -12,7 +12,7 @@
 <float> {player_collision_dist=1}
 <bool> {player_immortal=0}
 <float> {player_jump_speed=1}
-<float> {player_move_speed=1.00496}
+<float> {player_move_speed=2.5}
 <string> {player_name=Nguyen Tuong Hung}
 <bool> {point_grid=0}
 <int> {ray_opacity=180}
