@@ -20,7 +20,7 @@ Background::Background(std::string name, float scale)
 bool Background::loadBackground(std::string path, Vector2 realSize)
 {
     std::string name = "bg-" + str(Backgrounds.size());
-    float scale = Backgrounds.size() * 0.05f + 1.05f;
+    float scale = Backgrounds.size() * 0.1f + 1.1f;
     if (Sprites.find(name) == Sprites.end())
     {
         if (!LoadSprite(name, path, 1, realSize))

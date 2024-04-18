@@ -220,6 +220,7 @@ void Scene::Common()
                                  MapMaking::current_drawing_type = -1;
                                  UI::RemovingUI("MapBuilding-0");
                                  UI::RemovingUI("MapBuilding-1");
+                                 Map::MapPlaylist.clear();
                              }
                              UI::SetVisible("Common", false);
                              MapMaking::ToggleBtns(true);
@@ -827,6 +828,18 @@ void Scene::SelectMap()
         });
         ((Button *)UI::UIs["SelectMap.last.ok"])->enabled = false;
     }
+    else
+    {
+        canvas0->AddComponent(new Button(
+            "goback", v, v, "Back",
+            []() {
+                UI::RemovingUI("SelectMap");
+                UI::SetVisible("MapBuilding-0", true);
+                UI::SetVisible("MapBuilding-1", true);
+                UI::SetVisible("Common", true);
+            },
+            Screen::font_size, border_opacity));
+    }
 }
 
 void Scene::SaveChoice()
@@ -866,7 +879,7 @@ void Scene::SaveChoice()
     canvas->AddComponents({
         {new Button("tonewmap", v, v, "Save as new map", SaveAs, Screen::font_size, border_opacity), 1},
         {new Button(
-             "Back", v, v, "Go back",
+             "back", v, v, "Back",
              []() {
                  UI::SetVisible("MapBuilding-0", true);
                  UI::SetVisible("MapBuilding-1", true);
@@ -889,7 +902,7 @@ void Scene::SaveAs()
 
     Canvas *canvas1 = new Canvas("NameInput", v, v, 0, 8, 0, 0, border_opacity);
 
-    Canvas *canvas2 = new Canvas("SaveOrBack", v, v, 0, 8, 0, 0, border_opacity);
+    Canvas *canvas2 = new Canvas("SaveOrBack", v, v, 0, 8, 0, 0);
 
     canvas0->AddComponents({
         {canvas1, 2},
@@ -897,8 +910,8 @@ void Scene::SaveAs()
     });
 
     canvas1->AddComponents({
-        {new Text("mapname", v, v, "Map name: ", 1, Screen::font_size, border_opacity), 1},
-        {new Text("curmapname", v, v, "", 1, Screen::font_size, border_opacity, 1), 3},
+        {new Text("mapname", v, v, "Map name: ", 1, Screen::font_size), 1},
+        {new Text("curmapname", v, v, "", 1, Screen::font_size, 0, 1), 3},
     });
 
     EventHandler::currentInputtingText = &UI::UIs["SaveAs.NameInput.curmapname"]->label;

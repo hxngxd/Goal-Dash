@@ -684,9 +684,9 @@ void MapMaking::Clear(LinkedFunction *post_func)
 {
     print("clearing map...");
     Text::SetLabel("MapBuilding-0.curmap", "No map selected");
-    Map::MapPlaylist.clear();
     if (Map::mode == 1)
     {
+        Map::MapPlaylist.clear();
         allow_drawing = false;
         ToggleBtns(false);
     }
