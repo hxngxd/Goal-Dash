@@ -83,7 +83,7 @@ void UI::Update()
 {
     for (auto &ui : UIs)
     {
-        if (!ui.second || !ui.second->visible)
+        if (!ui.second || !ui.second->visible || ui.second->name == "msgbg" || ui.second->name == "msg")
             continue;
         if (ui.second->type == CANVAS)
         {
@@ -93,7 +93,7 @@ void UI::Update()
     }
     for (auto &ui : UIs)
     {
-        if (!ui.second || !ui.second->visible)
+        if (!ui.second || !ui.second->visible || ui.second->name == "msgbg" || ui.second->name == "msgbg.msg")
             continue;
         if (ui.second->type == BUTTON)
         {
@@ -116,6 +116,11 @@ void UI::Update()
             tg->Update();
         }
     }
+
+    if (UIs.find("msgbg") != UIs.end())
+        ((Canvas *)UIs["msgbg"])->Update();
+    if (UIs.find("msgbg.msg") != UIs.end())
+        ((Text *)UIs["msgbg.msg"])->Update();
 }
 
 UI::UI(int type, std::string name, const Vector2 &position, const Vector2 &size, std::string label, int label_alignment,

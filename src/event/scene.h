@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 class Scene
 {
@@ -13,4 +14,5 @@ class Scene
     static void SelectMap();
     static void SaveChoice();
     static void SaveAs();
+    static void ShowMessage(std::string message);
 };

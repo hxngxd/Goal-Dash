@@ -7,6 +7,7 @@ Vector2 EventHandler::MousePosition;
 bool EventHandler::isMouseLeft = false;
 std::map<std::string, std::function<void()>> EventHandler::MouseDownActions;
 std::map<std::string, std::function<void()>> EventHandler::MouseUpActions;
+bool EventHandler::allow_ui = true;
 
 void EventHandler::PlayerInputHandler(Player *player, Keys &keys)
 {
@@ -85,13 +86,16 @@ void EventHandler::Update()
         if (Game::event.type == SDL_QUIT)
             game->running = false;
 
-        MouseInputHandler();
-
         if (Game::player)
             PlayerInputHandler(Game::player, Game::properties["keyboard_layout"].b ? right_keys : left_keys);
 
-        if (currentInputtingText)
-            TextInputHandler();
+        if (allow_ui)
+        {
+            MouseInputHandler();
+
+            if (currentInputtingText)
+                TextInputHandler();
+        }
     }
 }
 

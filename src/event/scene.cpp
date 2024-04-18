@@ -157,10 +157,9 @@ void Scene::MapMaking()
              []() {
                  bool success = MapMaking::Delete();
                  if (success)
-                 {
-                 }
+                     ShowMessage("Map deleted.");
                  else
-                     print("TRY AGAIN");
+                     ShowMessage("Failed to delete map.");
              },
              Screen::font_size, border_opacity),
          2},
@@ -879,10 +878,11 @@ void Scene::SaveChoice()
                     UI::SetVisible("Common", true);
                     UI::RemovingUI("SaveChoice");
                     MapMaking::allow_drawing = true;
+                    ShowMessage("Map saved.");
                 }
                 else
                 {
-                    print("TRY AGAIN");
+                    ShowMessage("Failed to save map.");
                 }
             },
             Screen::font_size, border_opacity));
@@ -947,15 +947,16 @@ void Scene::SaveAs()
                          EventHandler::currentInputtingText = nullptr;
                          Text::SetLabel("MapBuilding-0.curmap", "Current map: " + label);
                          MapMaking::allow_drawing = true;
+                         ShowMessage("Map saved.");
                      }
                      else
                      {
-                         print("TRY AGAIN");
+                         ShowMessage("Failed to save map.");
                      }
                  }
                  else
                  {
-                     print("TRY AGAIN");
+                     ShowMessage("Failed to save map.");
                  }
              },
              Screen::font_size, border_opacity),
@@ -970,4 +971,22 @@ void Scene::SaveAs()
              Screen::font_size, border_opacity),
          1},
     });
+}
+
+void Scene::ShowMessage(std::string message)
+{
+    EventHandler::allow_ui = false;
+    Canvas *canvas0 =
+        new Canvas("msgbg", Vector2(), Screen::resolution, 200, 0, Screen::resolution.x / 4.0f, 1, border_opacity);
+
+    canvas0->AddComponent(new Text("msg", v, v, message, 1, Screen::font_size));
+
+    LinkedFunction *lf = new LinkedFunction(
+        []() {
+            UI::RemovingUI("msgbg");
+            EventHandler::allow_ui = true;
+            return 1;
+        },
+        1000);
+    lf->Execute();
 }

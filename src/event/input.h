@@ -9,6 +9,7 @@ class EventHandler
     static bool isMouseLeft;
     static std::map<std::string, std::function<void()>> MouseDownActions;
     static std::map<std::string, std::function<void()>> MouseUpActions;
+    static bool allow_ui;
 
     static void PlayerInputHandler(Player *player, Keys &keys);
     static void MouseInputHandler();
