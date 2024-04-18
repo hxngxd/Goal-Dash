@@ -37,7 +37,7 @@ Player::Player(Vector2 position)
 
 Player::~Player()
 {
-    StopSound(CHANNEL_RUN);
+    StopSound(CHANNEL_RUN_BUILD);
 }
 
 void Player::Update()
@@ -157,22 +157,22 @@ void Player::MoveRightLeft()
     {
         if (!collide_down.second)
         {
-            if (Mix_Playing(CHANNEL_RUN))
-                StopSound(CHANNEL_RUN);
+            if (Mix_Playing(CHANNEL_RUN_BUILD))
+                StopSound(CHANNEL_RUN_BUILD);
         }
         else
         {
-            if (!Mix_Playing(CHANNEL_RUN))
+            if (!Mix_Playing(CHANNEL_RUN_BUILD))
             {
                 if (Game::properties["sound"].b)
-                    PlaySound("run", CHANNEL_RUN, -1);
+                    PlaySound("run", CHANNEL_RUN_BUILD, -1);
             }
         }
     }
     else
     {
-        if (Mix_Playing(CHANNEL_RUN))
-            StopSound(CHANNEL_RUN);
+        if (Mix_Playing(CHANNEL_RUN_BUILD))
+            StopSound(CHANNEL_RUN_BUILD);
     }
 }
 
@@ -293,8 +293,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
         {
             Screen::SetDrawColor(Color::yellow(Game::properties["ray_opacity"].i));
 
-            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
-                                  Vector2(Screen::tile_size * 0.6f), 0))
+            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
+                                  0))
             {
                 current_score++;
                 total_score++;
@@ -317,7 +317,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                 LinkedFunction *lf = new LinkedFunction(std::bind(
                     [](Tile *tile) {
                         Animate(tile, "coin");
-                        return TransformValue(&tile->scale, Game::properties["tile_scale"].f * 0.6f,
+                        return TransformValue(&tile->scale, Game::properties["tile_scale"].f,
                                               Game::properties["tile_rescale_speed"].f) &&
                                TransformVector2(&tile->position, Vector2(Screen::tile_size * 2, 0), 0.05f, 5);
                     },
@@ -335,6 +335,56 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                         return 1;
                     },
                     flying_coin));
+                lf->Execute();
+
+                float wait = 0.1f;
+                Map::RemoveTile(nextTile.y, nextTile.x, wait, false);
+            }
+        }
+        else if (type & HEALTH)
+        {
+            Screen::SetDrawColor(Color::blue(Game::properties["ray_opacity"].i));
+
+            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
+                                  0))
+            {
+                hp += 7;
+                if (hp >= 100)
+                    hp = 100;
+
+                if (Game::properties["show_health"].b)
+                    Text::SetLabel("Play-1.hp", "Health: " + str(hp));
+
+                print("player health", hp);
+
+                if (Game::properties["sound"].b)
+                    PlaySound("health", CHANNEL_HEALTH, 0);
+
+                Tile *flying_health = new Tile(Map::Tiles[nextTile.y][nextTile.x].second->position, Screen::tile_size);
+                LinkedFunction *lf = new LinkedFunction(std::bind(
+                    [](Tile *tile) {
+                        Animate(tile, "health");
+                        return TransformValue(&tile->scale, Game::properties["tile_scale"].f,
+                                              Game::properties["tile_rescale_speed"].f) &&
+                               TransformVector2(
+                                   &tile->position,
+                                   Vector2(Screen::tile_size * 2, Screen::tile_size * (Screen::map_size - 1)), 0.05f,
+                                   5);
+                    },
+                    flying_health));
+                lf->NextFunction(std::bind(
+                    [](Tile *tile) {
+                        Animate(tile, "health");
+                        return TransformValue<float>(&tile->scale, 0, Game::properties["tile_rescale_speed"].f);
+                    },
+                    flying_health));
+                lf->NextFunction(std::bind(
+                    [](Tile *tile) {
+                        delete tile;
+                        tile = nullptr;
+                        return 1;
+                    },
+                    flying_health));
                 lf->Execute();
 
                 float wait = 0.1f;
@@ -368,7 +418,7 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     250);
                 lf->NextFunction([]() {
                     if (Game::properties["sound"].b)
-                        PlaySound("win", CHANNEL_SPAWN_WIN, 0);
+                        PlaySound("win", CHANNEL_SPAWN_WIN_DIE, 0);
                     Game::time[1] = SDL_GetTicks();
                     delete Game::player;
                     Game::player = nullptr;
@@ -441,7 +491,7 @@ void Player::Jump()
                 if (hp <= 0)
                 {
                     hp = 0;
-                    PlaySound("die", CHANNEL_DIE, 0);
+                    PlaySound("die", CHANNEL_SPAWN_WIN_DIE, 0);
                     print("deleting player...");
                     LinkedFunction *lf = new LinkedFunction(
                         []() {
@@ -458,6 +508,8 @@ void Player::Jump()
                     });
                     lf->Execute();
                 }
+
+                print("player health", hp);
 
                 if (Game::properties["show_health"].b)
                     Text::SetLabel("Play-1.hp", "Health: " + str(hp));

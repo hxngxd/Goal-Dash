@@ -132,6 +132,8 @@ void Scene::MapMaking()
     Map::mode = 1;
     MapMaking::allow_drawing = true;
     UI::RemovingUI("Welcome");
+    Map::count_types.clear();
+    Map::MapPlaylist.clear();
 
     Canvas *canvas0 = new Canvas("MapBuilding-0", v, Vector2(Screen::tile_size * 15, Screen::tile_size), 255, 0, 0, 0,
                                  border_opacity);
@@ -181,6 +183,9 @@ void Scene::MapMaking()
          1},
         {new Button("wall", v, v, "WALL", std::bind(change_drawing_type, WALL), Screen::font_size, border_opacity), 1},
         {new Button("coin", v, v, "COIN", std::bind(change_drawing_type, COIN), Screen::font_size, border_opacity), 1},
+        {new Button("health", v, v, "HEALTH", std::bind(change_drawing_type, HEALTH), Screen::font_size,
+                    border_opacity),
+         1},
         {new Button("spawn", v, v, "SPAWN", std::bind(change_drawing_type, SPAWN), Screen::font_size, border_opacity),
          1},
         {new Button("win", v, v, "WIN", std::bind(change_drawing_type, WIN), Screen::font_size, border_opacity), 1},
@@ -295,7 +300,7 @@ void Scene::SpawnPlayer()
         []() {
             print("creating player...");
             if (Game::properties["sound"].b)
-                PlaySound("spawn", CHANNEL_SPAWN_WIN, 0);
+                PlaySound("spawn", CHANNEL_SPAWN_WIN_DIE, 0);
             Game::player = new Player(Map::spawn_tile * Screen::tile_size);
             Game::time[2] = SDL_GetTicks();
             if (Game::time[1])
@@ -328,7 +333,7 @@ void Scene::Settings()
 
     std::vector<Canvas *> canvases = {canvas0};
 
-    for (int i = 1; i <= 15; i++)
+    for (int i = 1; i <= 16; i++)
     {
         canvases.push_back(new Canvas("Section-" + str(i), v, v, 0, 0, 0, 0, border_opacity));
         canvas0->AddComponent(canvases[i]);
@@ -497,7 +502,7 @@ void Scene::Settings()
     canvases[13]->AddComponents({
         {new Text("wallpossibility", v, v, "Map building: Wall (%)", 0, Screen::font_size), 2},
         {new Slider(
-             "wallpossibilityslider", v, v, 0.0f, 35.0f, Game::properties["wall_possibility"].i, 1.0f,
+             "wallpossibilityslider", v, v, 0.0f, 30.0f, Game::properties["wall_possibility"].i, 1.0f,
              [](float &value) { Game::properties["wall_possibility"].i = (int)value; }, Screen::font_size),
          3},
     });
@@ -505,12 +510,20 @@ void Scene::Settings()
     canvases[14]->AddComponents({
         {new Text("coinpossibility", v, v, "Map building: Coin (%)", 0, Screen::font_size), 2},
         {new Slider(
-             "coinpossibilityslider", v, v, 5.0f, 50.0f, Game::properties["coin_possibility"].i, 1.0f,
+             "coinpossibilityslider", v, v, 1.0f, 30.0f, Game::properties["coin_possibility"].i, 1.0f,
              [](float &value) { Game::properties["coin_possibility"].i = (int)value; }, Screen::font_size),
          3},
     });
 
     canvases[15]->AddComponents({
+        {new Text("coinpossibility", v, v, "Map building: Health (%)", 0, Screen::font_size), 2},
+        {new Slider(
+             "coinpossibilityslider", v, v, 0.0f, 30.0f, Game::properties["health_possibility"].i, 1.0f,
+             [](float &value) { Game::properties["health_possibility"].i = (int)value; }, Screen::font_size),
+         3},
+    });
+
+    canvases[16]->AddComponents({
         {new Button("save", v, v, "Save", Game::SaveConfig, Screen::font_size, border_opacity), 2},
         {new Button(
              "default", v, v, "Default settings (also quit game)",
@@ -995,7 +1008,8 @@ void Scene::ShowMessage(std::string message)
 
 void Scene::ShowWinOrLose(bool win, int time)
 {
-    PlaySound(win ? "win_scene" : "lose_scene", CHANNEL_SPAWN_WIN, 0);
+    if (Game::properties["sound"].b)
+        PlaySound(win ? "win_scene" : "lose_scene", CHANNEL_SPAWN_WIN_DIE, 0);
 
     UI::RemovingUI("Play-0");
     UI::RemovingUI("Play-1");
@@ -1016,7 +1030,7 @@ void Scene::ShowWinOrLose(bool win, int time)
         {new Text("state", v, v, win ? "You passed!" : "You failed, try again next time!", 1, 1.5 * Screen::font_size),
          2},
         {new Text("score", v, v, "Scored: " + str(Player::total_score), 1, Screen::font_size), 1},
-        {new Text("time", v, v, "In: " + FormatMS(time), 1, Screen::font_size), 1},
+        {new Text("time", v, v, "In: " + FormatMS(time) + "s", 1, Screen::font_size), 1},
         {new Button(
              "again", v, v, "Play again",
              []() {

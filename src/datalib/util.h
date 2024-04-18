@@ -208,7 +208,8 @@ enum map_types
     SPAWN = 1,
     WIN = 2,
     WALL = 4,
-    COIN = 8
+    COIN = 8,
+    HEALTH = 16,
 };
 
 enum animation_states

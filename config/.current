@@ -5,14 +5,15 @@
 <string> {font=fonts/Gotu-Regular.ttf}
 <float> {fps=60}
 <float> {gravity=10}
+<int> {health_possibility=0}
 <bool> {keyboard_layout=0}
 <float> {map_delay=15}
-<string> {music=sound\musics\bg_music0.mp3}
+<string> {music=off}
 <float> {player_acceleration=1}
 <float> {player_collision_dist=1}
 <bool> {player_immortal=0}
 <float> {player_jump_speed=1}
-<float> {player_move_speed=2.5}
+<float> {player_move_speed=0.99078}
 <string> {player_name=Nguyen Tuong Hung}
 <bool> {point_grid=0}
 <int> {ray_opacity=180}
@@ -23,5 +24,5 @@
 <bool> {sound=1}
 <float> {tile_rescale_speed=0.075}
 <float> {tile_scale=1}
-<int> {volume=32}
+<int> {volume=56}
 <int> {wall_possibility=26}

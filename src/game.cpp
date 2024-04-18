@@ -255,7 +255,9 @@ bool Game::LoadMedia()
 {
     //----------------------------------------
 
-    if (!LoadSprite("coin", "img/coin.png", 5, Vector2(16)))
+    if (!LoadSprite("coin", "img/coin.png", 8, Vector2(32)))
+        return 0;
+    if (!LoadSprite("health", "img/health.png", 7, Vector2(32)))
         return 0;
     if (!LoadSprite("idle", "img/idle.png", 10, Vector2(48)))
         return 0;
@@ -287,8 +289,10 @@ bool Game::LoadMedia()
 
     //----------------------------------------
 
-    std::vector<std::string> names = {"coin", "jump",  "run", "fall",      "click",     "hover",
-                                      "win",  "spawn", "die", "win_scene", "lose_scene"};
+    std::vector<std::string> names = {
+        "coin", "health", "jump", "run",       "fall",       "click", "hover",
+        "win",  "spawn",  "die",  "win_scene", "lose_scene", "build",
+    };
     for (auto &name : names)
     {
         if (!LoadSound(name, "sound/" + name + ".ogg"))

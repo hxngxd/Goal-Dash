@@ -1,4 +1,5 @@
 #include "../datalib/PerlinNoise/PerlinNoise.hpp"
+#include "../datalib/mixer.h"
 #include "../datalib/sprite.h"
 #include "../event/input.h"
 #include "../event/ui.h"
@@ -27,7 +28,7 @@ Tile::Tile(Vector2 position, Vector2 size)
     this->size = size;
     this->current_frame = 0;
     this->animation_delay = 0;
-    this->animation_speed = 10;
+    this->animation_speed = 8;
     this->scale = 0;
 }
 
@@ -102,13 +103,12 @@ void Map::AddTile(int i, int j, float &wait, bool animation)
     {
         LinkedFunction *lf =
             new LinkedFunction(std::bind(TransformValue<float>, &Tiles[i][j].second->scale,
-                                         Game::properties["tile_scale"].f * (Tiles[i][j].first == COIN ? 0.6f : 1.0f),
-                                         Game::properties["tile_rescale_speed"].f),
+                                         Game::properties["tile_scale"].f, Game::properties["tile_rescale_speed"].f),
                                wait);
         lf->Execute();
     }
     else
-        Tiles[i][j].second->scale = Game::properties["tile_scale"].f * (Tiles[i][j].first == COIN ? 0.6f : 1.0f);
+        Tiles[i][j].second->scale = Game::properties["tile_scale"].f;
     wait += Game::properties["map_delay"].f;
 }
 
@@ -229,6 +229,9 @@ void Map::Update()
                 Screen::SetDrawColor(Color::yellow(Game::properties["ray_opacity"].i));
                 Animate(Tiles[i][j].second, "coin");
                 break;
+            case HEALTH:
+                Screen::SetDrawColor(Color::blue(Game::properties["ray_opacity"].i));
+                Animate(Tiles[i][j].second, "health");
             default:
                 break;
             }
@@ -260,13 +263,16 @@ void MapMaking::Update()
                 Screen::SetDrawColor(Color::green(64));
                 break;
             case SPAWN:
-                Screen::SetDrawColor(Color::blue(64));
+                Screen::SetDrawColor(Color::cyan(64));
                 break;
             case WALL:
                 Screen::SetDrawColor(Color::white(64));
                 break;
             case COIN:
                 Screen::SetDrawColor(Color::yellow(64));
+                break;
+            case HEALTH:
+                Screen::SetDrawColor(Color::blue(64));
                 break;
             case EMPTY:
                 Screen::SetDrawColor(Color::red(64));
@@ -278,6 +284,15 @@ void MapMaking::Update()
         }
         else
             current_mouse_tile = Vector2(-1);
+
+        auto f = []() {
+            Map::nempty++;
+            if (Game::properties["sound"].b)
+            {
+                Mix_Volume(CHANNEL_RUN_BUILD, IntegralRandom<int>(1, 127));
+                PlaySound("build", CHANNEL_RUN_BUILD, 0);
+            }
+        };
 
         if (EventHandler::isMouseLeft && allow_drawing)
         {
@@ -294,6 +309,7 @@ void MapMaking::Update()
                         {
                             Map::Tiles[mi][mj].first = current_drawing_type;
                             Map::AddTile(mi, mj, wait, 0);
+                            f();
                         }
                     }
                     else if (current_drawing_type == WIN)
@@ -302,14 +318,15 @@ void MapMaking::Update()
                         {
                             Map::Tiles[mi][mj].first = current_drawing_type;
                             Map::AddTile(mi, mj, wait, 0);
+                            f();
                         }
                     }
                     else
                     {
                         Map::Tiles[mi][mj].first = current_drawing_type;
                         Map::AddTile(mi, mj, wait, 0);
+                        f();
                     }
-                    Map::nempty++;
                 }
             }
             else
@@ -318,6 +335,11 @@ void MapMaking::Update()
                 {
                     Map::RemoveTile(mi, mj, wait, 0);
                     Map::nempty--;
+                    if (Game::properties["sound"].b)
+                    {
+                        Mix_Volume(CHANNEL_RUN_BUILD, IntegralRandom<int>(1, 127));
+                        PlaySound("build", CHANNEL_RUN_BUILD, 0);
+                    }
                 }
             }
         }
@@ -453,6 +475,23 @@ void MapMaking::Random()
                     {
                         Map::Tiles[i][j].first = COIN;
                         Map::nempty++;
+                    }
+                }
+            }
+
+            // Generate health
+            if (Game::properties["health_possibility"].i)
+            {
+                for (int i = 1; i < Screen::map_size - 1; i++)
+                {
+                    for (int j = 1; j < Screen::map_size - 1; j++)
+                    {
+                        if (visitable[i][j] && Map::Tiles[i][j].first == EMPTY &&
+                            RandomChoice(Game::properties["health_possibility"].i))
+                        {
+                            Map::Tiles[i][j].first = HEALTH;
+                            Map::nempty++;
+                        }
                     }
                 }
             }
