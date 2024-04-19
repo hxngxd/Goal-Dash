@@ -1,4 +1,5 @@
 #include "util.h"
+#include "iomanip"
 #include "msg.h"
 
 //----------------------------------------
@@ -7,7 +8,53 @@ TTF_Font *myFont = nullptr;
 
 //----------------------------------------
 
-RandomGenerator<Uint32> RandUint32;
+std::string strRound(float value, int n)
+{
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(n) << value;
+    return out.str();
+}
+
+//----------------------------------------
+
+std::string getFileName(std::string path, int maximum_length)
+{
+    size_t lastSlash = path.find_last_of('\\');
+    std::string name = path.substr(lastSlash + 1);
+
+    size_t lastDot = name.find_last_of('.');
+    if (lastDot != std::string::npos)
+        name = name.substr(0, lastDot);
+
+    if (name.size() > maximum_length)
+        return name.substr(0, maximum_length) + "...";
+    else
+        return name;
+}
+
+//----------------------------------------
+
+bool RandomChoice(int possibility)
+{
+    int n = IntegralRandom<int>(0, 100);
+    return n <= possibility;
+}
+
+//----------------------------------------
+
+std::string FormatMS(int ms)
+{
+    int hour = ms / 3600000;
+    int minute = (ms % 3600000) / 60000;
+    int second = (ms % 60000) / 1000;
+    int millisecond = ms % 1000;
+
+    std::ostringstream out;
+    out << std::setfill('0') << std::setw(2) << hour << ":" << std::setw(2) << minute << ":" << std::setw(2) << second
+        << "." << std::setw(3) << millisecond;
+
+    return out.str();
+}
 
 //----------------------------------------
 
@@ -36,14 +83,24 @@ Vector2 Rect::GetCenter(const Vector2 &position, const Vector2 &size)
 SDL_Rect Rect::Rescale(const Vector2 &position, const Vector2 &size, float scale)
 {
     SDL_Rect newRect;
-    newRect.x = position.x + (1 - scale) * size.x * 0.5;
-    newRect.y = position.y + (1 - scale) * size.y * 0.5;
-    newRect.w = scale * size.x;
-    newRect.h = scale * size.y;
+    newRect.x = position.x + ceil((1.0f - scale) * size.x * 0.5);
+    newRect.y = position.y + ceil((1.0f - scale) * size.y * 0.5);
+    newRect.w = ceil(scale * size.x);
+    newRect.h = ceil(scale * size.y);
     return newRect;
 }
 
 SDL_Rect Rect::Rescale(SDL_Rect rect, float scale)
 {
     return Rescale(Vector2(rect.x, rect.y), Vector2(rect.w, rect.h), scale);
+}
+
+Vector2 Rect::GetPosition(SDL_Rect rect)
+{
+    return Vector2(rect.x, rect.y);
+}
+
+Vector2 Rect::GetSize(SDL_Rect rect)
+{
+    return Vector2(rect.w, rect.h);
 }

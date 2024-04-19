@@ -4,9 +4,10 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 
 extern std::map<std::string, Mix_Chunk *> Sounds;
-extern std::map<std::string, Mix_Music *> Musics;
+extern Mix_Music *Music;
 
 bool LoadSound(std::string name, std::string path);
 
@@ -16,17 +17,19 @@ void StopSound(int channel);
 
 void StopAllSound();
 
-bool LoadMusic(std::string name, std::string path);
+bool LoadMusic(std::string path);
 
-void PlayMusic(std::string name, int loop);
+void PlayMusic(int loop);
 
 void StopMusic();
 
 enum mixer_channels
 {
     CHANNEL_JUMP_FALL = 0,
-    CHANNEL_RUN,
-    CHANNEL_BUTTON,
+    CHANNEL_RUN_BUILD,
+    CHANNEL_BUTTON_HOVER,
+    CHANNEL_BUTTON_CLICK,
     CHANNEL_COIN,
-    CHANNEL_SPAWN_WIN
+    CHANNEL_HEALTH,
+    CHANNEL_SPAWN_WIN_DIE,
 };

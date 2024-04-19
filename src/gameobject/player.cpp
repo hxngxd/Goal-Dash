@@ -1,10 +1,16 @@
 #include "../datalib/mixer.h"
 #include "../datalib/sprite.h"
 #include "../datalib/util.h"
+#include "../event/ui.h"
 #include "../game.h"
 #include "gameobject.h"
+#include "map.h"
 #include <cstring>
+#include <set>
 #include <string>
+
+int Player::total_score = 0;
+int Player::hp = 100;
 
 Player::Player(Vector2 position)
 {
@@ -13,18 +19,25 @@ Player::Player(Vector2 position)
     this->size = Vector2(Screen::tile_size);
     this->scale = 0;
     this->animation_speed = 15;
-    this->currentFrame = 0;
-    this->maxFrames = 0;
+    this->current_frame = 0;
+    this->max_frames = 0;
     this->animation_delay = 0;
     this->current_state = this->previous_state = IDLE;
     this->direction = RIGHT;
     this->key_right = this->key_left = this->key_down = this->key_up = 0;
-    memset(isDamaged, 0, sizeof(isDamaged));
+    this->current_score = 0;
+    this->win_score = Map::count_types[COIN];
+    this->won = false;
+    if (Game::properties["reset_health"].b)
+    {
+        hp = 100;
+        Text::SetLabel("Play-1.hp", "Health: " + str(hp));
+    }
 }
 
 Player::~Player()
 {
-    StopSound(CHANNEL_RUN);
+    StopSound(CHANNEL_RUN_BUILD);
 }
 
 void Player::Update()
@@ -33,29 +46,20 @@ void Player::Update()
 
     MoveRightLeft();
 
-    if (Game::Properties["no_gravity"].b)
+    if (Game::properties["gravity"].f == 0.0f)
         MoveDownUp();
     else
         Jump();
 
     Collision();
 
-    if (Game::Properties["draw_ray"].b)
-        DrawBox();
+    DrawBox();
 }
 
 void Player::Animation()
 {
-    float currentTicks = SDL_GetTicks();
-    if (currentTicks > animation_delay + 1000 / animation_speed)
-    {
-        currentFrame += 1;
-        if (currentFrame >= maxFrames)
-            currentFrame = 0;
-        animation_delay = currentTicks;
-    }
-
-    std::string current = "";
+    std::string current;
+    bool isRight = direction == RIGHT;
     switch (current_state)
     {
     case IDLE:
@@ -67,18 +71,21 @@ void Player::Animation()
     case JUMP:
         current = "jump";
         break;
+    default:
+        current = "idle";
+        break;
     }
-    maxFrames = Sprites[current]->maxFrames;
+    Animate(this, current, !isRight);
 
-    DrawSprite(current, position, size, scale, std::min(currentFrame, maxFrames), (direction == LEFT));
+    Vector2 startPos(position.x + size.x / 6, position.y);
+    Vector2 endPos(position.x + size.x / 6 * 5, position.y + size.y);
+    Vector2 centerPos = Rect::GetCenter(startPos, endPos - startPos);
 
-    if (!Game::Properties["immortal"].b)
-    {
-        if (isDamaged[1] || isDamaged[2])
-            Damaged(true);
-        else
-            Damaged(false);
-    }
+    Vector2 hbSize = Vector2(size.x * 1.5, size.y / 5);
+    Vector2 hbPos = centerPos - (hbSize / 2);
+    hbPos.y -= size.y * 7 / 10;
+    if (Game::properties["show_health"].b)
+        DrawSprite("healthbar", hbPos, hbSize, scale, (int)(4.0f - (float)hp / 25.0f));
 }
 
 void Player::MoveRightLeft()
@@ -99,12 +106,12 @@ void Player::MoveRightLeft()
         }
 
         if (velocity.l < 0)
-            velocity.l += Game::Properties["player_acceleration"].f * 1.5;
+            velocity.l += Game::properties["player_acceleration"].f * 1.5;
         else if (velocity.l > 0)
             velocity.l = 0;
 
         if (velocity.r > 0)
-            velocity.r -= Game::Properties["player_acceleration"].f * 1.5;
+            velocity.r -= Game::properties["player_acceleration"].f * 1.5;
         else if (velocity.r < 0)
             velocity.r = 0;
     }
@@ -117,12 +124,12 @@ void Player::MoveRightLeft()
 
             direction = LEFT;
 
-            velocity.l -= Game::Properties["player_acceleration"].f;
+            velocity.l -= Game::properties["player_acceleration"].f;
             velocity.l = velocity.l < -1 ? -1 : velocity.l;
 
             if (velocity.r > 0)
-                velocity.r -= Game::Properties["player_acceleration"].f * 1.5;
-            else if (velocity.l < 0)
+                velocity.r -= Game::properties["player_acceleration"].f * 1.5;
+            else if (velocity.r < 0)
                 velocity.r = 0;
         }
         if (key_right)
@@ -133,81 +140,85 @@ void Player::MoveRightLeft()
             direction = RIGHT;
 
             if (velocity.l < 0)
-                velocity.l += Game::Properties["player_acceleration"].f * 1.5;
+                velocity.l += Game::properties["player_acceleration"].f * 1.5;
             else if (velocity.l > 0)
                 velocity.l = 0;
 
-            velocity.r += Game::Properties["player_acceleration"].f;
+            velocity.r += Game::properties["player_acceleration"].f;
             velocity.r = velocity.r > 1 ? 1 : velocity.r;
         }
     }
 
     float vx = (velocity.l + velocity.r);
 
-    position.x += vx * Game::Properties["player_move_speed"].f;
-
-    if (Game::Properties["moving_background"].b)
-    {
-        Background::Move(Vector2(-vx, 0), 0, 0.25);
-        Background::Move(Vector2(-vx, 0), 1, 0.5);
-        Background::Move(Vector2(-vx, 0), 2, 0.75);
-    }
+    position.x += vx * Game::properties["player_move_speed"].f;
 
     if (velocity.l + velocity.r != 0)
     {
         if (!collide_down.second)
         {
-            if (Mix_Playing(CHANNEL_RUN))
-                StopSound(CHANNEL_RUN);
+            if (Mix_Playing(CHANNEL_RUN_BUILD))
+                StopSound(CHANNEL_RUN_BUILD);
         }
         else
         {
-            if (!Mix_Playing(CHANNEL_RUN))
+            if (!Mix_Playing(CHANNEL_RUN_BUILD))
             {
-                if (Game::Properties["sound"].b)
-                    PlaySound("run", CHANNEL_RUN, -1);
+                if (Game::properties["sound"].b)
+                    PlaySound("run", CHANNEL_RUN_BUILD, -1);
             }
         }
     }
     else
     {
-        if (Mix_Playing(CHANNEL_RUN))
-            StopSound(CHANNEL_RUN);
+        if (Mix_Playing(CHANNEL_RUN_BUILD))
+            StopSound(CHANNEL_RUN_BUILD);
     }
 }
 
 void Player::MoveDownUp()
 {
     if (!(key_up ^ key_down))
-        velocity.u = velocity.d = 0;
+    {
+        if (velocity.u < 0)
+            velocity.u += Game::properties["player_acceleration"].f * 1.5;
+        else if (velocity.u > 0)
+            velocity.u = 0;
+
+        if (velocity.d > 0)
+            velocity.d -= Game::properties["player_acceleration"].f * 1.5;
+        else if (velocity.d < 0)
+            velocity.d = 0;
+    }
     else
     {
         if (key_up)
         {
-            velocity.u -= Game::Properties["player_acceleration"].f;
+            velocity.u -= Game::properties["player_acceleration"].f;
             velocity.u = velocity.u < -1 ? -1 : velocity.u;
-            velocity.d = 0;
+
+            if (velocity.d > 0)
+                velocity.d -= Game::properties["player_acceleration"].f * 1.5;
+            else if (velocity.d < 0)
+                velocity.d = 0;
         }
         if (key_down)
         {
-            velocity.u = 0;
-            velocity.d += Game::Properties["player_acceleration"].f;
+            if (velocity.u < 0)
+                velocity.u += Game::properties["player_acceleration"].f * 1.5;
+            else if (velocity.u > 0)
+                velocity.u = 0;
+
+            velocity.d += Game::properties["player_acceleration"].f;
             velocity.d = velocity.d > 1 ? 1 : velocity.d;
         }
     }
 
-    position.y += (velocity.u + velocity.d) * Game::Properties["player_move_speed"].f;
+    position.y += (velocity.u + velocity.d) * Game::properties["player_move_speed"].f;
 }
 
 void Player::Collision()
 {
-    if (!Game::Properties["collision"].b)
-    {
-        position.x = Clamp(position.x, -size.x / 6, Screen::resolution.x - size.x);
-        position.y = Clamp(position.y, 0.0f, Screen::resolution.y - size.y);
-        return;
-    }
-
     Vector2 playerCenterTile = Int(Rect::GetCenter(position, size) / Screen::tile_size);
     std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> visit;
     std::queue<Vector2> Q;
@@ -215,7 +226,6 @@ void Player::Collision()
     Q.push(playerCenterTile);
 
     collide_down.first = collide_up.first = false;
-    isDamaged[0] = false;
 
     while (!Q.empty())
     {
@@ -230,13 +240,12 @@ void Player::Collision()
 
     collide_down.second = collide_down.first;
     collide_up.second = collide_up.first;
-    isDamaged[1] = isDamaged[0];
 }
 
 void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Vector2Hash, Vector2Equal> &visit,
                           std::queue<Vector2> &Q)
 {
-    float maxDist = Screen::tile_size * sqrt(61) / 6 - 3;
+    float maxDist = (Screen::tile_size * sqrt(61) / 6 - 3) * Game::properties["player_collision_dist"].f;
     float eps = 0;
 
     Vector2 playerCenter = Rect::GetCenter(position, size);
@@ -245,8 +254,8 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
 
     if (InRange(nextTile, Vector2(), Vector2(15)) && visit.find(nextTile) == visit.end() && h <= maxDist)
     {
-        int type = TileMap[nextTile.y][nextTile.x].first;
-        if (type & (WALL | DAMAGE))
+        int type = Map::Tiles[nextTile.y][nextTile.x].first;
+        if (type & WALL)
         {
             Vector2 d = nextCenter - playerCenter;
             float cos = d.x / h;
@@ -275,78 +284,174 @@ void Player::MapCollision(Vector2 nextTile, std::unordered_map<Vector2, bool, Ve
                     collide_up.first = true;
             }
 
-            if (Game::Properties["draw_ray"].b)
-            {
-                if (type & WALL)
-                    Screen::SetDrawColor(Color::white(255));
-                else
-                    Screen::SetDrawColor(Color::red(255));
-            }
-
-            if (!Game::Properties["immortal"].b && type & DAMAGE)
-            {
-                if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter,
-                                      Vector2(Screen::tile_size), 3))
-                    isDamaged[0] = true;
-            }
+            if (type & WALL)
+                Screen::SetDrawColor(Color::white(Game::properties["ray_opacity"].i));
+            else
+                Screen::SetDrawColor(Color::red(Game::properties["ray_opacity"].i));
         }
         else if (type & COIN)
         {
-            if (Game::Properties["draw_ray"].b)
-                Screen::SetDrawColor(Color::yellow(255));
+            Screen::SetDrawColor(Color::yellow(Game::properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0))
             {
-                int score = ++Game::player_score;
-                std::pair<int, MapTile *> &coin_tile = TileMap[nextTile.y][nextTile.x];
-                coin_tile.first = 0;
-                delete coin_tile.second;
-                coin_tile.second = nullptr;
+                current_score++;
+                total_score++;
 
-                print("player score", score);
+                Text::SetLabel("Play-0.score", "Score: " + str(total_score));
 
-                if (Game::Properties["sound"].b)
+                print("player score", current_score, "/", win_score);
+
+                if (Game::properties["sound"].b)
                     PlaySound("coin", CHANNEL_COIN, 0);
 
-                if (score == Game::Properties["coin"].i)
+                if (current_score == win_score)
                 {
-                    std::pair<int, MapTile *> &win_tile = TileMap[MapTile::WinTile.x][MapTile::WinTile.y];
-                    win_tile.first = WIN;
+                    Map::Tiles[Map::win_tile.y][Map::win_tile.x].first = WIN;
                     float wait = 500;
-                    MapTile::CreateATile(MapTile::WinTile.x, MapTile::WinTile.y, wait);
-                    MapTile::nEmptyTiles--;
+                    Map::AddTile(Map::win_tile.y, Map::win_tile.x, wait);
                 }
+
+                Tile *flying_coin = new Tile(Map::Tiles[nextTile.y][nextTile.x].second->position, Screen::tile_size);
+                LinkedFunction *lf = new LinkedFunction(std::bind(
+                    [](Tile *tile) {
+                        Animate(tile, "coin");
+                        return TransformValue(&tile->scale, Game::properties["tile_scale"].f,
+                                              Game::properties["tile_rescale_speed"].f) &&
+                               TransformVector2(&tile->position, Vector2(Screen::tile_size * 2, 0), 0.05f, 5);
+                    },
+                    flying_coin));
+                lf->NextFunction(std::bind(
+                    [](Tile *tile) {
+                        Animate(tile, "coin");
+                        return TransformValue<float>(&tile->scale, 0, Game::properties["tile_rescale_speed"].f);
+                    },
+                    flying_coin));
+                lf->NextFunction(std::bind(
+                    [](Tile *tile) {
+                        delete tile;
+                        tile = nullptr;
+                        return 1;
+                    },
+                    flying_coin));
+                lf->Execute();
+
+                float wait = 0.1f;
+                Map::RemoveTile(nextTile.y, nextTile.x, wait, false);
+            }
+        }
+        else if (type & HEALTH)
+        {
+            Screen::SetDrawColor(Color::blue(Game::properties["ray_opacity"].i));
+
+            if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
+                                  0))
+            {
+                hp += 7;
+                if (hp >= 100)
+                    hp = 100;
+
+                if (Game::properties["show_health"].b)
+                    Text::SetLabel("Play-1.hp", "Health: " + str(hp));
+
+                print("player health", hp);
+
+                if (Game::properties["sound"].b)
+                    PlaySound("health", CHANNEL_HEALTH, 0);
+
+                Tile *flying_health = new Tile(Map::Tiles[nextTile.y][nextTile.x].second->position, Screen::tile_size);
+                LinkedFunction *lf = new LinkedFunction(std::bind(
+                    [](Tile *tile) {
+                        Animate(tile, "health");
+                        return TransformValue(&tile->scale, Game::properties["tile_scale"].f,
+                                              Game::properties["tile_rescale_speed"].f) &&
+                               TransformVector2(
+                                   &tile->position,
+                                   Vector2(Screen::tile_size * 2, Screen::tile_size * (Screen::map_size - 1)), 0.05f,
+                                   5);
+                    },
+                    flying_health));
+                lf->NextFunction(std::bind(
+                    [](Tile *tile) {
+                        Animate(tile, "health");
+                        return TransformValue<float>(&tile->scale, 0, Game::properties["tile_rescale_speed"].f);
+                    },
+                    flying_health));
+                lf->NextFunction(std::bind(
+                    [](Tile *tile) {
+                        delete tile;
+                        tile = nullptr;
+                        return 1;
+                    },
+                    flying_health));
+                lf->Execute();
+
+                float wait = 0.1f;
+                Map::RemoveTile(nextTile.y, nextTile.x, wait, false);
             }
         }
         else if (type & WIN)
         {
-            if (Game::Properties["draw_ray"].b)
-                Screen::SetDrawColor(Color::green(255));
+            Screen::SetDrawColor(Color::green(Game::properties["ray_opacity"].i));
 
             if (Rect::IsColliding(playerCenter, Vector2(size.x / 6 * 4, size.y), nextCenter, Vector2(Screen::tile_size),
                                   0) &&
-                !Game::player_won && TileMap[MapTile::WinTile.x][MapTile::WinTile.y].second->scale == 1)
+                !won && Map::Tiles[Map::win_tile.y][Map::win_tile.x].second->scale == Game::properties["tile_scale"].f)
             {
                 print("player won");
-                Game::player_won = 1;
+                won = true;
+                Map::current_map_id++;
+
+                if (Map::current_map_id < Map::MapPlaylist.size())
+                {
+                    Text::SetLabel("Play-0.map",
+                                   "Map: " + getFileName(Map::MapPlaylist[Map::current_map_id].second, 5));
+                    MapMaking::ToggleBtns(false);
+                }
+
+                print("deleting player...");
                 LinkedFunction *lf = new LinkedFunction(
                     []() {
-                        if (Game::scene)
-                            Game::scene->DeleteScene();
-                        return 1;
+                        return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
                     },
                     250);
+                lf->NextFunction([]() {
+                    if (Game::properties["sound"].b)
+                        PlaySound("win", CHANNEL_SPAWN_WIN_DIE, 0);
+                    Game::time[1] = SDL_GetTicks();
+                    delete Game::player;
+                    Game::player = nullptr;
+                    if (Map::current_map_id < Map::MapPlaylist.size())
+                    {
+                        MapMaking::ChangeMap(Map::MapPlaylist[Map::current_map_id].second);
+                    }
+                    else
+                    {
+                        MapMaking::Clear(nullptr);
+                        Scene::ShowWinOrLose(1, SDL_GetTicks() - Game::time[0]);
+                    }
+                    return 1;
+                });
+
+                if (Map::current_map_id < Map::MapPlaylist.size())
+                {
+                    lf->NextFunction(
+                        []() {
+                            Scene::SpawnPlayer();
+                            return 1;
+                        },
+                        Map::GetMapDelay(750));
+                }
                 lf->Execute();
             }
         }
         else if (type & SPAWN)
         {
-            if (Game::Properties["draw_ray"].b)
-                Screen::SetDrawColor(Color::cyan(255));
+            Screen::SetDrawColor(Color::cyan(Game::properties["ray_opacity"].i));
         }
 
-        if (Game::Properties["draw_ray"].b && type)
+        if (type)
         {
             SDL_RenderDrawLine(Game::renderer, playerCenter.x, playerCenter.y, nextCenter.x, nextCenter.y);
         }
@@ -363,15 +468,8 @@ void Player::Jump()
         if (collide_up.second && velocity.d < -1)
             velocity.d = 0;
 
-        velocity.d += Game::Properties["gravity"].f;
+        velocity.d += Game::properties["gravity"].f;
         position.y += velocity.d;
-
-        if (Game::Properties["moving_background"].b)
-        {
-            Background::Move(Vector2(0, -velocity.d), 0, 0.1);
-            Background::Move(Vector2(0, -velocity.d), 1, 0.15);
-            Background::Move(Vector2(0, -velocity.d), 2, 0.2);
-        }
     }
     else
     {
@@ -381,24 +479,52 @@ void Player::Jump()
             previous_state = JUMP;
         }
 
-        if (velocity.d > 11)
+        if (velocity.d > Screen::resolution.x / 65.0f)
         {
-            if (!Game::Properties["immortal"].b)
+            if (!Game::properties["player_immortal"].b)
             {
-                isDamaged[2] = true;
+                if (Game::properties["sound"].b)
+                    PlaySound("fall", CHANNEL_JUMP_FALL, 0);
+
+                hp -= velocity.d / 2.5;
+
+                if (hp <= 0)
+                {
+                    hp = 0;
+                    PlaySound("die", CHANNEL_SPAWN_WIN_DIE, 0);
+                    print("deleting player...");
+                    LinkedFunction *lf = new LinkedFunction(
+                        []() {
+                            return TransformValue(&Game::player->scale, 0.0f, Game::properties["tile_rescale_speed"].f);
+                        },
+                        250);
+                    lf->NextFunction([]() {
+                        Game::time[1] = SDL_GetTicks();
+                        delete Game::player;
+                        Game::player = nullptr;
+                        MapMaking::Clear(nullptr);
+                        Scene::ShowWinOrLose(0, SDL_GetTicks() - Game::time[0]);
+                        return 1;
+                    });
+                    lf->Execute();
+                }
+
+                print("player health", hp);
+
+                if (Game::properties["show_health"].b)
+                    Text::SetLabel("Play-1.hp", "Health: " + str(hp));
+
+                Damaged(true);
                 LinkedFunction *lf = new LinkedFunction(std::bind(
                                                             [](Player *player) {
                                                                 if (player)
-                                                                    player->isDamaged[2] = false;
+                                                                    player->Damaged(false);
                                                                 return 1;
                                                             },
                                                             this),
                                                         500);
                 lf->Execute();
             }
-
-            if (Game::Properties["sound"].b)
-                PlaySound("fall", CHANNEL_JUMP_FALL, 0);
         }
 
         velocity.d = 0;
@@ -409,7 +535,8 @@ void Player::DrawBox()
 {
     Vector2 startPos(position.x + size.x / 6, position.y);
     Vector2 endPos(position.x + size.x / 6 * 5, position.y + size.y);
-    Screen::SetDrawColor(Color::white(255));
+
+    Screen::SetDrawColor(Color::white(Game::properties["ray_opacity"].i));
 
     SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, endPos.x, startPos.y);
     SDL_RenderDrawLine(Game::renderer, startPos.x, startPos.y, startPos.x, endPos.y);

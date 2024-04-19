@@ -13,15 +13,17 @@ class Sprite
   public:
     SDL_Texture *texture;
     std::string path;
-    int maxFrames;
-    Vector2 realSize;
+    int max_frames;
+    Vector2 real_size;
 };
 
 extern std::map<std::string, Sprite *> Sprites;
 
-bool LoadSprite(std::string name, std::string path, int maxFrames, Vector2 realSize);
+bool LoadSprite(std::string name, std::string path, int max_frames, Vector2 real_size);
 
 void SetSpriteOpacity(std::string name, int opacity);
 
-void DrawSprite(std::string name, const Vector2 &position, const Vector2 &size, float scale, int currentFrame,
+void DrawSprite(std::string name, const Vector2 &position, const Vector2 &size, float scale, int current_frame,
                 bool flip = false);
+
+void Animate(GameObject *gameobj, std::string sprite, bool flip = false);

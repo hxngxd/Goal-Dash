@@ -29,6 +29,12 @@ void operator*=(Vector2 &v, float k);
 
 void operator/=(Vector2 &v, float k);
 
+bool operator==(const Vector2 &v1, const Vector2 &v2);
+
+bool operator!=(const Vector2 &v1, const Vector2 &v2);
+
+bool operator<(const Vector2 &v1, const Vector2 &v2);
+
 Vector2 operator+(const Vector2 &v1, const Vector2 &v2);
 
 Vector2 operator-(const Vector2 &v1, const Vector2 &v2);
@@ -47,6 +53,8 @@ Vector2 Min(const Vector2 &v1, const Vector2 &v2);
 
 Vector2 Int(const Vector2 &v);
 
+void Swap(Vector2 &v);
+
 bool InRange(const Vector2 &v, const Vector2 &mn, const Vector2 &mx);
 
 struct Vector2Hash
@@ -58,3 +66,5 @@ struct Vector2Equal
 {
     bool operator()(const Vector2 &lhs, const Vector2 &rhs) const;
 };
+
+bool TransformVector2(Vector2 *v, Vector2 dest, float speed, float minimum_from_dest);

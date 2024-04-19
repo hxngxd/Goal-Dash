@@ -1,7 +1,7 @@
 #include "mixer.h"
 
 std::map<std::string, Mix_Chunk *> Sounds;
-std::map<std::string, Mix_Music *> Musics;
+Mix_Music *Music = nullptr;
 
 bool LoadSound(std::string name, std::string path)
 {
@@ -33,14 +33,13 @@ void StopAllSound()
     StopSound(-1);
 }
 
-bool LoadMusic(std::string name, std::string path)
+bool LoadMusic(std::string path)
 {
     print("loading music:", path);
-    Musics[name] = Mix_LoadMUS(path.c_str());
-    if (!Musics[name])
+    Music = Mix_LoadMUS(path.c_str());
+    if (!Music)
     {
-        Mix_FreeMusic(Musics[name]);
-        Musics.erase(name);
+        Mix_FreeMusic(Music);
         print("failed to load music:", path);
         return 0;
     }
@@ -48,9 +47,9 @@ bool LoadMusic(std::string name, std::string path)
     return 1;
 }
 
-void PlayMusic(std::string name, int loop)
+void PlayMusic(int loop)
 {
-    Mix_PlayMusic(Musics[name], loop);
+    Mix_PlayMusic(Music, loop);
 }
 
 void StopMusic()

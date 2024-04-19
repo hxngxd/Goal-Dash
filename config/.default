@@ -1,0 +1,33 @@
+#config
+
+<int> {resolution=3}
+<float> {fps=60.0}
+<string> {font=fonts/Gotu-Regular.ttf}
+
+<float> {gravity=9.8}
+<string> {player_name=Nguyen Tuong Hung}
+<float> {player_move_speed=1}
+<float> {player_jump_speed=1}
+<float> {player_acceleration=1}
+<bool> {player_immortal=0}
+<float> {player_collision_dist=1}
+<bool> {keyboard_layout=0}
+
+<bool> {background_enable=1}
+<bool> {point_grid=1}
+<int> {ray_opacity=180}
+
+<float> {map_delay=15}
+<float> {tile_rescale_speed=0.075}
+<float> {tile_scale=1}
+
+<string> {music=off}
+<bool> {sound=1}
+<int> {volume=64}
+
+<bool> {show_time=1}
+<bool> {show_health=1}
+<bool> {reset_health=0}
+
+<int> {wall_possibility=26}
+<int> {coin_possibility=10}

@@ -4,60 +4,74 @@
 #include "datalib/sprite.h"
 #include "datalib/util.h"
 #include "event/input.h"
+#include "event/scene.h"
 #include "event/ui.h"
 #include "func/func.h"
 
-Vector2 Screen::resolution(640, 640);
-int Screen::map_size = 16;
-int Screen::tile_size = Screen::resolution.x / Screen::map_size;
-
+bool Game::running = false;
+std::map<std::string, PropertiesType> Game::properties;
 SDL_Event Game::event;
 SDL_Window *Game::window = nullptr;
 SDL_Renderer *Game::renderer = nullptr;
-Scene *Game::scene = nullptr;
 Player *Game::player = nullptr;
-int Game::player_score = 0;
-bool Game::player_won = false;
+int Game::time[3] = {0, 0, 0};
 
-std::map<std::string, PropertiesType> Game::Properties;
+Vector2 Screen::resolution;
+int Screen::map_size;
+int Screen::tile_size;
+int Screen::font_size;
+std::vector<int> Screen::resolutions = {480, 640, 800, 960, 1120};
+int Screen::current_resolution;
 
 void Game::Update()
 {
     //----------------------------------------
 
-    Screen::Clear(Color::black(255));
+    Screen::Clear(Color::black());
 
-    if (Game::Properties["point_grid"].b)
-        Screen::PointGrid(Color::white(255));
-
-    if (Game::Properties["background"].b)
-        Background::Draw();
+    if (properties["point_grid"].b)
+        Screen::PointGrid(Color::white());
 
     //----------------------------------------
 
-    LinkedFunction::Update();
-    MapTile::Draw();
-    UI::Update();
+    EventHandler::Update();
+
     if (player)
     {
-        player->Update();
+        if (Game::properties["show_time"].b)
+            Text::SetLabel("Play-0.time", "Time: " + FormatMS(SDL_GetTicks() - time[0]));
+
+        if (properties["background_enable"].b)
+        {
+            Background::MoveRelativeTo(player->position);
+            Background::Update();
+        }
     }
-
-    //----------------------------------------
-
-    while (SDL_PollEvent(&event) != 0)
+    else
     {
-        if (event.type == SDL_QUIT)
-            running = false;
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        mousePosition = Vector2(x, y);
-        EventHandler::MouseInputHandler();
-        if (player)
-            EventHandler::PlayerInputHandler(player, Game::Properties["keyboard_layout"].b ? right_keys : left_keys);
+        if (properties["background_enable"].b)
+        {
+            Background::MoveRelativeTo(EventHandler::MousePosition);
+            Background::Update();
+        }
     }
 
+    Map::Update();
+
+    if (player)
+        player->Update();
+
+    if (Map::mode == 1)
+        MapMaking::Update();
+
+    UI::Update();
+
+    LinkedFunction::Update();
+
+    UI::RemoveUIs();
+
     //----------------------------------------
+
     Screen::Display();
 }
 
@@ -66,7 +80,7 @@ void Game::Start()
     //----------------------------------------
 
     print("loading config file...");
-    if (!LoadConfig())
+    if (!LoadConfig(0))
     {
         print("failed to load config file");
         return;
@@ -95,17 +109,17 @@ void Game::Start()
 
     //----------------------------------------
 
-    if (Game::Properties["music"].b)
+    if (properties["music"].s != "off")
     {
         print("playing background music...");
-        PlayMusic("bg_music", -1);
-        Mix_VolumeMusic(Game::Properties["music_volume"].i);
+        PlayMusic(-1);
+        Mix_VolumeMusic(properties["volume"].i);
     }
 
     //----------------------------------------
 
     print("loading font...");
-    myFont = TTF_OpenFont(Game::Properties["font"].s.c_str(), 24);
+    myFont = TTF_OpenFont("fonts/myfont.ttf", 24);
     if (!myFont)
     {
         print("failed to load font");
@@ -113,9 +127,31 @@ void Game::Start()
     }
     print("font loaded");
 
+    print("starting sdl text input...");
+    SDL_StartTextInput();
+    print("done");
+
     //----------------------------------------
 
-    scene = new Scene();
+    UI::Start();
+    Scene::Welcome();
+    Scene::Common();
+    Scene::Settings();
+
+    Screen::CalculateGravity();
+    Screen::CalculateMoveSpeed();
+    Screen::CalculateJumpSpeed();
+    Screen::CalculateAcceleration();
+
+    //----------------------------------------
+
+    print("changing cursor");
+    if (!ChangeCursor("img\\cursor.png"))
+    {
+        print("failed to change cursor");
+        return;
+    }
+    print("cursor changed");
 
     //----------------------------------------
 
@@ -160,7 +196,7 @@ bool Game::InitSDL2()
     //----------------------------------------
 
     print("initializing sdl_mixer...");
-    int format = MIX_INIT_OGG;
+    int format = MIX_INIT_OGG | MIX_INIT_MP3;
     if (Mix_Init(format) & format != format)
     {
         print("sdl_mixer failed");
@@ -219,7 +255,9 @@ bool Game::LoadMedia()
 {
     //----------------------------------------
 
-    if (!LoadSprite("coin", "img/coin.png", 5, Vector2(16)))
+    if (!LoadSprite("coin", "img/coin.png", 8, Vector2(32)))
+        return 0;
+    if (!LoadSprite("health", "img/health.png", 7, Vector2(32)))
         return 0;
     if (!LoadSprite("idle", "img/idle.png", 10, Vector2(48)))
         return 0;
@@ -227,37 +265,45 @@ bool Game::LoadMedia()
         return 0;
     if (!LoadSprite("jump", "img/jump.png", 4, Vector2(48)))
         return 0;
-    if (!LoadSprite("button_hover", "img/button_hover.png", 1, Vector2(695, 377)))
+    if (!LoadSprite("spawn", "img/spawn.png", 6, Vector2(32)))
         return 0;
+    if (!LoadSprite("win", "img/win.png", 6, Vector2(32)))
+        return 0;
+    if (!LoadSprite("wall", "img/wall.png", 1, Vector2(160)))
+        return 0;
+    if (!LoadSprite("healthbar", "img/healthbar.png", 5, Vector2(48, 7)))
+        return 0;
+    if (!LoadSprite("circ", "img/circ.png", 5, Vector2(600)))
+        return 0;
+    if (!LoadSprite("toggle", "img/toggle.png", 5, Vector2(787, 520)))
+        return 0;
+
     //----------------------------------------
 
-    if (!Background::loadBackground("bg_cloud", "img/bg_cloud.png", 1, Vector2(4096), 1.25))
+    if (!Background::loadBackground("img/bg_cloud.png", Vector2(4096)))
         return 0;
-    if (!Background::loadBackground("bg_star1", "img/bg_star.png", 1, Vector2(4096), 1.5))
+    if (!Background::loadBackground("img/bg_star.png", Vector2(4096)))
         return 0;
-    if (!Background::loadBackground("bg_star", "img/bg_star.png", 1, Vector2(4096), 2))
+    if (!Background::loadBackground("img/bg_star1.png", Vector2(4096)))
         return 0;
 
     //----------------------------------------
 
-    if (!LoadSound("coin", "sound/coin.ogg"))
-        return 0;
-    if (!LoadSound("jump", "sound/jump.ogg"))
-        return 0;
-    if (!LoadSound("run", "sound/run.ogg"))
-        return 0;
-    if (!LoadSound("fall", "sound/fall.ogg"))
-        return 0;
-    if (!LoadSound("click", "sound/click.ogg"))
-        return 0;
-    if (!LoadSound("hover", "sound/hover.ogg"))
-        return 0;
-    if (!LoadSound("win", "sound/win.ogg"))
-        return 0;
-    if (!LoadSound("spawn", "sound/spawn.ogg"))
-        return 0;
-    if (!LoadMusic("bg_music", "sound/bg_music.ogg"))
-        return 0;
+    std::vector<std::string> names = {
+        "coin", "health", "jump", "run",       "fall",       "click", "hover",
+        "win",  "spawn",  "die",  "win_scene", "lose_scene", "build",
+    };
+    for (auto &name : names)
+    {
+        if (!LoadSound(name, "sound/" + name + ".ogg"))
+            return 0;
+    }
+
+    if (properties["music"].s != "off")
+    {
+        if (!LoadMusic(properties["music"].s))
+            return 0;
+    }
 
     //----------------------------------------
 
@@ -268,28 +314,42 @@ void Game::Quit()
 {
     //----------------------------------------
 
-    print("deleting player...");
     if (player)
     {
+        print("deleting player...");
         delete player;
         player = nullptr;
+        print("player deleted");
     }
-    print("player deleted");
 
     //----------------------------------------
 
-    print("deleting tiles....");
-    for (int i = 0; i < Screen::map_size; i++)
+    if (!Map::Tiles.empty())
     {
-        for (int j = 0; j < Screen::map_size; j++)
+        print("deleting tiles....");
+        for (int i = 0; i < Screen::map_size; i++)
         {
-            if (!TileMap[i][j].second)
-                continue;
-            delete TileMap[i][j].second;
-            TileMap[i][j].second = nullptr;
+            for (int j = 0; j < Screen::map_size; j++)
+            {
+                if (!Map::Tiles[i][j].second)
+                    continue;
+                delete Map::Tiles[i][j].second;
+                Map::Tiles[i][j].second = nullptr;
+            }
         }
+        print("tiles deleted");
     }
-    print("tiles deleted");
+
+    //----------------------------------------
+
+    print("deleting backgrounds...");
+    for (auto &bg : Background::Backgrounds)
+    {
+        delete bg;
+        bg = nullptr;
+    }
+    Background::Backgrounds.clear();
+    print("backgrounds deleted");
 
     //----------------------------------------
 
@@ -317,31 +377,39 @@ void Game::Quit()
         print("deleted", sound.first);
     }
 
-    for (auto &music : Musics)
+    if (Music)
     {
-        if (!music.second)
-            continue;
-        Mix_FreeMusic(music.second);
-        music.second = nullptr;
-        print("deleted", music.first);
+        Mix_FreeMusic(Music);
+        Music = nullptr;
     }
 
     print("sounds and music deleted");
 
     //----------------------------------------
 
-    print("deleting font...");
     if (myFont)
+    {
+        print("deleting font...");
         TTF_CloseFont(myFont);
-    print("font deleted");
+        print("font deleted");
+    }
+
+    print("stopping sdl text input");
+    SDL_StopTextInput();
+    print("done");
 
     //----------------------------------------
 
-    if (scene)
+    if (myCursor)
     {
-        scene->DeleteScene();
-        scene = nullptr;
+        print("deleting cursor...");
+        SDL_FreeCursor(myCursor);
     }
+
+    //----------------------------------------
+
+    UI::RemovingUIs();
+    UI::RemoveUIs();
 
     //----------------------------------------
 
@@ -378,9 +446,9 @@ void Screen::PointGrid(SDL_Color color)
 {
     SetDrawColor(color);
     int sqr = resolution.x / map_size;
-    for (int i = sqr; i < resolution.x; i += sqr)
+    for (int i = sqr; i < resolution.y; i += sqr)
     {
-        for (int j = sqr; j < resolution.y; j += sqr)
+        for (int j = sqr; j < resolution.x; j += sqr)
         {
             SDL_RenderDrawPoint(renderer, i, j);
         }

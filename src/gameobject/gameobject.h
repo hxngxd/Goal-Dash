@@ -16,7 +16,7 @@ class GameObject
     float scale;
     Direction velocity;
 
-    int currentFrame, maxFrames;
+    int current_frame, max_frames;
     float animation_delay;
     float animation_speed;
 };
@@ -26,33 +26,16 @@ class Background : public GameObject
   public:
     int opacity;
     bool toggle;
-
+    static std::vector<Background *> Backgrounds;
     Background(std::string name, float scale);
-    static bool loadBackground(std::string name, std::string path, int maxFrames, Vector2 realSize, float scale);
+    static bool loadBackground(std::string path, Vector2 realSize);
 
-    static void Move(Vector2 velocity, int index, float ratio);
-    static void Draw();
+    static void Update();
+
+    static void MoveRelativeTo(const Vector2 &position);
 };
 
 extern std::vector<Background> Backgrounds;
-
-class MapTile : public GameObject
-{
-  public:
-    static Vector2 SpawnTile;
-    static Vector2 WinTile;
-    static int nEmptyTiles;
-
-    MapTile(Vector2 position, Vector2 size, float wait);
-
-    static void CreateBorder();
-    static void CreateTiles(int map);
-    static void CreateATile(int i, int j, float &wait);
-    static void DeleteTiles();
-    static void Draw();
-};
-
-extern std::vector<std::vector<std::pair<int, MapTile *>>> TileMap;
 
 class Player : public GameObject
 {
@@ -61,6 +44,11 @@ class Player : public GameObject
 
     animation_states current_state, previous_state;
     animation_directions direction;
+
+    static int hp;
+    int current_score, win_score;
+    static int total_score;
+    bool won;
 
     Player(Vector2 position);
     ~Player();
@@ -81,5 +69,4 @@ class Player : public GameObject
 
     std::pair<bool, bool> collide_down;
     std::pair<bool, bool> collide_up;
-    bool isDamaged[3];
 };
