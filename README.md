@@ -7,17 +7,17 @@
 
 # Mục Lục 📃
 
-- [Mục Lục](#mục-lục)
+- [Mục Lục 📃](#mục-lục-)
 - [Chủ đề](#chủ-đề)
 - [Tự đánh giá](#tự-đánh-giá)
-  - [Phát triển](#phát-triển)
+  - [Phát triển 🧑‍💻](#phát-triển-)
   - [Các chức năng](#các-chức-năng)
     - [Màn hình chính](#màn-hình-chính)
     - [Play](#play)
     - [Map Building](#map-building)
     - [Settings](#settings)
   - [Một số điểm nổi bật khác do em tự phát triển](#một-số-điểm-nổi-bật-khác-do-em-tự-phát-triển)
-    - [Sử dụng lớp `Vector2` để quản lý và xử lý các toạ độ 2 chiều](#sử-dụng-lớp-vector2-để-quản-lý-và-xử-lý-các-toạ-độ-2-chiều)
+    - [Sử dụng lớp `Vector2` để quản lý và xử lý toạ độ 2 chiều](#sử-dụng-lớp-vector2-để-quản-lý-và-xử-lý-toạ-độ-2-chiều)
     - [LinkedFunction (Hàm liên kết) - ứng dụng của Singly Linked List](#linkedfunction-hàm-liên-kết---ứng-dụng-của-singly-linked-list)
     - [User Interface - Giao diện người dùng](#user-interface---giao-diện-người-dùng)
 - [Demo (Youtube)](#demo-youtube)
