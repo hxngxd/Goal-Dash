@@ -671,7 +671,8 @@ void Scene::SelectMusic()
              "goback", v, v, "Back",
              []() {
                  UI::SetVisible("Settings", true);
-                 UI::SetVisible("Common", true);
+                 if (Map::mode != -1)
+                     UI::SetVisible("Common", true);
                  UI::RemovingUI("SelectMusic");
              },
              Screen::font_size, border_opacity),
