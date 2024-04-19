@@ -198,7 +198,7 @@ Vì tất cả mọi thứ trong game đều chạy trong một hàm `while`, n�
 
 ### User Interface - Giao diện người dùng
 
-Các thành phần của UI đều được do em tự phát triển bao gồm:
+Các thành phần của UI đều được em tự phát triển bao gồm:
 
 * **Canvas**.
 * **Button**.
@@ -217,4 +217,4 @@ Về phần render chữ, em sử dụng thuật toán **tìm kiếm nhị phân
 
 # Kết luận
 
-Với những lý do trên, em nghĩ mình xứng đáng lọt vào top **10% của lớp**. Em xin cảm ơn!
+Với những lý do trên, em nghĩ mình xứng đáng lọt vào top **10%** của lớp. Em xin cảm ơn!
