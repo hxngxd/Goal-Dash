@@ -44,20 +44,16 @@ bool RandomChoice(int possibility)
 
 std::string FormatMS(int ms)
 {
-    float fsecond = (float)ms / 1000.0f;
-    int second = fsecond;
-    fsecond -= (float)second;
-    fsecond *= 1000;
-    int hour = second / 3600;
-    second -= hour * 3600;
-    int minute = second / 60;
-    second -= minute * 60;
-    auto addzero = [](int n, int length) {
-        std::string strn = str(n);
-        return std::string(length - strn.size(), '0') + strn;
-    };
-    return (hour ? str(hour) : "00") + ":" + addzero(minute, 2) + ":" + addzero(second, 2) + "." +
-           addzero((int)fsecond, 3);
+    int hour = ms / 3600000;
+    int minute = (ms % 3600000) / 60000;
+    int second = (ms % 60000) / 1000;
+    int millisecond = ms % 1000;
+
+    std::ostringstream out;
+    out << std::setfill('0') << std::setw(2) << hour << ":" << std::setw(2) << minute << ":" << std::setw(2) << second
+        << "." << std::setw(3) << millisecond;
+
+    return out.str();
 }
 
 //----------------------------------------
