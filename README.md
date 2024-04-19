@@ -7,7 +7,6 @@
 
 # Mục Lục 📃
 
-- [Mục Lục 📃](#mục-lục-)
 - [Chủ đề](#chủ-đề)
 - [Tự đánh giá](#tự-đánh-giá)
   - [Phát triển 🧑‍💻](#phát-triển-)
