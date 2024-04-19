@@ -144,7 +144,7 @@ Người dùng chỉ cần kéo thả file nhạc ***.mp3*** vào thư mục ***
 
 ## Một số điểm nổi bật khác do em tự phát triển
 
-### Sử dụng lớp `Vector2` để quản lý và xử lý các toạ độ 2 chiều
+### Sử dụng cấu trúc `Vector2` để quản lý và xử lý các toạ độ 2 chiều
 
 ```cpp
 struct Vector2
