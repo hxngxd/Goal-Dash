@@ -53,7 +53,7 @@ Các phần mềm em đã sử dụng trong quá trình phát triển dự án:
 
 ### Màn hình chính
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419142012864.png" alt="image-20240419142012864" style="zoom:50%;" />
+<img src="images\image-20240419142012864.png" alt="image-20240419142012864" style="zoom:50%;" />
 
 Màn hình chính gồm tiêu đề, và các nút điều hướng sau:
 
@@ -67,7 +67,7 @@ Màn hình chính gồm tiêu đề, và các nút điều hướng sau:
 
 ### Play
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419143130055.png" alt="image-20240419143130055" style="zoom:50%;" />
+<img src="images\image-20240419143130055.png" alt="image-20240419143130055" style="zoom:50%;" />
 
 Tại đây người chơi được chọn các map theo thứ tự để chơi.
 
@@ -75,7 +75,7 @@ Tại đây người chơi được chọn các map theo thứ tự để chơi.
 
 * **Play now**: Bắt đầu chơi (chỉ ấn được khi có ít nhất 1 map được chọn).
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419143321591.png" alt="image-20240419143321591" style="zoom:50%;" />
+<img src="images\image-20240419143321591.png" alt="image-20240419143321591" style="zoom:50%;" />
 
 Trong khi chơi, các thông số được hiện là **điểm, thời gian chơi, map hiện tại, máu còn lại của người chơi**. Còn về phần độ khó của map, em vẫn chưa tìm ra cách để đánh giá tự động độ khó của map. Background thay vì di chuyển so với chuột thì sẽ di chuyển so với người chơi.
 
@@ -83,7 +83,7 @@ Về xử lý va chạm, em sử dụng thuật toán va chạm ***axis-aligned 
 
 Phía bên phải có các nút điều hướng để thoát game, về màn hình chính, cài đặt.
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419143637939.png" alt="image-20240419143637939" style="zoom:50%;" />
+<img src="images\image-20240419143637939.png" alt="image-20240419143637939" style="zoom:50%;" />
 
 Khi thu thập được đồng vàng cuối cùng, cánh cổng đến map tiếp theo sẽ mở ra. Người chơi đi vào để chuyển sang map đó.
 
@@ -91,11 +91,11 @@ Khi thu thập được đồng vàng cuối cùng, cánh cổng đến map ti�
 
 |                Màn hình khi người chơi thắng                 |                 Màn hình khi người chơi thua                 |
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
-| <img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419144308955.png" alt="image-20240419144308955" style="zoom: 33%;" /> | <img src="H:\Documents\GitHub\Goal-Dash\images\Screenshot 2024-04-19 144206.png" alt="Screenshot 2024-04-19 144206" style="zoom: 33%;" /> |
+| <img src="images\image-20240419144308955.png" alt="image-20240419144308955" style="zoom: 33%;" /> | <img src="images\Screenshot 2024-04-19 144206.png" alt="Screenshot 2024-04-19 144206" style="zoom: 33%;" /> |
 
 ### Map Building
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419145109354.png" alt="image-20240419145109354" style="zoom:50%;" />
+<img src="images\image-20240419145109354.png" alt="image-20240419145109354" style="zoom:50%;" />
 
 Trong chế độ này, người dùng có thể:
 
@@ -105,11 +105,11 @@ Trong chế độ này, người dùng có thể:
 
 * Mở map đã tồn tại:
 
-  <img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419145512768.png" alt="image-20240419145512768" style="zoom: 50%;" />
+  <img src="images\image-20240419145512768.png" alt="image-20240419145512768" style="zoom: 50%;" />
 
 * Lưu map: Lưu vào map hiện tại (nếu đang mở một map đã tồn tại), hoặc lưu map với tên mới.
 
-  | <img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419145622072.png" alt="image-20240419145622072" style="zoom: 33%;" /> | <img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419145646098.png" alt="image-20240419145646098" style="zoom: 33%;" /> |
+  | <img src="images\image-20240419145622072.png" alt="image-20240419145622072" style="zoom: 33%;" /> | <img src="images\image-20240419145646098.png" alt="image-20240419145646098" style="zoom: 33%;" /> |
   | :----------------------------------------------------------: | :----------------------------------------------------------: |
 
 ***Về phần tạo map tự động (Random), do game của em có chứa yếu tố trọng lực, và cần phải random được map có thể chơi được và đủ thách thức nên việc này không dễ dàng. Em đã kết hợp các thuật toán sau đây:***
@@ -121,7 +121,7 @@ Trong chế độ này, người dùng có thể:
 
 ### Settings
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419150911367.png" alt="image-20240419150911367" style="zoom: 50%;" />
+<img src="images\image-20240419150911367.png" alt="image-20240419150911367" style="zoom: 50%;" />
 
 **Người dùng có thể tinh chỉnh được nhiều thứ như:**
 
@@ -136,11 +136,11 @@ Trong chế độ này, người dùng có thể:
 
 ***Đặc biệt người dùng có thể chọn nhạc và thêm nhạc theo ý thích:***
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\image-20240419151613392.png" alt="image-20240419151613392" style="zoom:50%;" />
+<img src="images\image-20240419151613392.png" alt="image-20240419151613392" style="zoom:50%;" />
 
 Người dùng chỉ cần kéo thả file nhạc ***.mp3*** vào thư mục ***sound/musics/***, game sẽ tự động đọc và cập nhật trong settings.
 
-<img src="H:\Documents\GitHub\Goal-Dash\images\Screenshot 2024-04-19 151738.png" alt="Screenshot 2024-04-19 151738" style="zoom:50%;" />
+<img src="images\Screenshot 2024-04-19 151738.png" alt="Screenshot 2024-04-19 151738" style="zoom:50%;" />
 
 ## Một số điểm nổi bật khác do em tự phát triển
 
