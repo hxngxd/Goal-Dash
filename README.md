@@ -213,7 +213,7 @@ Về phần render chữ, em sử dụng thuật toán **tìm kiếm nhị phân
 
 # Demo (Youtube)
 
-[![](https://img.youtube.com/vi/JG7NuMQjLXo/maxresdefault.jpg)](https://www.youtube.com/watch?v=JG7NuMQjLXo)
+<a href="https://www.youtube.com/watch?v=JG7NuMQjLXo" target="_blank"><img src="https://img.youtube.com/vi/JG7NuMQjLXo/maxresdefault.jpg" alt=""></a>
 
 # Kết luận
 
