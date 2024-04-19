@@ -5,7 +5,23 @@
 > **Tên dự án**: *Goal Dash* (về đích nhanh nhất)<br/>
 > **Ngày**: *19/04/2024*
 
-[TOC]
+# Mục Lục
+
+- [Mục Lục](#mục-lục)
+- [Chủ đề](#chủ-đề)
+- [Tự đánh giá](#tự-đánh-giá)
+  - [Phát triển](#phát-triển)
+  - [Các chức năng](#các-chức-năng)
+    - [Màn hình chính](#màn-hình-chính)
+    - [Play](#play)
+    - [Map Building](#map-building)
+    - [Settings](#settings)
+  - [Một số điểm nổi bật khác do em tự phát triển](#một-số-điểm-nổi-bật-khác-do-em-tự-phát-triển)
+    - [Sử dụng lớp `Vector2` để quản lý và xử lý các toạ độ 2 chiều](#sử-dụng-lớp-vector2-để-quản-lý-và-xử-lý-các-toạ-độ-2-chiều)
+    - [LinkedFunction (Hàm liên kết) - ứng dụng của Singly Linked List](#linkedfunction-hàm-liên-kết---ứng-dụng-của-singly-linked-list)
+    - [User Interface - Giao diện người dùng](#user-interface---giao-diện-người-dùng)
+- [Demo](#demo)
+- [Kết luận](#kết-luận)
 
 # Chủ đề
 
@@ -193,6 +209,10 @@ Các thành phần của UI đều được do em tự phát triển bao gồm:
 
 **Canvas** như là một khung, chỉ cần đặt các thành phần khác vào, canvas sẽ tự động căn chỉnh vị trí và kích cỡ các thành phần đó dựa trên những tham số như: ***spacing, margin, alignment,...***
 
-Về phần render chữ, em sử dụng thuật toán **tìm kiếm nhị phân** để tính toán cỡ chữ vừa đủ với kích cỡ nền cho trước. Và có thể chọn các căn trái, giữa, phải cho chữ.
+Về phần render chữ, em sử dụng thuật toán **tìm kiếm nhị phân** để tính toán cỡ chữ vừa đủ với kích cỡ nền cho trước. Và có thể chọn căn trái, giữa, phải cho chữ.
 
 # Demo
+
+# Kết luận
+
+Với những lý do trên, em nghĩ mình xứng đáng lọt vào top **10% của lớp**. Em xin cảm ơn!
