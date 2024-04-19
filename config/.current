@@ -4,8 +4,8 @@
 <int> {coin_possibility=10}
 <string> {font=fonts/Gotu-Regular.ttf}
 <float> {fps=60}
-<float> {gravity=10}
-<int> {health_possibility=0}
+<float> {gravity=9.8}
+<int> {health_possibility=5}
 <bool> {keyboard_layout=0}
 <float> {map_delay=15}
 <string> {music=off}
@@ -13,9 +13,9 @@
 <float> {player_collision_dist=1}
 <bool> {player_immortal=0}
 <float> {player_jump_speed=1}
-<float> {player_move_speed=0.99078}
+<float> {player_move_speed=1}
 <string> {player_name=Nguyen Tuong Hung}
-<bool> {point_grid=0}
+<bool> {point_grid=1}
 <int> {ray_opacity=180}
 <bool> {reset_health=0}
 <int> {resolution=3}
@@ -24,5 +24,5 @@
 <bool> {sound=1}
 <float> {tile_rescale_speed=0.075}
 <float> {tile_scale=1}
-<int> {volume=56}
+<int> {volume=64}
 <int> {wall_possibility=26}

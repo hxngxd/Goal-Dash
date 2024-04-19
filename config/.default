@@ -31,3 +31,4 @@
 
 <int> {wall_possibility=26}
 <int> {coin_possibility=10}
+<int> {health_possibility=5}

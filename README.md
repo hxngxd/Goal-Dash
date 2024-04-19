@@ -20,7 +20,7 @@
     - [Sử dụng lớp `Vector2` để quản lý và xử lý các toạ độ 2 chiều](#sử-dụng-lớp-vector2-để-quản-lý-và-xử-lý-các-toạ-độ-2-chiều)
     - [LinkedFunction (Hàm liên kết) - ứng dụng của Singly Linked List](#linkedfunction-hàm-liên-kết---ứng-dụng-của-singly-linked-list)
     - [User Interface - Giao diện người dùng](#user-interface---giao-diện-người-dùng)
-- [Demo](#demo)
+- [Demo (Youtube)](#demo-youtube)
 - [Kết luận](#kết-luận)
 
 # Chủ đề
@@ -211,7 +211,9 @@ Các thành phần của UI đều được do em tự phát triển bao gồm:
 
 Về phần render chữ, em sử dụng thuật toán **tìm kiếm nhị phân** để tính toán cỡ chữ vừa đủ với kích cỡ nền cho trước. Và có thể chọn căn trái, giữa, phải cho chữ.
 
-# Demo
+# Demo (Youtube)
+
+[![](https://img.youtube.com/vi/JG7NuMQjLXo/maxresdefault.jpg)](https://www.youtube.com/watch?v=JG7NuMQjLXo)
 
 # Kết luận
 
